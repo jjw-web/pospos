@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { TableData, MenuItem } from './types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
-import { supabase } from './lib/supabase';
+import { supabase } from './src/lib/supabase';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
 import OrderView from './components/OrderView';
@@ -26,7 +26,7 @@ const App: React.FC = () => {
     if (error) {
       console.error("Error initializing tables:", error);
     } else {
-      setTables(new Map(INITIAL_TABLES.map(table => [table.id, table])));
+      setTables(new Map(INITIAL_TABLES.map((table: TableData) => [table.id, table])));
     }
   }, []);
 
@@ -41,10 +41,10 @@ const App: React.FC = () => {
 
       if (error) {
         console.error('Lỗi tải dữ liệu:', error);
-        setTables(new Map(INITIAL_TABLES.map(table => [table.id, table])));
+        setTables(new Map(INITIAL_TABLES.map((table: TableData) => [table.id, table])));
       } else if (data && data.length > 0) {
         const tableMap = new Map<number, TableData>();
-        data.forEach(table => {
+        (data as any[]).forEach((table: any) => {
           tableMap.set(table.id, { ...table, order: table.order || [] });
         });
         setTables(tableMap);
@@ -61,9 +61,9 @@ const App: React.FC = () => {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'tables' },
-        (payload) => {
+        (payload: any) => {
           const updatedTable = payload.new as TableData;
-          setTables(prev => {
+          setTables((prev: Map<number, TableData>) => {
             const newMap = new Map(prev);
             newMap.set(updatedTable.id, { ...updatedTable, order: updatedTable.order || [] });
             return newMap;
@@ -90,11 +90,11 @@ const App: React.FC = () => {
 
   const updateTable = useCallback((tableId: number, updatedData: Partial<TableData>) => {
     let updatedTableForSupabase: Partial<TableData> | null = null;
-    setTables(prev => {
+    setTables((prev: Map<number, TableData>) => {
       const newTables = new Map(prev);
       const currentTable = newTables.get(tableId);
       if (currentTable) {
-        const updatedTable = { ...currentTable, ...updatedData };
+        const updatedTable = { ...currentTable, ...updatedData } as TableData;
         newTables.set(tableId, updatedTable);
         updatedTableForSupabase = { status: updatedTable.status, order: updatedTable.order };
       }
