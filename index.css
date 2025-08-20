@@ -1,0 +1,223 @@
+/* CSS Reset & Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.app-container {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 10px;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simple, clean styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+}
+
+/* Simple table styles */
+.table-available {
+  background-color: #8FBC8F;
+  color: white;
+}
+
+.table-occupied {
+  background-color: #f59e0b;
+  color: white;
+}
+
+/* Simple button hover */
+.table-available:hover {
+  background-color: #79a179;
+}
+
+.table-occupied:hover {
+  background-color: #d97706;
+}
+
+/* Simple card */
+.card-simple {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Simple modal */
+.modal-simple {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-simple {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Simple navigation */
+.nav-simple {
+  background-color: #f3f4f6;
+  border-radius: 8px;
+}
+
+.nav-button-simple {
+  background-color: white;
+  color: #374151;
+  border-radius: 9999px;
+  padding: 8px 24px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.nav-button-simple.active {
+  background-color: #8FBC8F;
+  color: white;
+}
+
+.nav-button-simple:hover:not(.active) {
+  background-color: #f9fafb;
+}
+
+/* Simple header */
+.header-simple {
+  background-color: white;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Simple menu items */
+.menu-item-simple {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.menu-item-simple:hover {
+  border-color: #8FBC8F;
+  background-color: #f0f9ff;
+}
+
+/* Simple button */
+.btn-simple {
+  background-color: #8FBC8F;
+  color: white;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-simple:hover {
+  background-color: #79a179;
+}
+
+.btn-simple:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Fix cho hình ảnh Coffee Time */
+.coffee-image-container {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: #e5e5e5;
+  border-radius: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.coffee-image {
+  width: 100%;
+  height: auto;
+  max-width: 350px;
+  object-fit: contain; /* Quan trọng: giữ tỷ lệ hình */
+  display: block;
+}
+
+/* Fix cho mobile screens */
+@media (max-width: 480px) {
+  .coffee-image-container {
+    padding: 8px;
+    margin: 0 10px;
+  }
+  
+  .coffee-image {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* Fix cho container chính */
+.main-container {
+  width: 100%;
+  max-width: 100vw;
+  padding: 0 15px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f0f0f0; /* Added a light background */
+}
+
+/* Fix cho tiêu đề */
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 20px 0 10px 0;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 20px 0;
+  padding: 0 10px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 20px;
+    margin: 15px 0 8px 0;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    margin: 0 0 15px 0;
+  }
+}
+
+/* Fix lỗi hiển thị nút quantity */
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-control button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
