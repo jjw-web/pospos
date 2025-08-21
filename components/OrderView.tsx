@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { TableData, MenuItem, MenuCategory } from '../types';
 import { PlusIcon, MinusIcon, TrashIcon } from './icons';
 
@@ -24,7 +24,20 @@ const OrderView: React.FC<OrderViewProps> = ({
   onUpdateQuantity,
   onPayment,
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
   const total = table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+
+  // Filter menu items based on search term
+  const filteredMenuCategories = useMemo(() => {
+    if (!searchTerm.trim()) return menuCategories;
+    
+    return menuCategories.map(category => ({
+      ...category,
+      items: category.items.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    })).filter(category => category.items.length > 0);
+  }, [menuCategories, searchTerm]);
 
   // Inline Styles
   const headerStyle: React.CSSProperties = { 
@@ -37,6 +50,53 @@ const OrderView: React.FC<OrderViewProps> = ({
     backgroundColor: '#4b5563', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer' 
   };
   const sectionTitleStyle: React.CSSProperties = { fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: '#1f2937' };
+
+  // Search styles
+  const searchContainerStyle: React.CSSProperties = {
+    marginBottom: '1rem',
+    position: 'relative',
+  };
+
+  const searchInputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.75rem 1rem 0.75rem 2.5rem',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+  };
+
+  const searchIconStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: '0.75rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#6b7280',
+    fontSize: '1.125rem',
+  };
+
+  const clearButtonStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: '0.75rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: '#6b7280',
+    cursor: 'pointer',
+    fontSize: '1.125rem',
+    padding: '0.25rem',
+    borderRadius: '50%',
+    display: searchTerm ? 'block' : 'none',
+  };
+
+  const noResultsStyle: React.CSSProperties = {
+    textAlign: 'center',
+    padding: '2rem',
+    color: '#6b7280',
+    fontSize: '1rem',
+  };
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
@@ -116,24 +176,73 @@ const OrderView: React.FC<OrderViewProps> = ({
           {/* Menu - Hybrid Approach */}
           <div className="w-full lg:w-1/2 flex flex-col h-1/2 lg:h-auto" style={{ padding: '1.5rem' }}>
             <h3 style={sectionTitleStyle}>Thực đơn</h3>
-            <div className="flex-grow overflow-y-auto pr-2 sm:pr-4 min-h-0">
-              <div className="space-y-6">
-                {menuCategories.map((category) => (
-                  <div key={category.name}>
-                    <h4 style={{...sectionTitleStyle, fontSize: '1.125rem', position: 'sticky', top: 0, backgroundColor: 'white', padding: '0.5rem 0'}}>{category.name}</h4>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                      {category.items.map((menuItem) => (
-                        <li key={menuItem.id}>
-                          <button onClick={() => onAddItem(table.id, menuItem)} className="menu-item-simple w-full h-full text-left p-3 hover:scale-105 transition-transform">
-                            <p className="font-semibold text-sm sm:text-base text-gray-800 mb-1">{menuItem.name}</p>
-                            <p className="text-xs sm:text-sm text-gray-600 font-mono">{formatCurrency(menuItem.price)}</p>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+            
+            {/* Search Bar */}
+            <div style={searchContainerStyle}>
+              <div style={{ position: 'relative' }}>
+                <span style={searchIconStyle}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm món ăn, đồ uống..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    ...searchInputStyle,
+                    borderColor: searchTerm ? '#3b82f6' : '#e5e7eb'
+                  }}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={clearButtonStyle}
+                    aria-label="Xóa tìm kiếm"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
+            </div>
+
+            <div className="flex-grow overflow-y-auto pr-2 sm:pr-4 min-h-0">
+              {filteredMenuCategories.length === 0 ? (
+                <div style={noResultsStyle}>
+                  <p>Không tìm thấy món nào phù hợp với "{searchTerm}"</p>
+                  <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Hãy thử từ khóa khác</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {filteredMenuCategories.map((category) => (
+                    <div key={category.name}>
+                      <h4 style={{...sectionTitleStyle, fontSize: '1.125rem', position: 'sticky', top: 0, backgroundColor: 'white', padding: '0.5rem 0'}}>
+                        {category.name} 
+                        {searchTerm && (
+                          <span style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: 'normal' }}>
+                            {' '}({category.items.length} món)
+                          </span>
+                        )}
+                      </h4>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                        {category.items.map((menuItem) => (
+                          <li key={menuItem.id}>
+                            <button 
+                              onClick={() => onAddItem(table.id, menuItem)} 
+                              className="menu-item-simple w-full h-full text-left p-3 hover:scale-105 transition-transform"
+                              style={{
+                                backgroundColor: searchTerm && menuItem.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+                                  ? '#fef3c7' 
+                                  : undefined
+                              }}
+                            >
+                              <p className="font-semibold text-sm sm:text-base text-gray-800 mb-1">{menuItem.name}</p>
+                              <p className="text-xs sm:text-sm text-gray-600 font-mono">{formatCurrency(menuItem.price)}</p>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

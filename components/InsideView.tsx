@@ -13,12 +13,12 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
   const containerStyle: React.CSSProperties = {
     width: '100%',
     minHeight: '100vh',
-    backgroundColor: '#f3f4f6', // bg-gray-100
+    backgroundColor: '#111827', // Dark background like poker app
     padding: '16px',
   };
 
   const wrapperStyle: React.CSSProperties = {
-    maxWidth: '1280px', // max-w-7xl
+    maxWidth: '1280px',
     margin: '0 auto',
   };
 
@@ -30,21 +30,29 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: '1.875rem', // text-3xl
+    fontSize: '1.875rem',
     fontWeight: 'bold',
-    color: '#1f2937', // text-gray-800
+    color: 'white',
   };
 
   const backButtonStyle: React.CSSProperties = {
-    fontSize: '1.125rem', // text-lg
+    fontSize: '1.125rem',
     fontWeight: 'bold',
     padding: '8px 16px',
-    backgroundColor: '#4b5563', // bg-gray-600
+    backgroundColor: '#6b7280',
     color: 'white',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.2s ease'
+  };
+
+  // Grid layout: 2 columns, 4 rows
+  const gridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '16px',
+    padding: '16px',
   };
 
   return (
@@ -55,15 +63,15 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
           <button 
             onClick={onBack}
             style={backButtonStyle}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'} // hover:bg-gray-800
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
           >
             Quay lại
           </button>
         </div>
         
-        {/* Responsive grid layout classes are kept for functionality */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+        {/* 2x4 Grid Layout */}
+        <div style={gridStyle}>
           {tables.map((table) => (
             <div key={table.id}>
               <Table table={table} onSelect={onTableSelect} />

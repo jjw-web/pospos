@@ -12,10 +12,41 @@ import ViewSelectionView from './components/ViewSelectionView';
 type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order';
 
 const App: React.FC = () => {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('start');
-  const [tables, setTables] = useState<Map<number, TableData>>(new Map());
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
+    const savedScreen = localStorage.getItem('currentScreen');
+    return (savedScreen ? JSON.parse(savedScreen) : 'start') as Screen;
+  });
+  const [tables, setTables] = useState<Map<number, TableData>>(() => {
+    const savedTables = localStorage.getItem('tables');
+    if (savedTables) {
+      const parsed = JSON.parse(savedTables);
+      // Check if parsed is an array before calling new Map(parsed)
+      if (Array.isArray(parsed)) {
+        return new Map(parsed);
+      }
+    }
+    return new Map();
+  });
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(() => {
+    const savedTableId = localStorage.getItem('selectedTableId');
+    return savedTableId ? JSON.parse(savedTableId) : null;
+  });
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem('currentScreen', JSON.stringify(currentScreen));
+  }, [currentScreen]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedTableId', JSON.stringify(selectedTableId));
+  }, [selectedTableId]);
+
+  useEffect(() => {
+    // Don't save an empty map to localStorage
+    if (tables.size > 0) {
+      localStorage.setItem('tables', JSON.stringify(Array.from(tables.entries())));
+    }
+  }, [tables]);
 
   // Khởi tạo dữ liệu bàn nếu chưa có
   const initializeTables = useCallback(async () => {
@@ -32,6 +63,11 @@ const App: React.FC = () => {
 
   // Load dữ liệu từ Supabase khi component mount
   useEffect(() => {
+    if (tables.size > 0) {
+      setLoading(false);
+      return;
+    }
+
     const loadTables = async () => {
       setLoading(true);
       const { data, error } = await supabase
@@ -75,7 +111,7 @@ const App: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [initializeTables]);
+  }, [initializeTables, tables.size]);
 
   // Cập nhật bàn lên Supabase
   const updateTableOnSupabase = async (tableId: number, updatedData: Partial<TableData>) => {
@@ -170,6 +206,9 @@ const App: React.FC = () => {
       case 'outside':
         return <OutsideView tables={outsideTables} onTableSelect={handleTableSelect} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'order':
+        if (loading) {
+          return <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '1.25rem'}}>Đang tải dữ liệu từ server...</div>;
+        }
         if (!selectedTable) return <ViewSelectionView onSelect={(view) => setCurrentScreen(view)} onBack={() => setCurrentScreen('start')} />;
         return (
           <OrderView
