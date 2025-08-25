@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { TableData, MenuItem, MenuCategory } from '../types';
-import { PlusIcon, MinusIcon, TrashIcon } from './icons';
+import { TableData, MenuCategory, MenuItem } from '../types';
+import SearchBar from './SearchBar';
 
 interface OrderViewProps {
   table: TableData;
@@ -12,10 +12,6 @@ interface OrderViewProps {
   onPayment: (tableId: number) => void;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-};
-
 const OrderView: React.FC<OrderViewProps> = ({
   table,
   menuCategories,
@@ -24,226 +20,353 @@ const OrderView: React.FC<OrderViewProps> = ({
   onUpdateQuantity,
   onPayment,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name || '');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  if (!table || !table.order) {
+    return <div>Đang tải...</div>;
+  }
+
   const total = table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
 
-  // Filter menu items based on search term
-  const filteredMenuCategories = useMemo(() => {
-    if (!searchTerm.trim()) return menuCategories;
-    
-    return menuCategories.map(category => ({
-      ...category,
-      items: category.items.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    })).filter(category => category.items.length > 0);
-  }, [menuCategories, searchTerm]);
-
-  // Inline Styles
-  const headerStyle: React.CSSProperties = { 
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-    padding: '1rem 1.5rem', borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' 
-  };
-  const titleStyle: React.CSSProperties = { fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' };
-  const backButtonStyle: React.CSSProperties = { 
-    fontSize: '1rem', fontWeight: 'bold', padding: '0.5rem 1rem', 
-    backgroundColor: '#4b5563', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer' 
-  };
-  const sectionTitleStyle: React.CSSProperties = { fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', color: '#1f2937' };
-
-  // Search styles
-  const searchContainerStyle: React.CSSProperties = {
-    marginBottom: '1rem',
-    position: 'relative',
+  const handleAddItem = (menuItem: MenuItem) => {
+    onAddItem(table.id, menuItem);
   };
 
-  const searchInputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.75rem 1rem 0.75rem 2.5rem',
-    border: '2px solid #e5e7eb',
-    borderRadius: '8px',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'border-color 0.2s ease',
+  const handleUpdateQuantity = (menuItemId: number, change: number) => {
+    onUpdateQuantity(table.id, menuItemId, change);
   };
 
-  const searchIconStyle: React.CSSProperties = {
-    position: 'absolute',
-    left: '0.75rem',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#6b7280',
-    fontSize: '1.125rem',
+  const handlePayment = () => {
+    onPayment(table.id);
   };
 
-  const clearButtonStyle: React.CSSProperties = {
-    position: 'absolute',
-    right: '0.75rem',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    color: '#6b7280',
-    cursor: 'pointer',
-    fontSize: '1.125rem',
-    padding: '0.25rem',
-    borderRadius: '50%',
-    display: searchTerm ? 'block' : 'none',
+  const filteredMenuItems = useMemo(() => {
+    const category = menuCategories.find((cat) => cat.name === selectedCategory);
+    if (!category) return [];
+    if (!searchQuery) return category.items;
+    return category.items.filter((item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [selectedCategory, searchQuery, menuCategories]);
+
+  const containerStyle: React.CSSProperties = {
+    padding: '20px',
+    maxWidth: '1200px',
+    margin: '0 auto',
   };
 
-  const noResultsStyle: React.CSSProperties = {
+  const headerStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+    padding: '20px',
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const tableInfoStyle: React.CSSProperties = {
     textAlign: 'center',
-    padding: '2rem',
-    color: '#6b7280',
-    fontSize: '1rem',
+  };
+
+  const tableNameStyle: React.CSSProperties = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: '8px',
+  };
+
+  const tableStatusStyle: React.CSSProperties = {
+    fontSize: '16px',
+    color: '#666',
+  };
+
+  const backButtonStyle: React.CSSProperties = {
+    padding: '12px 24px',
+    backgroundColor: '#6b7280',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '16px',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+  };
+
+  const menuSectionStyle: React.CSSProperties = {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const categoryTabsStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '20px',
+    flexWrap: 'wrap',
+  };
+
+  const categoryTabStyle: React.CSSProperties = {
+    padding: '8px 16px',
+    border: 'none',
+    borderRadius: '20px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    backgroundColor: '#f3f4f6',
+    color: '#374151',
+  };
+
+  const categoryTabActiveStyle: React.CSSProperties = {
+    ...categoryTabStyle,
+    backgroundColor: '#8FBC8F',
+    color: 'white',
+  };
+
+  const menuGridStyle: React.CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '16px',
+  };
+
+  const menuItemStyle: React.CSSProperties = {
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    padding: '16px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  };
+
+  const menuItemHoverStyle: React.CSSProperties = {
+    ...menuItemStyle,
+    borderColor: '#8FBC8F',
+    backgroundColor: '#f0f9ff',
+  };
+
+  const menuItemNameStyle: React.CSSProperties = {
+    fontSize: '16px',
+    fontWeight: '600',
+    marginBottom: '8px',
+    color: '#333',
+  };
+
+  const menuItemPriceStyle: React.CSSProperties = {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: '#8FBC8F',
+  };
+
+  const orderSectionStyle: React.CSSProperties = {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  };
+
+  const orderTitleStyle: React.CSSProperties = {
+    fontSize: '20px',
+    fontWeight: 'bold',
+    marginBottom: '20px',
+    color: '#333',
+  };
+
+  const orderListStyle: React.CSSProperties = {
+    marginBottom: '20px',
+  };
+
+  const orderItemStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '12px 0',
+    borderBottom: '1px solid #e5e7eb',
+  };
+
+  const orderItemInfoStyle: React.CSSProperties = {
+    flex: 1,
+  };
+
+  const orderItemNameStyle: React.CSSProperties = {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#333',
+  };
+
+  const orderItemPriceStyle: React.CSSProperties = {
+    fontSize: '14px',
+    color: '#666',
+  };
+
+  const quantityControlStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  };
+
+  const quantityButtonStyle: React.CSSProperties = {
+    width: '32px',
+    height: '32px',
+    border: '1px solid #d1d5db',
+    borderRadius: '4px',
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    fontWeight: 'bold',
+  };
+
+  const quantityStyle: React.CSSProperties = {
+    fontSize: '16px',
+    fontWeight: '600',
+    minWidth: '40px',
+    textAlign: 'center',
+  };
+
+  const totalSectionStyle: React.CSSProperties = {
+    borderTop: '2px solid #e5e7eb',
+    paddingTop: '20px',
+    marginTop: '20px',
+  };
+
+  const totalStyle: React.CSSProperties = {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#8FBC8F',
+    textAlign: 'center',
+    marginBottom: '20px',
+  };
+
+  const paymentButtonStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '16px',
+    backgroundColor: '#8FBC8F',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '18px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  };
+
+  const emptyOrderStyle: React.CSSProperties = {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: '16px',
+    padding: '40px 0',
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'white' }}>
-        <header style={headerStyle}>
-          <h2 style={titleStyle}>Bàn {table.name}</h2>
-          <button onClick={onBack} style={backButtonStyle}>Quay lại</button>
-        </header>
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        <div style={tableInfoStyle}>
+          <div style={tableNameStyle}>{table.name}</div>
+          <div style={tableStatusStyle}>
+            {table.layout === 'Inside' ? 'Trong nhà' : 'Ngoài trời'} - {table.status === 'available' ? 'Trống' : 'Có khách'}
+          </div>
+        </div>
+        <button style={backButtonStyle} onClick={onBack}>
+          ← Quay lại
+        </button>
+      </div>
 
-        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0">
-          {/* Order Details - Hybrid Approach */}
-          <div className="w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-r border-gray-200 h-1/2 lg:h-auto" style={{ padding: '1.5rem' }}>
-            <h3 style={sectionTitleStyle}>Đơn hàng hiện tại</h3>
-            <div className="flex-grow overflow-y-auto pr-2 -mr-2 min-h-0">
-              {table.order.length === 0 ? (
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                  <p style={{ color: '#6b7280', fontSize: '1.125rem' }}>Chưa có món nào trong đơn.</p>
-                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>Hãy chọn món từ thực đơn bên cạnh</p>
-                </div>
-              ) : (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {table.order.map((item) => (
-                    <li key={item.menuItem.id} style={{ backgroundColor: '#f9fafb', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                       <div className="flex items-center justify-between gap-2">
-                         {/* Text part can be inline */}
-                         <div className="flex-1 min-w-0">
-                           <p style={{ fontWeight: 600, color: '#1f2937' }} className="truncate text-sm sm:text-base">{item.menuItem.name}</p>
-                           <p style={{ color: '#4b5563' }} className="text-xs sm:text-sm">{formatCurrency(item.menuItem.price)}</p>
-                         </div>
-                         {/* Buttons part uses flex, better to keep classes */}
-                         <div className="flex items-center gap-2 ml-2">
-                           {/* Quantity Control */}
-                           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2 py-1 shadow-sm">
-                             <button
-                               onClick={() => onUpdateQuantity(table.id, item.menuItem.id, -1)}
-                               className="p-1"
-                               aria-label="Giảm số lượng"
-                             >
-                               <MinusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                             </button>
-                             <span className="font-bold text-base sm:text-lg w-6 text-center text-gray-800">
-                               {item.quantity}
-                             </span>
-                             <button
-                               onClick={() => onUpdateQuantity(table.id, item.menuItem.id, 1)}
-                               className="p-1"
-                               aria-label="Tăng số lượng"
-                             >
-                               <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                             </button>
-                           </div>
-
-                           {/* Trash Button */}
-                           <button
-                             onClick={() => onUpdateQuantity(table.id, item.menuItem.id, -item.quantity)}
-                             className="p-2 text-gray-500 hover:text-red-500"
-                             aria-label="Xóa món"
-                           >
-                             <TrashIcon className="w-5 h-5" />
-                           </button>
-                         </div>
-                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="mt-auto pt-4 flex-shrink-0">
-               <div style={{borderTop: '2px dashed #d1d5db', paddingTop: '1rem', paddingBottom: '1rem'}} className="flex justify-between items-center text-lg sm:text-xl font-bold text-gray-800">
-                <span>Tổng cộng:</span>
-                <span style={{ color: '#16a34a' }}>{formatCurrency(total)}</span>
-               </div>
-               <button onClick={() => onPayment(table.id)} disabled={total === 0} className="w-full btn-simple text-base sm:text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">Thanh toán</button>
-            </div>
+      <div style={contentStyle}>
+        {/* Menu Section */}
+        <div style={menuSectionStyle}>
+          <h3 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+            Thực đơn
+          </h3>
+          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          <div style={categoryTabsStyle}>
+            {menuCategories.map((category) => (
+              <button
+                key={category.name}
+                style={selectedCategory === category.name ? categoryTabActiveStyle : categoryTabStyle}
+                onClick={() => setSelectedCategory(category.name)}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
 
-          {/* Menu - Hybrid Approach */}
-          <div className="w-full lg:w-1/2 flex flex-col h-1/2 lg:h-auto" style={{ padding: '1.5rem' }}>
-            <h3 style={sectionTitleStyle}>Thực đơn</h3>
-            
-            {/* Search Bar */}
-            <div style={searchContainerStyle}>
-              <div style={{ position: 'relative' }}>
-                <span style={searchIconStyle}>🔍</span>
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm món ăn, đồ uống..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    ...searchInputStyle,
-                    borderColor: searchTerm ? '#3b82f6' : '#e5e7eb'
+          <div style={menuGridStyle}>
+            {filteredMenuItems.map((item) => (
+                <div
+                  key={item.id}
+                  style={menuItemStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#8FBC8F';
+                    e.currentTarget.style.backgroundColor = '#f0f9ff';
                   }}
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    style={clearButtonStyle}
-                    aria-label="Xóa tìm kiếm"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.backgroundColor = 'white';
+                  }}
+                  onClick={() => handleAddItem(item)}
+                >
+                  <div style={menuItemNameStyle}>{item.name}</div>
+                  <div style={menuItemPriceStyle}>{item.price.toLocaleString()}đ</div>
+                </div>
+              ))}
+          </div>
+        </div>
 
-            <div className="flex-grow overflow-y-auto pr-2 sm:pr-4 min-h-0">
-              {filteredMenuCategories.length === 0 ? (
-                <div style={noResultsStyle}>
-                  <p>Không tìm thấy món nào phù hợp với "{searchTerm}"</p>
-                  <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Hãy thử từ khóa khác</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {filteredMenuCategories.map((category) => (
-                    <div key={category.name}>
-                      <h4 style={{...sectionTitleStyle, fontSize: '1.125rem', position: 'sticky', top: 0, backgroundColor: 'white', padding: '0.5rem 0'}}>
-                        {category.name} 
-                        {searchTerm && (
-                          <span style={{ fontSize: '0.875rem', color: '#6b7280', fontWeight: 'normal' }}>
-                            {' '}({category.items.length} món)
-                          </span>
-                        )}
-                      </h4>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                        {category.items.map((menuItem) => (
-                          <li key={menuItem.id}>
-                            <button 
-                              onClick={() => onAddItem(table.id, menuItem)} 
-                              className="menu-item-simple w-full h-full text-left p-3 hover:scale-105 transition-transform"
-                              style={{
-                                backgroundColor: searchTerm && menuItem.name.toLowerCase().includes(searchTerm.toLowerCase()) 
-                                  ? '#fef3c7' 
-                                  : undefined
-                              }}
-                            >
-                              <p className="font-semibold text-sm sm:text-base text-gray-800 mb-1">{menuItem.name}</p>
-                              <p className="text-xs sm:text-sm text-gray-600 font-mono">{formatCurrency(menuItem.price)}</p>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+        {/* Order Section */}
+        <div style={orderSectionStyle}>
+          <h3 style={orderTitleStyle}>Đơn hàng hiện tại</h3>
+          
+          <div style={orderListStyle}>
+            {table.order.length === 0 ? (
+              <div style={emptyOrderStyle}>
+                Chưa có món nào trong đơn hàng
+              </div>
+            ) : (
+              table.order.map((item) => (
+                <div key={item.menuItem.id} style={orderItemStyle}>
+                  <div style={orderItemInfoStyle}>
+                    <div style={orderItemNameStyle}>{item.menuItem.name}</div>
+                    <div style={orderItemPriceStyle}>
+                      {item.menuItem.price.toLocaleString()}đ x {item.quantity}
                     </div>
-                  ))}
+                  </div>
+                  <div style={quantityControlStyle}>
+                    <button
+                      style={quantityButtonStyle}
+                      onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}
+                    >
+                      -
+                    </button>
+                    <span style={quantityStyle}>{item.quantity}</span>
+                    <button
+                      style={quantityButtonStyle}
+                      onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-              )}
+              ))
+            )}
+          </div>
+
+          <div style={totalSectionStyle}>
+            <div style={totalStyle}>
+              Tổng cộng: {total.toLocaleString()}đ
             </div>
+            <button
+              style={paymentButtonStyle}
+              onClick={handlePayment}
+              disabled={table.order.length === 0}
+            >
+              Thanh toán
+            </button>
           </div>
         </div>
       </div>

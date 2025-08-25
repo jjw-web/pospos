@@ -4,9 +4,10 @@ import React from 'react';
 interface ViewSelectionViewProps {
   onSelect: (view: 'inside' | 'outside') => void;
   onBack: () => void;
+  onHistory: () => void;
 }
 
-const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack }) => {
+const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack, onHistory }) => {
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
@@ -63,6 +64,12 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack 
     color: 'white'
   };
 
+  const historyButtonStyle: React.CSSProperties = {
+    ...baseButtonStyle,
+    backgroundColor: '#f59e0b', // bg-amber-500
+    color: 'white'
+  };
+
   return (
     <div style={containerStyle}>
       <div style={buttonsWrapperStyle}>
@@ -81,6 +88,14 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack 
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
           Ngoài trời
+        </button>
+        <button 
+          style={historyButtonStyle} 
+          onClick={onHistory}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          Lịch sử
         </button>
         <button 
           style={backButtonStyle} 
