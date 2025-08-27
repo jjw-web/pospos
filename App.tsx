@@ -8,10 +8,15 @@ import OrderView from './components/OrderView';
 import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
+import { checkVersion } from './src/lib/version-manager';
 
 type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history';
 
 const App: React.FC = () => {
+  useEffect(() => {
+    checkVersion();
+  }, []);
+
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
     const savedScreen = localStorage.getItem('currentScreen');
     return (savedScreen as Screen) || 'start';
