@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { TableData, MenuCategory, MenuItem } from '../types';
 import SearchBar from './SearchBar';
@@ -42,142 +41,132 @@ const OrderView: React.FC<OrderViewProps> = ({
   };
 
   const filteredMenuItems = useMemo(() => {
+    if (searchQuery) {
+      const allItems = menuCategories.flatMap(cat => cat.items);
+      return allItems.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
     const category = menuCategories.find((cat) => cat.name === selectedCategory);
-    if (!category) return [];
-    if (!searchQuery) return category.items;
-    return category.items.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return category ? category.items : [];
   }, [selectedCategory, searchQuery, menuCategories]);
 
+  // Styles based on the provided HTML
   const containerStyle: React.CSSProperties = {
-    padding: '20px',
-    maxWidth: '1200px',
+    maxWidth: '480px',
     margin: '0 auto',
+    padding: '0 15px',
+    paddingBottom: '100px', // Space for checkout bar
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '20px',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    padding: '15px 0',
+    borderBottom: '1px solid #eaeaea',
+    backgroundColor: '#fff',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
   };
 
-  const tableInfoStyle: React.CSSProperties = {
-    textAlign: 'center',
-  };
-
-  const tableNameStyle: React.CSSProperties = {
+  const backBtnStyle: React.CSSProperties = {
     fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '8px',
-  };
-
-  const tableStatusStyle: React.CSSProperties = {
-    fontSize: '16px',
-    color: '#666',
-  };
-
-  const backButtonStyle: React.CSSProperties = {
-    padding: '12px 24px',
-    backgroundColor: '#6b7280',
-    color: 'white',
+    marginRight: '15px',
+    textDecoration: 'none',
+    color: '#2c3e50',
+    background: 'none',
     border: 'none',
-    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '16px',
   };
 
-  const contentStyle: React.CSSProperties = {
+  const headerTitleStyle: React.CSSProperties = {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: '#2c3e50',
+  };
+
+  const searchContainerStyle: React.CSSProperties = {
+    margin: '15px 0',
+  };
+
+  const categoriesGridStyle: React.CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-  };
-
-  const menuSectionStyle: React.CSSProperties = {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-  };
-
-  const categoryTabsStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '8px',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '12px',
     marginBottom: '20px',
-    flexWrap: 'wrap',
   };
 
-  const categoryTabStyle: React.CSSProperties = {
-    padding: '8px 16px',
-    border: 'none',
-    borderRadius: '20px',
+  const categoryItemStyle: React.CSSProperties = {
+    backgroundColor: '#fff',
+    borderRadius: '10px',
+    padding: '15px 10px',
+    textAlign: 'center',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    transition: 'transform 0.2s, box-shadow 0.2s',
     cursor: 'pointer',
+    border: '1px solid #eee',
+  };
+  
+  const categoryItemActiveStyle: React.CSSProperties = {
+      ...categoryItemStyle,
+      borderColor: '#3498db',
+      boxShadow: '0 4px 8px rgba(52, 152, 219, 0.2)',
+      transform: 'translateY(-3px)',
+  }
+
+  const categoryNameStyle: React.CSSProperties = {
     fontSize: '14px',
-    backgroundColor: '#f3f4f6',
-    color: '#374151',
+    fontWeight: 500,
+    color: '#2c3e50',
   };
 
-  const categoryTabActiveStyle: React.CSSProperties = {
-    ...categoryTabStyle,
-    backgroundColor: '#8FBC8F',
-    color: 'white',
-  };
-
-  const menuGridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '16px',
+  const menuListStyle: React.CSSProperties = {
+    marginBottom: '20px',
   };
 
   const menuItemStyle: React.CSSProperties = {
-    border: '1px solid #e5e7eb',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '15px',
+    backgroundColor: '#fff',
     borderRadius: '8px',
-    padding: '16px',
+    marginBottom: '10px',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-  };
-
-  const menuItemHoverStyle: React.CSSProperties = {
-    ...menuItemStyle,
-    borderColor: '#8FBC8F',
-    backgroundColor: '#f0f9ff',
   };
 
   const menuItemNameStyle: React.CSSProperties = {
     fontSize: '16px',
-    fontWeight: '600',
-    marginBottom: '8px',
-    color: '#333',
+    fontWeight: 600,
   };
 
   const menuItemPriceStyle: React.CSSProperties = {
-    fontSize: '18px',
+    fontSize: '15px',
+    color: '#3498db',
     fontWeight: 'bold',
-    color: '#8FBC8F',
   };
 
-  const orderSectionStyle: React.CSSProperties = {
-    backgroundColor: 'white',
+  const orderPanelStyle: React.CSSProperties = {
+    backgroundColor: '#fff',
     borderRadius: '12px',
     padding: '20px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    marginBottom: '20px',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
   };
 
   const orderTitleStyle: React.CSSProperties = {
-    fontSize: '20px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    color: '#333',
+    fontSize: '18px',
+    fontWeight: 600,
+    marginBottom: '15px',
+    color: '#2c3e50',
   };
 
-  const orderListStyle: React.CSSProperties = {
-    marginBottom: '20px',
+  const emptyOrderStyle: React.CSSProperties = {
+    textAlign: 'center',
+    padding: '30px 0',
+    color: '#95a5a6',
   };
 
   const orderItemStyle: React.CSSProperties = {
@@ -185,190 +174,137 @@ const OrderView: React.FC<OrderViewProps> = ({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 0',
-    borderBottom: '1px solid #e5e7eb',
-  };
-
-  const orderItemInfoStyle: React.CSSProperties = {
-    flex: 1,
+    borderBottom: '1px solid #f0f0f0',
   };
 
   const orderItemNameStyle: React.CSSProperties = {
     fontSize: '16px',
-    fontWeight: '600',
-    color: '#333',
-  };
-
-  const orderItemPriceStyle: React.CSSProperties = {
-    fontSize: '14px',
-    color: '#666',
   };
 
   const quantityControlStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '10px',
   };
 
   const quantityButtonStyle: React.CSSProperties = {
-    width: '32px',
-    height: '32px',
-    border: '1px solid #d1d5db',
-    borderRadius: '4px',
-    backgroundColor: 'white',
+    width: '28px',
+    height: '28px',
+    border: '1px solid #ddd',
+    borderRadius: '50%',
+    backgroundColor: '#f8f9fa',
     cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     fontSize: '18px',
-    fontWeight: 'bold',
+    lineHeight: '24px',
   };
 
-  const quantityStyle: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: '600',
-    minWidth: '40px',
-    textAlign: 'center',
+  const checkoutBarStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxWidth: '480px',
+    margin: '0 auto',
+    backgroundColor: '#fff',
+    padding: '15px 20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+    zIndex: 100,
   };
 
-  const totalSectionStyle: React.CSSProperties = {
-    borderTop: '2px solid #e5e7eb',
-    paddingTop: '20px',
-    marginTop: '20px',
+  const totalAmountStyle: React.CSSProperties = {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: '#2c3e50',
   };
 
-  const totalStyle: React.CSSProperties = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#8FBC8F',
-    textAlign: 'center',
-    marginBottom: '20px',
-  };
-
-  const paymentButtonStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: '#8FBC8F',
+  const checkoutBtnStyle: React.CSSProperties = {
+    backgroundColor: '#3498db',
     color: 'white',
     border: 'none',
     borderRadius: '8px',
-    fontSize: '18px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  };
-
-  const emptyOrderStyle: React.CSSProperties = {
-    textAlign: 'center',
-    color: '#666',
+    padding: '12px 25px',
     fontSize: '16px',
-    padding: '40px 0',
+    fontWeight: 600,
+    cursor: 'pointer',
   };
 
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <div style={tableInfoStyle}>
-          <div style={tableNameStyle}>{table.name}</div>
-          <div style={tableStatusStyle}>
-            {table.layout === 'Inside' ? 'Trong nhà' : 'Ngoài trời'} - {table.status === 'available' ? 'Trống' : 'Có khách'}
-          </div>
-        </div>
-        <button style={backButtonStyle} onClick={onBack}>
-          ← Quay lại
-        </button>
+        <button style={backBtnStyle} onClick={onBack}>←</button>
+        <h1 style={headerTitleStyle}>
+          {table.name} - {table.status === 'available' ? 'Trống' : 'Có khách'}
+        </h1>
       </div>
 
-      <div style={contentStyle}>
-        {/* Menu Section */}
-        <div style={menuSectionStyle}>
-          <h3 style={{ marginBottom: '20px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-            Thực đơn
-          </h3>
-          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-          <div style={categoryTabsStyle}>
-            {menuCategories.map((category) => (
-              <button
-                key={category.name}
-                style={selectedCategory === category.name ? categoryTabActiveStyle : categoryTabStyle}
-                onClick={() => setSelectedCategory(category.name)}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
+      <div style={searchContainerStyle}>
+        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} placeholder="Tìm kiếm món ăn..."/>
+      </div>
 
-          <div style={menuGridStyle}>
-            {filteredMenuItems.map((item) => (
-                <div
-                  key={item.id}
-                  style={menuItemStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = '#8FBC8F';
-                    e.currentTarget.style.backgroundColor = '#f0f9ff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                    e.currentTarget.style.backgroundColor = 'white';
-                  }}
-                  onClick={() => handleAddItem(item)}
-                >
-                  <div style={menuItemNameStyle}>{item.name}</div>
-                  <div style={menuItemPriceStyle}>{item.price.toLocaleString()}đ</div>
-                </div>
-              ))}
+      <div style={categoriesGridStyle}>
+        {menuCategories.map((category) => (
+          <div
+            key={category.name}
+            style={selectedCategory === category.name && !searchQuery ? categoryItemActiveStyle : categoryItemStyle}
+            onClick={() => {
+              setSelectedCategory(category.name);
+              setSearchQuery('');
+            }}
+          >
+            <div style={categoryNameStyle}>{category.name}</div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Order Section */}
-        <div style={orderSectionStyle}>
-          <h3 style={orderTitleStyle}>Đơn hàng hiện tại</h3>
-          
-          <div style={orderListStyle}>
-            {table.order.length === 0 ? (
-              <div style={emptyOrderStyle}>
-                Chưa có món nào trong đơn hàng
-              </div>
-            ) : (
-              table.order.map((item) => (
-                <div key={item.menuItem.id} style={orderItemStyle}>
-                  <div style={orderItemInfoStyle}>
-                    <div style={orderItemNameStyle}>{item.menuItem.name}</div>
-                    <div style={orderItemPriceStyle}>
-                      {item.menuItem.price.toLocaleString()}đ x {item.quantity}
-                    </div>
-                  </div>
-                  <div style={quantityControlStyle}>
-                    <button
-                      style={quantityButtonStyle}
-                      onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}
-                    >
-                      -
-                    </button>
-                    <span style={quantityStyle}>{item.quantity}</span>
-                    <button
-                      style={quantityButtonStyle}
-                      onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div style={totalSectionStyle}>
-            <div style={totalStyle}>
-              Tổng cộng: {total.toLocaleString()}đ
+      <div style={menuListStyle}>
+        {filteredMenuItems.map((item) => (
+          <div key={item.id} style={menuItemStyle} onClick={() => handleAddItem(item)}>
+            <div>
+              <div style={menuItemNameStyle}>{item.name}</div>
+              <div style={menuItemPriceStyle}>{item.price.toLocaleString()}đ</div>
             </div>
-            <button
-              style={paymentButtonStyle}
-              onClick={handlePayment}
-              disabled={table.order.length === 0}
-            >
-              Thanh toán
-            </button>
+            <span style={{fontSize: '24px', color: '#3498db'}}>+</span>
           </div>
-        </div>
+        ))}
+      </div>
+
+      <div style={orderPanelStyle}>
+        <h2 style={orderTitleStyle}>Đơn hàng hiện tại</h2>
+        {table.order.length === 0 ? (
+          <div style={emptyOrderStyle}>Chưa có món nào trong đơn hàng</div>
+        ) : (
+          table.order.map((item) => (
+            <div key={item.menuItem.id} style={orderItemStyle}>
+              <div>
+                <div style={orderItemNameStyle}>{item.menuItem.name}</div>
+                <div style={{color: '#888'}}>{item.menuItem.price.toLocaleString()}đ</div>
+              </div>
+              <div style={quantityControlStyle}>
+                <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
+                <span>{item.quantity}</span>
+                <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={{textAlign: 'center', padding: '15px 0', color: '#7f8c8d', fontSize: '12px'}}>
+        pospos.vercel.app
+      </div>
+
+      <div style={checkoutBarStyle}>
+        <div style={totalAmountStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
+        <button 
+          style={checkoutBtnStyle} 
+          onClick={handlePayment}
+          disabled={table.order.length === 0}
+        >
+          Thanh toán
+        </button>
       </div>
     </div>
   );
