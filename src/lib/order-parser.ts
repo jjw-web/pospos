@@ -1,106 +1,135 @@
-import { MenuItem } from '../../types';
+// src/lib/order-parser.ts
+import { MenuItem, ParsedLine } from '../types';
 
-// The result of parsing a single line of the order text
-export interface ParsedLine {
-  originalLine: string;
-  matchedItem: MenuItem | null;
-  quantity: number;
-  note: string;
-  error?: 'NO_MATCH';
+// Danh sách các từ viết tắt và cách thay thế tương ứng
+const abbreviations: { [key: string]: string } = {
+  'sc': 'sữa chua',
+  'scl': 'socola',
+  'nc': 'nước',
+  'ep': 'ép',
+  'sto': 'sinh tố',
+  'ko': 'không',
+  'k': 'không',
+  'kg': 'không',
+  'it': 'ít',
+  'nh': 'nhiều',
+  'dg': 'đường',
+  'd': 'đá',
+  'tc': 'trân châu',
+  'bm': 'bơ mãng',
+  'mc': 'mãng cầu',
+  'cl': 'chanh leo',
+  'dc': 'dẻo cacao',
+  'hq': 'hoa quả',
+  'vs': 'việt quất',
+};
+
+/**
+ * Mở rộng các từ viết tắt trong một chuỗi văn bản.
+ * @param text - Chuỗi văn bản đầu vào.
+ * @returns Chuỗi văn bản đã được mở rộng.
+ */
+function expandAbbreviations(text: string): string {
+  let expandedText = ` ${text} `;
+  for (const abbr in abbreviations) {
+    // Sử dụng regex với word boundary để tránh thay thế một phần của từ
+    // Ví dụ: không thay thế 'sc' trong 'screen'
+    // Thêm khoảng trắng ở đầu và cuối để xử lý các từ ở biên
+    const regex = new RegExp(` ${abbr} `, 'gi');
+    expandedText = expandedText.replace(regex, ` ${abbreviations[abbr]} `);
+  }
+  return expandedText.trim();
 }
 
 /**
- * Normalizes a string by converting to lowercase, removing accents, and extra spaces.
+ * Phân tích một dòng văn bản để tìm số lượng, tên món và ghi chú.
+ * @param line - Dòng văn bản cần phân tích (ví dụ: "2 cafe sữa ít ngọt")
+ * @param menuItems - Danh sách tất cả các món ăn có sẵn
+ * @returns Một đối tượng ParsedLine
  */
-const normalizeString = (str: string): string => {
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͤ]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
+function parseSingleLine(line: string, menuItems: MenuItem[]): ParsedLine {
+  const expandedLine = expandAbbreviations(line);
+
+  const result: ParsedLine = {
+    originalLine: line,
+    quantity: 1, // Mặc định số lượng là 1
+  };
+
+  // 1. Tìm món ăn khớp nhất (longest match) trong toàn bộ dòng
+  let bestMatch: MenuItem | null = null;
+  let bestMatchScore = 0;
+  let bestMatchIndex = -1;
+
+  const lineLower = expandedLine.toLowerCase();
+
+  for (const item of menuItems) {
+    const itemNameLower = item.name.toLowerCase();
+    const index = lineLower.indexOf(itemNameLower);
+    if (index !== -1) {
+      const score = itemNameLower.length; // Ưu tiên tên dài hơn
+      if (score > bestMatchScore) {
+        bestMatch = item;
+        bestMatchScore = score;
+        bestMatchIndex = index;
+      }
+    }
+  }
+
+  if (bestMatch) {
+    result.matchedItem = bestMatch;
+
+    // 2. Tách phần văn bản còn lại sau khi đã loại bỏ tên món
+    const remainingText = (
+      expandedLine.substring(0, bestMatchIndex) +
+      expandedLine.substring(bestMatchIndex + bestMatch.name.length)
+    ).trim();
+
+    // 3. Phân tích phần còn lại để tìm số lượng và ghi chú
+    const quantityRegex = /^(?:sl:?|x)?\s*(\d+)\s*(.*)|(.*)\s*(?:x|sl:?)\s*(\d+)$/i;
+    const match = remainingText.match(quantityRegex);
+
+    let noteText = remainingText;
+
+    if (match) {
+      const quantity = parseInt(match[1] || match[4], 10);
+      if (!isNaN(quantity)) {
+        result.quantity = quantity;
+        noteText = (match[2] || match[3] || '').trim();
+      }
+    } else {
+      // Nếu không khớp regex trên, kiểm tra xem phần còn lại có phải chỉ là một con số không
+      const num = parseInt(remainingText, 10);
+      if (!isNaN(num) && num.toString() === remainingText) {
+        result.quantity = num;
+        noteText = '';
+      }
+    }
+
+    if (noteText) {
+      result.note = noteText;
+    }
+
+  } else {
+    // Nếu không tìm thấy món nào, báo lỗi
+    result.error = 'Không tìm thấy món';
+  }
+
+  return result;
+}
 
 /**
- * A simple string similarity function based on word overlap.
+ * Phân tích toàn bộ đoạn văn bản order, chia thành từng dòng.
+ * @param text - Toàn bộ văn bản từ textarea
+ * @param allMenuItems - Danh sách tất cả các món ăn
+ * @returns Mảng các đối tượng ParsedLine
  */
-const getSimilarity = (a: string, b: string): number => {
-  const normA = normalizeString(a);
-  const normB = normalizeString(b);
-  const wordsA = new Set(normA.split(' '));
-  const wordsB = new Set(normB.split(' '));
+export const parseOrderText = (text: string, allMenuItems: MenuItem[]): ParsedLine[] => {
+  if (!text.trim()) {
+    return [];
+  }
 
-  if (wordsA.size === 0 || wordsB.size === 0) return 0;
-
-  const intersection = new Set([...wordsA].filter(word => wordsB.has(word)));
-  const union = new Set([...wordsA, ...wordsB]);
-
-  return intersection.size / union.size;
-};
-
-
-/**
- * Parses a raw text block of an order into structured line items.
- * @param rawText The raw order text, with each item on a new line.
- * @param menuItems The list of all available menu items to match against.
- * @returns An array of ParsedLine objects.
- */
-export const parseOrderText = (rawText: string, menuItems: MenuItem[]): ParsedLine[] => {
-  const lines = rawText.split('\n').filter(line => line.trim() !== '');
-  const allItems = menuItems.map(item => ({ ...item, normalizedName: normalizeString(item.name) }));
-
-  const parsedLines: ParsedLine[] = lines.map(line => {
-    let processedLine = line.trim();
-    let quantity = 1;
-
-    // 1. Extract quantity (e.g., "2 bơ dầm", "bơ dầm x2", "sl:2 bơ dầm")
-    const quantityMatch = processedLine.match(/^(?:sl:?|x)?\s*(\d+)\s*(.*)|(.*)\s*(?:x|sl:?)\s*(\d+)$/i);
-    let nameAndNote = processedLine;
-
-    if (quantityMatch) {
-        if (quantityMatch[1]) { // qty at start
-            quantity = parseInt(quantityMatch[1], 10);
-            nameAndNote = quantityMatch[2] || '';
-        } else if (quantityMatch[4]) { // qty at end
-            quantity = parseInt(quantityMatch[4], 10);
-            nameAndNote = quantityMatch[3] || '';
-        }
-    }
-
-    // 2. Find the best matching menu item
-    let bestMatch: MenuItem | null = null;
-    let bestScore = 0.4; // Minimum confidence threshold
-
-    const normalizedNameAndNote = normalizeString(nameAndNote);
-
-    for (const item of allItems) {
-        // Prioritize exact match or starts-with match
-        if (normalizedNameAndNote.startsWith(item.normalizedName)) {
-            const score = item.normalizedName.length / normalizedNameAndNote.length; // Simple score
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = item;
-            }
-        }
-    }
-
-    // 3. Extract note
-    let note = '';
-    if (bestMatch) {
-        const matchedName = bestMatch.name;
-        // Find the part of the original string that is not the matched name
-        const noteRegex = new RegExp(matchedName.replace(/[.*+?^${}()|[\\]/g, '\\$&'), 'i');
-        note = nameAndNote.replace(noteRegex, '').trim();
-    }
-
-    return {
-      originalLine: line,
-      matchedItem: bestMatch,
-      quantity,
-      note,
-      error: bestMatch ? undefined : 'NO_MATCH',
-    };
-  });
-
-  return parsedLines;
+  return text
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .map(line => parseSingleLine(line, allMenuItems));
 };

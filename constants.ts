@@ -33,9 +33,10 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 22, name: 'Trà dilmah dâu', price: 25000 },
       { id: 23, name: 'Trà dilmah đào', price: 25000 },
       { id: 24, name: 'Trà dilmah bạc hà', price: 25000 },
+      { id: 114, name: 'Trà ô long kem mặn', price: 40000 },
+      { id: 115, name: 'Trà nhài kem mặn', price: 40000 },
     ],
-  },
-  {
+  },  {
     name: 'SỮA CHUA DẺO',
     items: [
       { id: 25, name: 'Sữa chua dẻo hoa quả', price: 45000 },

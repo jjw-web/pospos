@@ -135,6 +135,16 @@ const App: React.FC = () => {
     setSelectedTableId(null);
   }, [tables, updateTable]);
 
+  const handleCompleteQuickOrder = useCallback((order: Omit<Bill, 'id' | 'date'>) => {
+    const newBill: Bill = {
+      ...order,
+      id: Date.now(),
+      date: new Date().toISOString(),
+    };
+    setHistory(prevHistory => [...prevHistory, newBill]);
+    setCurrentScreen('viewSelection');
+  }, []);
+
   const clearHistory = useCallback(() => {
     setHistory([]);
   }, []);
@@ -177,7 +187,7 @@ const App: React.FC = () => {
       case 'history':
         return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={MENU_CATEGORIES} />;
       case 'quickOrder':
-        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} />;
+        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} onCompleteOrder={handleCompleteQuickOrder} />;
       default:
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
     }
