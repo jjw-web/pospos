@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside' | 'quickOrder') => void;
+  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu') => void;
   onBack: () => void;
   onHistory: () => void;
 }
@@ -106,6 +106,14 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
   };
 
+  const menuButtonStyle: React.CSSProperties = {
+    ...baseButtonStyle,
+    backgroundColor: '#ec4899', // pink-500
+    color: 'white',
+    background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+    gridColumn: '1 / -1' // Span full width
+  };
+
   return (
     <div style={containerStyle}>
       <div style={wrapperStyle}>
@@ -179,6 +187,21 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
             }}
           >
             <div>Lịch Sử</div>
+          </button>
+
+          <button 
+            style={menuButtonStyle} 
+            onClick={() => onSelect('menu')}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            }}
+          >
+            <div>Quản Lý Menu</div>
           </button>
         </div>
       </div>

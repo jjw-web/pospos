@@ -8,9 +8,10 @@ import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
 import QuickOrderView from './components/QuickOrderView';
+import MenuView from './components/MenuView';
 import { checkVersion } from './src/lib/version-manager';
 
-type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history' | 'quickOrder';
+type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history' | 'quickOrder' | 'menu';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -188,6 +189,8 @@ const App: React.FC = () => {
         return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={MENU_CATEGORIES} />;
       case 'quickOrder':
         return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} onCompleteOrder={handleCompleteQuickOrder} />;
+      case 'menu':
+        return <MenuView onBack={() => setCurrentScreen('viewSelection')} />;
       default:
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
     }
