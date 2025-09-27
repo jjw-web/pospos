@@ -106,11 +106,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
   };
 
-  const iconStyle: React.CSSProperties = {
-    fontSize: '32px',
-    marginBottom: '8px'
-  };
-
   return (
     <div style={containerStyle}>
       <div style={wrapperStyle}>
@@ -138,7 +133,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
               e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            <div style={iconStyle}>🏠</div>
             <div>Trong Nhà</div>
           </button>
           
@@ -154,7 +148,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
               e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            <div style={iconStyle}>🌳</div>
             <div>Ngoài Trời</div>
           </button>
           
@@ -170,7 +163,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
               e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            <div style={iconStyle}>⚡</div>
             <div>Quick Order</div>
           </button>
           
@@ -186,7 +178,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
               e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            <div style={iconStyle}>📋</div>
             <div>Lịch Sử</div>
           </button>
         </div>
