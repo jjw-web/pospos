@@ -43,6 +43,15 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack }) => {
   };
 
   const backBtnStyle: React.CSSProperties = {
+    fontSize: '1.125rem',
+    fontWeight: 'bold',
+    padding: '8px 16px',
+    backgroundColor: '#6b7280',
+    color: 'white',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
     marginBottom: '20px',
   };
 
@@ -82,7 +91,14 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack }) => {
 
   return (
     <div style={containerStyle}>
-      <button style={backBtnStyle} onClick={onBack}>← Quay Lại</button>
+            <button 
+        style={backBtnStyle} 
+        onClick={onBack}
+        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'}
+        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+      >
+        Quay lại
+      </button>
       <h1>Quick Order</h1>
       <p>Dán nội dung đơn hàng vào ô bên dưới. Mỗi món một dòng.</p>
       <textarea
