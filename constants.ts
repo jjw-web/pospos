@@ -38,7 +38,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   {
     name: 'SỮA CHUA DẺO',
     items: [
-      { id: 25, name: 'Sữa chua dẻo hoa quả', price: 40000 },
+      { id: 25, name: 'Sữa chua dẻo hoa quả', price: 45000 },
       { id: 26, name: 'Sữa chua dẻo bơ', price: 45000 },
       { id: 27, name: 'Sữa chua dẻo xoài', price: 40000 },
       { id: 28, name: 'Sữa chua dẻo dâu', price: 40000 },
@@ -47,18 +47,22 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 31, name: 'Sữa chua dẻo bơ xoài', price: 45000 },
       { id: 32, name: 'Sữa chua dẻo bơ dâu', price: 45000 },
       { id: 33, name: 'Sữa chua dẻo mít', price: 40000 },
+      { id: 110, name: 'Sữa chua dẻo bơ mít', price: 45000 },
       { id: 34, name: 'Sữa chua dẻo cacao', price: 35000 },
       { id: 35, name: 'Sữa chua dẻo việt quất', price: 35000 },
       { id: 36, name: 'Sữa chua dẻo chanh leo', price: 35000 },
       { id: 37, name: 'Sữa chua dẻo trân châu', price: 35000 },
       { id: 38, name: 'Sữa chua dẻo matcha', price: 35000 },
       { id: 39, name: 'Sữa chua dẻo nha đam', price: 35000 },
+      { id: 111, name: 'Sữa chua dẻo trắng', price: 35000 },
+      { id: 112, name: 'Sữa chua cà phê', price: 30000 },
+      { id: 113, name: 'Sữa chua đanh đá', price: 25000 },
     ],
   },
   {
     name: 'HOA QUẢ DẦM',
     items: [
-      { id: 40, name: 'Hoa quả dầm sữa chua', price: 40000 },
+      { id: 40, name: 'Hoa quả dầm sữa chua', price: 45000 },
       { id: 41, name: 'Bơ dầm sữa chua', price: 45000 },
       { id: 42, name: 'Xoài dầm sữa chua', price: 40000 },
       { id: 43, name: 'Mãng cầu dầm sữa chua', price: 45000 },
@@ -67,7 +71,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 46, name: 'Bơ dâu dầm sữa chua', price: 45000 },
       { id: 47, name: 'Bơ xoài dầm sữa chua', price: 45000 },
       { id: 48, name: 'Dâu xoài dầm sữa chua', price: 45000 },
-      { id: 49, name: 'Mít dầm sữa chua', price: 35000 },
+      { id: 49, name: 'Mít dầm sữa chua', price: 40000 },
     ],
   },
   {
@@ -126,7 +130,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 90, name: 'Mãng cầu', price: 40000 },
       { id: 91, name: 'Dưa hấu', price: 40000 },
       { id: 92, name: 'Chuối', price: 35000 },
-      { id: 93, name: 'Chuối sữa chua', price: 35000 },
+      { id: 93, name: 'Chuối sữa chua', price: 40000 },
       { id: 94, name: 'Chanh leo', price: 40000 },
       { id: 95, name: 'Chanh leo tuyết', price: 40000 },
       { id: 96, name: 'Chanh tuyết', price: 35000 },
@@ -181,4 +185,14 @@ export const INITIAL_TABLES: TableData[] = [
   { id: 18, name: 'N10', layout: 'Outside', status: 'available', order: [] },
   { id: 19, name: 'N11', layout: 'Outside', status: 'available', order: [] },
   { id: 20, name: 'N12', layout: 'Outside', status: 'available', order: [] },
+];
+
+export const PREDEFINED_NOTES = [
+  'Ít đường',
+  'Nhiều đường',
+  'Không đường',
+  'Ít đá',
+  'Nhiều đá',
+  'Không đá',
+  'Để riêng',
 ];

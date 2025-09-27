@@ -1,6 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { TableData, MenuCategory, MenuItem } from '../types';
+import { TableData, MenuCategory, MenuItem, OrderItem } from '../types';
 import SearchBar from './SearchBar';
+import NoteModal from './NoteModal';
+
+// A simple note icon
+const NoteIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
 
 interface OrderViewProps {
   table: TableData;
@@ -9,6 +18,7 @@ interface OrderViewProps {
   onAddItem: (tableId: number, menuItem: MenuItem) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number) => void;
+  onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
 }
 
 const OrderView: React.FC<OrderViewProps> = ({
@@ -18,15 +28,18 @@ const OrderView: React.FC<OrderViewProps> = ({
   onAddItem,
   onUpdateQuantity,
   onPayment,
+  onUpdateNote,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
 
   if (!table || !table.order) {
     return <div>Đang tải...</div>;
   }
 
   const total = table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+  const totalQuantity = table.order.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleAddItem = (menuItem: MenuItem) => {
     onAddItem(table.id, menuItem);
@@ -40,6 +53,12 @@ const OrderView: React.FC<OrderViewProps> = ({
     onPayment(table.id);
   };
 
+  const handleSaveNote = (note: string) => {
+    if (editingNoteItem) {
+      onUpdateNote(table.id, editingNoteItem.menuItem.id, note);
+    }
+  };
+
   const filteredMenuItems = useMemo(() => {
     if (searchQuery) {
       const allItems = menuCategories.flatMap(cat => cat.items);
@@ -51,12 +70,30 @@ const OrderView: React.FC<OrderViewProps> = ({
     return category ? category.items : [];
   }, [selectedCategory, searchQuery, menuCategories]);
 
-  // Styles based on the provided HTML
+  const groupedOrder = useMemo(() => {
+    const grouped: { [category: string]: OrderItem[] } = {};
+    const itemToCategoryMap = new Map<number, string>();
+    menuCategories.forEach(category => {
+        category.items.forEach(item => {
+            itemToCategoryMap.set(item.id, category.name);
+        });
+    });
+
+    table.order.forEach(item => {
+      const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = [];
+      }
+      grouped[categoryName].push(item);
+    });
+    return grouped;
+  }, [table.order, menuCategories]);
+
   const containerStyle: React.CSSProperties = {
     maxWidth: '480px',
     margin: '0 auto',
     padding: '0 15px',
-    paddingBottom: '100px', // Space for checkout bar
+    paddingBottom: '100px',
   };
 
   const headerStyle: React.CSSProperties = {
@@ -231,6 +268,30 @@ const OrderView: React.FC<OrderViewProps> = ({
     cursor: 'pointer',
   };
 
+  const categoryHeaderStyle: React.CSSProperties = {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginTop: '20px',
+    marginBottom: '10px',
+    borderBottom: '1px solid #eaeaea',
+    paddingBottom: '5px',
+  };
+
+  const noteTextStyle: React.CSSProperties = {
+    fontSize: '13px',
+    color: '#e74c3c',
+    marginTop: '4px',
+  };
+
+  const noteButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    marginLeft: '10px',
+    color: '#3498db',
+  };
+
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
@@ -272,21 +333,32 @@ const OrderView: React.FC<OrderViewProps> = ({
       </div>
 
       <div style={orderPanelStyle}>
-        <h2 style={orderTitleStyle}>Đơn hàng hiện tại</h2>
+        <h2 style={orderTitleStyle}>Đơn hàng hiện tại ({totalQuantity})</h2>
         {table.order.length === 0 ? (
           <div style={emptyOrderStyle}>Chưa có món nào trong đơn hàng</div>
         ) : (
-          table.order.map((item) => (
-            <div key={item.menuItem.id} style={orderItemStyle}>
-              <div>
-                <div style={orderItemNameStyle}>{item.menuItem.name}</div>
-                <div style={{color: '#888'}}>{item.menuItem.price.toLocaleString()}đ</div>
-              </div>
-              <div style={quantityControlStyle}>
-                <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
-                <span>{item.quantity}</span>
-                <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
-              </div>
+          Object.entries(groupedOrder).map(([category, items]) => (
+            <div key={category}>
+              <h3 style={categoryHeaderStyle}>{category}</h3>
+              {items.map((item) => (
+                <div key={item.menuItem.id} style={orderItemStyle}>
+                  <div>
+                    <div style={{display: 'flex', alignItems: 'center'}}>
+                        <div style={orderItemNameStyle}>{item.menuItem.name}</div>
+                        <button style={noteButtonStyle} onClick={() => setEditingNoteItem(item)}>
+                            <NoteIcon />
+                        </button>
+                        {item.note && <div style={noteTextStyle}>{item.note}</div>}
+                    </div>
+                    <div style={{color: '#888'}}>{item.menuItem.price.toLocaleString()}đ</div>
+                  </div>
+                  <div style={quantityControlStyle}>
+                    <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
+                  </div>
+                </div>
+              ))}
             </div>
           ))
         )}
@@ -306,6 +378,14 @@ const OrderView: React.FC<OrderViewProps> = ({
           Thanh toán
         </button>
       </div>
+
+      {editingNoteItem && (
+        <NoteModal
+          item={editingNoteItem}
+          onClose={() => setEditingNoteItem(null)}
+          onSave={handleSaveNote}
+        />
+      )}
     </div>
   );
 };

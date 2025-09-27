@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
-import { Bill } from '../types';
+import React, { useState, useMemo } from 'react';
+import { Bill, MenuCategory, OrderItem } from '../types';
 
 interface HistoryViewProps {
   history: Bill[];
   onClearHistory: () => void;
   onDeleteSelected: (selectedIds: number[]) => void;
   onBack: () => void;
+  menuCategories: MenuCategory[];
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDeleteSelected, onBack }) => {
+const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDeleteSelected, onBack, menuCategories }) => {
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
+
+  const itemToCategoryMap = useMemo(() => {
+    const map = new Map<number, string>();
+    menuCategories.forEach(category => {
+        category.items.forEach(item => {
+            map.set(item.id, category.name);
+        });
+    });
+    return map;
+  }, [menuCategories]);
+
+  const getGroupedItems = (items: OrderItem[]) => {
+    const grouped: { [category: string]: OrderItem[] } = {};
+    items.forEach(item => {
+        const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
+        if (!grouped[categoryName]) {
+            grouped[categoryName] = [];
+        }
+        grouped[categoryName].push(item);
+    });
+    return grouped;
+  };
 
   const handleSelectBill = (billId: number) => {
     setSelectedBills(prevSelected =>
@@ -136,7 +159,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
   const orderItemStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '5px 0',
+    alignItems: 'flex-start',
+    padding: '8px 0',
     borderBottom: '1px solid #f9f9f9',
   };
 
@@ -144,6 +168,20 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     textAlign: 'center',
     padding: '50px 0',
     color: '#95a5a6',
+  };
+
+  const categoryHeaderStyle: React.CSSProperties = {
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: '#555',
+    marginTop: '15px',
+    marginBottom: '8px',
+  };
+
+  const noteTextStyle: React.CSSProperties = {
+    fontSize: '12px',
+    color: '#e74c3c',
+    paddingLeft: '10px',
   };
 
   return (
@@ -174,30 +212,45 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
         <div style={emptyHistoryStyle}>Không có lịch sử thanh toán.</div>
       ) : (
         <div>
-          {history.map(bill => (
-            <div
-              key={bill.id}
-              style={selectedBills.includes(bill.id) ? billItemSelectedStyle : billItemStyle}
-              onClick={() => handleSelectBill(bill.id)}
-            >
-              <div style={billHeaderStyle}>
-                <div style={{fontWeight: 'bold'}}>Bàn {bill.table}</div>
-                <div style={billTotalStyle}>{bill.total.toLocaleString()}đ</div>
-              </div>
-              <div style={billMetaStyle}>
-                {new Date(bill.date).toLocaleString('vi-VN')}
-              </div>
-              <hr style={{border: 'none', borderTop: '1px solid #f0f0f0', margin: '15px 0'}} />
-              <ul style={orderItemListStyle}>
-                {bill.items.map(item => (
-                  <li key={item.menuItem.id} style={orderItemStyle}>
-                    <span>{item.menuItem.name}</span>
-                    <span>x{item.quantity}</span>
-                  </li>
+          {history.map(bill => {
+            const totalQuantity = bill.items.reduce((sum, item) => sum + item.quantity, 0);
+            const groupedItems = getGroupedItems(bill.items);
+
+            return (
+                <div
+                key={bill.id}
+                style={selectedBills.includes(bill.id) ? billItemSelectedStyle : billItemStyle}
+                onClick={() => handleSelectBill(bill.id)}
+                >
+                <div style={billHeaderStyle}>
+                    <div style={{fontWeight: 'bold'}}>Bàn {bill.table} ({totalQuantity} món)</div>
+                    <div style={billTotalStyle}>{bill.total.toLocaleString()}đ</div>
+                </div>
+                <div style={billMetaStyle}>
+                    {new Date(bill.date).toLocaleString('vi-VN')}
+                </div>
+                <hr style={{border: 'none', borderTop: '1px solid #f0f0f0', margin: '15px 0'}} />
+                
+                {Object.entries(groupedItems).map(([category, items]) => (
+                    <div key={category}>
+                        <h4 style={categoryHeaderStyle}>{category}</h4>
+                        <ul style={orderItemListStyle}>
+                            {items.map(item => (
+                            <li key={item.menuItem.id} style={orderItemStyle}>
+                                <div style={{flex: 1}}>
+                                    <span>{item.menuItem.name}</span>
+                                    <div style={{fontSize: '12px', color: '#777'}}>{item.quantity} x {item.menuItem.price.toLocaleString()}đ</div>
+                                    {item.note && <div style={noteTextStyle}>{item.note}</div>}
+                                </div>
+                                <span style={{fontWeight: 'bold'}}>{(item.menuItem.price * item.quantity).toLocaleString()}đ</span>
+                            </li>
+                            ))}
+                        </ul>
+                    </div>
                 ))}
-              </ul>
-            </div>
-          ))}
+                </div>
+            )
+          })}
         </div>
       )}
     </div>

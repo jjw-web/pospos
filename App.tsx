@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { TableData, MenuItem, Bill } from './types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
@@ -8,9 +7,10 @@ import OrderView from './components/OrderView';
 import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
+import QuickOrderView from './components/QuickOrderView';
 import { checkVersion } from './src/lib/version-manager';
 
-type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history';
+type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history' | 'quickOrder';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -105,6 +105,17 @@ const App: React.FC = () => {
     updateTable(tableId, { order: newOrder, status: newStatus });
   }, [tables, updateTable]);
 
+  const handleUpdateItemNote = useCallback((tableId: number, menuItemId: number, note: string) => {
+    const table = tables.get(tableId);
+    if (!table) return;
+    const newOrder = table.order.map(item =>
+        item.menuItem.id === menuItemId
+        ? {...item, note: note}
+        : item
+    );
+    updateTable(tableId, { order: newOrder });
+  }, [tables, updateTable]);
+
   const handlePayment = useCallback((tableId: number) => {
     const table = tables.get(tableId);
     if (!table) return;
@@ -160,10 +171,13 @@ const App: React.FC = () => {
             onAddItem={handleAddItem}
             onUpdateQuantity={handleUpdateItemQuantity}
             onPayment={handlePayment}
+            onUpdateNote={handleUpdateItemNote}
           />
         );
       case 'history':
-        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} />;
+        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={MENU_CATEGORIES} />;
+      case 'quickOrder':
+        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} />;
       default:
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
     }

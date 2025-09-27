@@ -19,6 +19,7 @@ export interface MenuItem {
 export interface OrderItem {
   menuItem: MenuItem;
   quantity: number;
+  note?: string;
 }
 
 export interface MenuCategory {

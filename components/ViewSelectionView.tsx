@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside') => void;
+  onSelect: (view: 'inside' | 'outside' | 'quickOrder') => void;
   onBack: () => void;
   onHistory: () => void;
 }
@@ -24,7 +24,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
   const buttonsWrapperStyle: React.CSSProperties = {
     display: 'flex',
     width: '100%',
-    maxWidth: '600px',
+    maxWidth: '800px',
     gap: '12px',
     boxSizing: 'border-box'
   };
@@ -55,6 +55,12 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
   const outsideButtonStyle: React.CSSProperties = {
     ...baseButtonStyle,
     backgroundColor: '#3b82f6', // bg-blue-500
+    color: 'white'
+  };
+
+  const quickOrderButtonStyle: React.CSSProperties = {
+    ...baseButtonStyle,
+    backgroundColor: '#8b5cf6', // bg-violet-500
     color: 'white'
   };
 
@@ -90,6 +96,14 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
           Ngoài trời
         </button>
         <button 
+          style={quickOrderButtonStyle} 
+          onClick={() => onSelect('quickOrder')}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          Quick Order
+        </button>
+        <button 
           style={historyButtonStyle} 
           onClick={onHistory}
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
@@ -111,3 +125,4 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
 };
 
 export default ViewSelectionView;
+
