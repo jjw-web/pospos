@@ -1,4 +1,47 @@
-name: Deploy to Vercel
+export const MENU_CATEGORIES: MenuCategory[] = [
+  // ...existing code...
+  {
+    name: "Snack & Thuốc Lá",
+    items: [
+      {
+        name: "Sài gòn bạc",
+        price: 20000,
+      },
+      {
+        name: "Thăng long mềm",
+        price: 20000,
+      },
+      {
+        name: "Thăng long cứng", 
+        price: 20000,
+      },
+      {
+        name: "Thăng long dẹt",
+        price: 20000,
+      },
+      {
+        name: "Malboro trắng",
+        price: 35000,
+      },
+      {
+        name: "Camel dưa hấu",
+        price: 35000,
+      },
+      {
+        name: "Camel trà đen",
+        price: 45000,
+      },
+      {
+        name: "Kent bấm",
+        price: 45000,
+      },
+      {
+        name: "Hướng dương",
+        price: 15000,
+      }
+    ]
+  }
+];name: Deploy to Vercel
 
 on:
   push:

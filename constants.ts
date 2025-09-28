@@ -160,6 +160,20 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 109, name: 'Kem ngậy', price: 10000 },
     ],
   },
+  {
+    name: 'SNACK & THUỐC LÁ',
+    items: [
+      { id: 201, name: 'Sài gòn bạc', price: 20000 },
+      { id: 202, name: 'Thăng long mềm', price: 20000 },
+      { id: 203, name: 'Thăng long cứng', price: 20000 },
+      { id: 204, name: 'Thăng long dẹt', price: 20000 },
+      { id: 205, name: 'Malboro trắng', price: 35000 },
+      { id: 206, name: 'Camel dưa hấu', price: 35000 },
+      { id: 207, name: 'Camel trà đen', price: 45000 },
+      { id: 208, name: 'Kent bấm', price: 45000 },
+      { id: 209, name: 'Hướng dương', price: 15000 },
+    ],
+  },
 ];
 
 export const INITIAL_TABLES: TableData[] = [
