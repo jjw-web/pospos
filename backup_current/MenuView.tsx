@@ -4,13 +4,11 @@ import { MENU_CATEGORIES } from '../constants';
 
 interface MenuViewProps {
   onBack: () => void;
-  menuCategories: MenuCategory[];
-  onUpdateMenuCategories: (categories: MenuCategory[]) => void;
 }
 
-const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMenuCategories }) => {
-  const [localMenuCategories, setLocalMenuCategories] = useState<MenuCategory[]>(menuCategories);
-  const [selectedCategory, setSelectedCategory] = useState<string>(localMenuCategories[0]?.name || '');
+const MenuView: React.FC<MenuViewProps> = ({ onBack }) => {
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(MENU_CATEGORIES);
+  const [selectedCategory, setSelectedCategory] = useState<string>(MENU_CATEGORIES[0].name);
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: '',
     price: 0,
@@ -106,7 +104,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const handleAddItem = () => {
     if (newItem.name && newItem.price) {
-      const maxId = localMenuCategories.reduce((max, category) => {
+      const maxId = menuCategories.reduce((max, category) => {
         const categoryMaxId = Math.max(...category.items.map(item => item.id), 0);
         return Math.max(max, categoryMaxId);
       }, 0);
@@ -117,75 +115,80 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
         price: Number(newItem.price)
       };
 
-      const updatedCategories = localMenuCategories.map(category => 
+      const updatedCategories = menuCategories.map(category => 
         category.name === selectedCategory
           ? { ...category, items: [...category.items, item] }
           : category
       );
 
-      setLocalMenuCategories(updatedCategories);
+      setMenuCategories(updatedCategories);
       setNewItem({ name: '', price: 0 });
       
-      // Gọi callback để cập nhật menu ở cấp ứng dụng
-      onUpdateMenuCategories(updatedCategories);
+      // Cập nhật MENU_CATEGORIES
+      MENU_CATEGORIES.length = 0;
+      MENU_CATEGORIES.push(...updatedCategories);
     }
   };
 
   const handleDeleteItem = (categoryName: string, itemId: number) => {
-    const updatedCategories = localMenuCategories.map(category => 
+    const updatedCategories = menuCategories.map(category => 
       category.name === categoryName
         ? { ...category, items: category.items.filter(item => item.id !== itemId) }
         : category
     );
 
-    setLocalMenuCategories(updatedCategories);
+    setMenuCategories(updatedCategories);
     
-    // Gọi callback để cập nhật menu ở cấp ứng dụng
-    onUpdateMenuCategories(updatedCategories);
+    // Cập nhật MENU_CATEGORIES
+    MENU_CATEGORIES.length = 0;
+    MENU_CATEGORIES.push(...updatedCategories);
   };
 
   const handleAddCategory = () => {
-    if (newCategory && !localMenuCategories.some(cat => cat.name === newCategory)) {
+    if (newCategory && !menuCategories.some(cat => cat.name === newCategory)) {
       const newCategoryObj: MenuCategory = {
         name: newCategory,
         items: []
       };
-      const updatedCategories = [...localMenuCategories, newCategoryObj];
-      setLocalMenuCategories(updatedCategories);
+      const updatedCategories = [...menuCategories, newCategoryObj];
+      setMenuCategories(updatedCategories);
       setSelectedCategory(newCategory);
       setNewCategory('');
       setShowCategoryForm(false);
 
-      // Gọi callback để cập nhật menu ở cấp ứng dụng
-      onUpdateMenuCategories(updatedCategories);
+      // Cập nhật MENU_CATEGORIES
+      MENU_CATEGORIES.length = 0;
+      MENU_CATEGORIES.push(...updatedCategories);
     }
   };
 
   const handleEditCategory = (oldName: string) => {
-    if (newCategory && !localMenuCategories.some(cat => cat.name === newCategory)) {
-      const updatedCategories = localMenuCategories.map(category => 
+    if (newCategory && !menuCategories.some(cat => cat.name === newCategory)) {
+      const updatedCategories = menuCategories.map(category => 
         category.name === oldName
           ? { ...category, name: newCategory }
           : category
       );
-      setLocalMenuCategories(updatedCategories);
+      setMenuCategories(updatedCategories);
       setSelectedCategory(newCategory);
       setNewCategory('');
       setEditingCategory(null);
 
-      // Gọi callback để cập nhật menu ở cấp ứng dụng
-      onUpdateMenuCategories(updatedCategories);
+      // Cập nhật MENU_CATEGORIES
+      MENU_CATEGORIES.length = 0;
+      MENU_CATEGORIES.push(...updatedCategories);
     }
   };
 
   const handleDeleteCategory = (categoryName: string) => {
-    if (localMenuCategories.length > 1) {
-      const updatedCategories = localMenuCategories.filter(cat => cat.name !== categoryName);
-      setLocalMenuCategories(updatedCategories);
+    if (menuCategories.length > 1) {
+      const updatedCategories = menuCategories.filter(cat => cat.name !== categoryName);
+      setMenuCategories(updatedCategories);
       setSelectedCategory(updatedCategories[0].name);
 
-      // Gọi callback để cập nhật menu ở cấp ứng dụng
-      onUpdateMenuCategories(updatedCategories);
+      // Cập nhật MENU_CATEGORIES
+      MENU_CATEGORIES.length = 0;
+      MENU_CATEGORIES.push(...updatedCategories);
     }
   };
 
@@ -268,7 +271,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
             </button>
           )}
           
-          {localMenuCategories.map(category => (
+          {menuCategories.map(category => (
             <div key={category.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {editingCategory === category.name ? (
                 <div style={categoryFormStyle}>

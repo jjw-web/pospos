@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  version: '2.2.4',
+  version: '2.2.5',
   dataVersion: 2,
   minCompatibleVersion: '2.0.0'
 };

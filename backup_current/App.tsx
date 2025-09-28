@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { TableData, MenuItem, Bill, MenuCategory } from './types';
+import { TableData, MenuItem, Bill } from './types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
@@ -22,10 +22,6 @@ const App: React.FC = () => {
     const savedScreen = localStorage.getItem('currentScreen');
     return (savedScreen as Screen) || 'start';
   });
-  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(() => {
-    const savedMenu = localStorage.getItem('menuCategories');
-    return savedMenu ? JSON.parse(savedMenu) : MENU_CATEGORIES;
-  });
   const [tables, setTables] = useState<Map<number, TableData>>(() => {
     const savedTables = localStorage.getItem('tables');
     if (savedTables) {
@@ -45,11 +41,6 @@ const App: React.FC = () => {
     const savedHistory = localStorage.getItem('history');
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
-
-  // Lưu menuCategories vào localStorage khi có sự thay đổi
-  useEffect(() => {
-    localStorage.setItem('menuCategories', JSON.stringify(menuCategories));
-  }, [menuCategories]);
 
   useEffect(() => {
     localStorage.setItem('currentScreen', currentScreen);
@@ -186,7 +177,7 @@ const App: React.FC = () => {
         return (
           <OrderView
             table={selectedTable}
-            menuCategories={menuCategories}
+            menuCategories={MENU_CATEGORIES}
             onBack={() => setCurrentScreen(selectedTable.layout === 'Inside' ? 'inside' : 'outside')}
             onAddItem={handleAddItem}
             onUpdateQuantity={handleUpdateItemQuantity}
@@ -195,15 +186,11 @@ const App: React.FC = () => {
           />
         );
       case 'history':
-        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} />;
+        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={MENU_CATEGORIES} />;
       case 'quickOrder':
-        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} onCompleteOrder={handleCompleteQuickOrder} menuCategories={menuCategories} />;
+        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} onCompleteOrder={handleCompleteQuickOrder} />;
       case 'menu':
-        return <MenuView 
-          onBack={() => setCurrentScreen('viewSelection')} 
-          menuCategories={menuCategories}
-          onUpdateMenuCategories={setMenuCategories}
-        />;
+        return <MenuView onBack={() => setCurrentScreen('viewSelection')} />;
       default:
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
     }

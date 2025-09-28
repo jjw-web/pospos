@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
+import { MENU_CATEGORIES } from '../constants';
 import { parseOrderText } from '../src/lib/order-parser';
 import { MenuItem, ParsedLine } from '../src/types';
 import SearchBar from './SearchBar';
 
-import { Bill, OrderItem as BillOrderItem, MenuCategory } from '../types';
+import { Bill, OrderItem as BillOrderItem } from '../types';
 
 interface QuickOrderViewProps {
   onBack: () => void;
   onCompleteOrder: (order: Omit<Bill, 'id' | 'date'>) => void;
-  menuCategories: MenuCategory[];
 }
 
 interface OrderItem {
@@ -26,7 +26,7 @@ interface Order {
   createdAt: string;
 }
 
-const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder, menuCategories }) => {
+const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder }) => {
   const [text, setText] = useState('');
   const [parsedLines, setParsedLines] = useState<ParsedLine[]>([]);
   const [orderCreated, setOrderCreated] = useState(false);
@@ -36,19 +36,19 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
   const [editingNoteValue, setEditingNoteValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const allMenuItems = useMemo(() => menuCategories.flatMap(category => category.items), [menuCategories]);
+  const allMenuItems = useMemo(() => MENU_CATEGORIES.flatMap(category => category.items), []);
 
   const filteredMenu = useMemo(() => {
     if (!searchQuery) {
-      return menuCategories;
+      return MENU_CATEGORIES;
     }
-    return menuCategories.map(category => {
+    return MENU_CATEGORIES.map(category => {
       const filteredItems = category.items.filter(item =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       return { ...category, items: filteredItems };
     }).filter(category => category.items.length > 0);
-  }, [searchQuery, menuCategories]);
+  }, [searchQuery]);
 
   // Khôi phục đơn hàng từ localStorage khi component mount
   React.useEffect(() => {
@@ -257,7 +257,7 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
     
     currentOrder.items.forEach(item => {
       // Tìm danh mục của món này
-      const category = menuCategories.find(cat => 
+      const category = MENU_CATEGORIES.find(cat => 
         cat.items.some(menuItem => menuItem.id === item.id)
       )?.name || 'Khác';
       
@@ -268,7 +268,7 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
     });
     
     return groups;
-  }, [currentOrder, menuCategories]);
+  }, [currentOrder]);
 
   const containerStyle: React.CSSProperties = {
     maxWidth: '600px',
@@ -339,7 +339,7 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
         style={textAreaStyle}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="Dán đơn hàng vào đây..."
+        placeholder="Ví dụ:\n2 bơ mãng cầu dầm\n1 sữa chua dẻo cacao\n1 sinh tố bơ\n1 cóc dứa ít đường ít đá..."
       />
       <button style={buttonStyle} onClick={handleParse}>Xử lý đơn</button>
 
