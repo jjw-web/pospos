@@ -49,6 +49,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 32, name: 'Sữa chua dẻo bơ dâu', price: 45000 },
       { id: 33, name: 'Sữa chua dẻo mít', price: 40000 },
       { id: 110, name: 'Sữa chua dẻo bơ mít', price: 45000 },
+      { id: 116, name: 'Sữa chua dẻo bơ mãng cầu', price: 45000 },
       { id: 34, name: 'Sữa chua dẻo cacao', price: 35000 },
       { id: 35, name: 'Sữa chua dẻo việt quất', price: 35000 },
       { id: 36, name: 'Sữa chua dẻo chanh leo', price: 35000 },
