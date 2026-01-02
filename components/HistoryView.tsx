@@ -228,6 +228,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                 </div>
                 <div style={billMetaStyle}>
                     {new Date(bill.date).toLocaleString('vi-VN')}
+                    {bill.paymentMethod && (
+                      <span style={{marginLeft: '10px', color: '#3498db', fontWeight: 500}}>
+                        • {bill.paymentMethod === 'Cash' ? '💵 Tiền mặt' : bill.paymentMethod === 'BIDV' ? '🏦 BIDV' : '💳 Tintin'}
+                      </span>
+                    )}
                 </div>
                 <hr style={{border: 'none', borderTop: '1px solid #f0f0f0', margin: '15px 0'}} />
                 

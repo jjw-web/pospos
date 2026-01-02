@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { TableData, MenuCategory, MenuItem, OrderItem } from '../types';
 import SearchBar from './SearchBar';
 import NoteModal from './NoteModal';
+import PaymentMethodModal, { PaymentMethod } from './PaymentMethodModal';
 
 // A simple note icon
 const NoteIcon = () => (
@@ -17,7 +18,7 @@ interface OrderViewProps {
   onBack: () => void;
   onAddItem: (tableId: number, menuItem: MenuItem) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
-  onPayment: (tableId: number) => void;
+  onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
 }
 
@@ -33,6 +34,7 @@ const OrderView: React.FC<OrderViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   if (!table || !table.order) {
     return <div>Đang tải...</div>;
@@ -50,7 +52,12 @@ const OrderView: React.FC<OrderViewProps> = ({
   };
 
   const handlePayment = () => {
-    onPayment(table.id);
+    setShowPaymentModal(true);
+  };
+
+  const handleSelectPaymentMethod = (method: PaymentMethod) => {
+    onPayment(table.id, method);
+    setShowPaymentModal(false);
   };
 
   const handleSaveNote = (note: string) => {
@@ -384,6 +391,14 @@ const OrderView: React.FC<OrderViewProps> = ({
           item={editingNoteItem}
           onClose={() => setEditingNoteItem(null)}
           onSave={handleSaveNote}
+        />
+      )}
+
+      {showPaymentModal && (
+        <PaymentMethodModal
+          total={total}
+          onSelect={handleSelectPaymentMethod}
+          onClose={() => setShowPaymentModal(false)}
         />
       )}
     </div>

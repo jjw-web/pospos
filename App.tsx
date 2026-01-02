@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { TableData, MenuItem, Bill, MenuCategory } from './types';
+import { TableData, MenuItem, Bill, MenuCategory, PaymentMethod } from './types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
@@ -126,7 +126,7 @@ const App: React.FC = () => {
     updateTable(tableId, { order: newOrder });
   }, [tables, updateTable]);
 
-  const handlePayment = useCallback((tableId: number) => {
+  const handlePayment = useCallback((tableId: number, paymentMethod: PaymentMethod) => {
     const table = tables.get(tableId);
     if (!table) return;
 
@@ -136,6 +136,7 @@ const App: React.FC = () => {
       items: table.order,
       total: table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0),
       date: new Date().toISOString(),
+      paymentMethod: paymentMethod,
     };
     setHistory(prevHistory => [...prevHistory, bill]);
 

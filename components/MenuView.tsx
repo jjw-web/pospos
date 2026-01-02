@@ -18,6 +18,12 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingPriceItem, setEditingPriceItem] = useState<{ categoryName: string; itemId: number } | null>(null);
+  const [editingPrice, setEditingPrice] = useState<number>(0);
+
+  useEffect(() => {
+    setLocalMenuCategories(menuCategories);
+  }, [menuCategories]);
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
@@ -104,6 +110,46 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     cursor: 'pointer',
   };
 
+  const editButtonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    marginRight: '8px',
+  };
+
+  const saveButtonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    marginRight: '8px',
+  };
+
+  const cancelButtonStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    backgroundColor: '#6b7280',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    marginRight: '8px',
+  };
+
+  const priceInputStyle: React.CSSProperties = {
+    padding: '6px 8px',
+    borderRadius: '4px',
+    border: '1px solid #374151',
+    backgroundColor: '#1f2937',
+    color: 'white',
+    width: '120px',
+    fontSize: '14px',
+  };
+
   const handleAddItem = () => {
     if (newItem.name && newItem.price) {
       const maxId = localMenuCategories.reduce((max, category) => {
@@ -142,6 +188,40 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     
     // Gọi callback để cập nhật menu ở cấp ứng dụng
     onUpdateMenuCategories(updatedCategories);
+  };
+
+  const handleStartEditPrice = (categoryName: string, itemId: number, currentPrice: number) => {
+    setEditingPriceItem({ categoryName, itemId });
+    setEditingPrice(currentPrice);
+  };
+
+  const handleSavePrice = () => {
+    if (editingPriceItem && editingPrice > 0) {
+      const updatedCategories = localMenuCategories.map(category => 
+        category.name === editingPriceItem.categoryName
+          ? { 
+              ...category, 
+              items: category.items.map(item => 
+                item.id === editingPriceItem.itemId
+                  ? { ...item, price: editingPrice }
+                  : item
+              )
+            }
+          : category
+      );
+
+      setLocalMenuCategories(updatedCategories);
+      setEditingPriceItem(null);
+      setEditingPrice(0);
+      
+      // Gọi callback để cập nhật menu ở cấp ứng dụng
+      onUpdateMenuCategories(updatedCategories);
+    }
+  };
+
+  const handleCancelEditPrice = () => {
+    setEditingPriceItem(null);
+    setEditingPrice(0);
   };
 
   const handleAddCategory = () => {
@@ -356,24 +436,71 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
             </tr>
           </thead>
           <tbody>
-            {menuCategories
+            {localMenuCategories
               .find(category => category.name === selectedCategory)
-              ?.items.map((item) => (
-                <tr key={item.id}>
-                  <td style={cellStyle}>{item.name}</td>
-                  <td style={cellStyle}>{item.price.toLocaleString()}đ</td>
-                  <td style={cellStyle}>
-                    <button
-                      style={deleteButtonStyle}
-                      onClick={() => handleDeleteItem(selectedCategory, item.id)}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              ?.items.map((item) => {
+                const isEditing = editingPriceItem?.categoryName === selectedCategory && editingPriceItem?.itemId === item.id;
+                return (
+                  <tr key={item.id}>
+                    <td style={cellStyle}>{item.name}</td>
+                    <td style={cellStyle}>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          style={priceInputStyle}
+                          value={editingPrice}
+                          onChange={(e) => setEditingPrice(Number(e.target.value))}
+                          min="0"
+                          step="1000"
+                        />
+                      ) : (
+                        item.price.toLocaleString() + 'đ'
+                      )}
+                    </td>
+                    <td style={cellStyle}>
+                      {isEditing ? (
+                        <>
+                          <button
+                            style={saveButtonStyle}
+                            onClick={handleSavePrice}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                          >
+                            Lưu
+                          </button>
+                          <button
+                            style={cancelButtonStyle}
+                            onClick={handleCancelEditPrice}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+                          >
+                            Hủy
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            style={editButtonStyle}
+                            onClick={() => handleStartEditPrice(selectedCategory, item.id, item.price)}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+                          >
+                            Sửa giá
+                          </button>
+                          <button
+                            style={deleteButtonStyle}
+                            onClick={() => handleDeleteItem(selectedCategory, item.id)}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+                          >
+                            Xóa
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

@@ -60,10 +60,13 @@ export interface OrderViewProps {
   onPayment: (tableId: number) => void;
 }
 
+export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
+
 export interface Bill {
   id: number;
   table: string;
   items: OrderItem[];
   total: number;
   date: string;
+  paymentMethod?: PaymentMethod;
 }
