@@ -16,5 +16,6 @@ export interface ParsedLine {
   quantity: number;
   matchedItem?: MenuItem;
   note?: string;
+  toppings?: string[];
   error?: string;
 }

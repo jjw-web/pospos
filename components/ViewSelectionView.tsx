@@ -1,19 +1,46 @@
 import React from 'react';
+import type { TableAreaStats } from '../types';
+import { useTheme } from '../src/context/ThemeContext';
 
 interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu') => void;
+  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu' | 'dailySummary') => void;
   onBack: () => void;
   onHistory: () => void;
+  insideStats: TableAreaStats;
+  outsideStats: TableAreaStats;
 }
 
-const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack, onHistory }) => {
+const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
+  onSelect,
+  onBack,
+  onHistory,
+  insideStats,
+  outsideStats,
+}) => {
+  const { theme, toggleTheme } = useTheme();
+  const areaHintStyle: React.CSSProperties = {
+    fontSize: '14px',
+    fontWeight: 500,
+    marginTop: '10px',
+    opacity: 0.92,
+    lineHeight: 1.35,
+    maxWidth: '95%',
+  };
+
+  const formatAreaHint = (stats: TableAreaStats) => {
+    if (stats.total === 0) return 'Chưa có bàn';
+    if (stats.occupied === 0) return `Cả ${stats.total} bàn đang trống`;
+    if (stats.occupied === stats.total) return `Cả ${stats.total} bàn đang có khách`;
+    return `${stats.occupied}/${stats.total} bàn đang có khách`;
+  };
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
     minHeight: '100vh',
-    backgroundColor: '#111827', // bg-gray-900 - nền đen
+    backgroundColor: theme === 'dark' ? '#111827' : '#f1f5f9',
     padding: '16px',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    transition: 'background-color 0.2s ease',
   };
 
   const wrapperStyle: React.CSSProperties = {
@@ -23,8 +50,10 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '10px',
     marginBottom: '24px',
   };
 
@@ -43,9 +72,9 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
   const titleStyle: React.CSSProperties = {
     fontSize: '32px',
     fontWeight: 'bold',
-    color: '#f8fafc', // text-slate-50 - chữ trắng cho nền đen
+    color: theme === 'dark' ? '#f8fafc' : '#0f172a',
     marginBottom: '20px',
-    textAlign: 'center'
+    textAlign: 'center',
   };
 
   const buttonsWrapperStyle: React.CSSProperties = {
@@ -59,7 +88,9 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
   };
 
   const baseButtonStyle: React.CSSProperties = {
-    height: '120px',
+    minHeight: '120px',
+    height: 'auto',
+    padding: '16px 12px',
     fontSize: '20px',
     fontWeight: 600,
     cursor: 'pointer',
@@ -106,6 +137,13 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
   };
 
+  const dailySummaryButtonStyle: React.CSSProperties = {
+    ...baseButtonStyle,
+    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+    color: 'white',
+    gridColumn: '1 / -1',
+  };
+
   const menuButtonStyle: React.CSSProperties = {
     ...baseButtonStyle,
     backgroundColor: '#ec4899', // pink-500
@@ -114,17 +152,32 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
     gridColumn: '1 / -1' // Span full width
   };
 
+  const themeBtnStyle: React.CSSProperties = {
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    padding: '8px 14px',
+    backgroundColor: theme === 'dark' ? '#374151' : '#e2e8f0',
+    color: theme === 'dark' ? '#f9fafb' : '#1e293b',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+  };
+
   return (
     <div style={containerStyle}>
       <div style={wrapperStyle}>
         <div style={headerStyle}>
-          <button 
+          <button
+            type="button"
             onClick={onBack}
             style={backButtonStyle}
             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
           >
             Quay lại
+          </button>
+          <button type="button" style={themeBtnStyle} onClick={toggleTheme}>
+            {theme === 'dark' ? '☀️ Sáng' : '🌙 Tối'}
           </button>
         </div>
         
@@ -142,6 +195,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
             }}
           >
             <div>Trong Nhà</div>
+            <div style={areaHintStyle}>{formatAreaHint(insideStats)}</div>
           </button>
           
           <button 
@@ -157,6 +211,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
             }}
           >
             <div>Ngoài Trời</div>
+            <div style={areaHintStyle}>{formatAreaHint(outsideStats)}</div>
           </button>
           
           <button 
@@ -187,6 +242,23 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({ onSelect, onBack,
             }}
           >
             <div>Lịch Sử</div>
+          </button>
+
+          <button
+            type="button"
+            style={dailySummaryButtonStyle}
+            onClick={() => onSelect('dailySummary')}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            }}
+          >
+            <div>Tổng kết ngày</div>
+            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Doanh thu & món bán chạy</div>
           </button>
 
           <button 

@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import type { OrderItem } from '../types';
+import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
 
 export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
 
@@ -6,9 +8,15 @@ interface PaymentMethodModalProps {
   total: number;
   onSelect: (method: PaymentMethod) => void;
   onClose: () => void;
+  receipt?: {
+    tableLabel: string;
+    items: OrderItem[];
+  };
 }
 
-const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose }) => {
+const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose, receipt }) => {
+  const [receiptHint, setReceiptHint] = useState<string | null>(null);
+
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
@@ -66,6 +74,24 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     color: '#2c3e50',
   };
 
+  const secondaryRowStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    marginBottom: '16px',
+  };
+
+  const secondaryBtnStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    backgroundColor: '#ecfdf5',
+    border: '1px solid #6ee7b7',
+    borderRadius: '8px',
+    fontSize: '15px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    color: '#065f46',
+  };
+
   const cancelButtonStyle: React.CSSProperties = {
     padding: '12px 24px',
     backgroundColor: '#6b7280',
@@ -78,13 +104,54 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     width: '100%',
   };
 
+  const buildReceiptBody = () => {
+    if (!receipt) return '';
+    return formatReceiptText({
+      tableLabel: receipt.tableLabel,
+      items: receipt.items,
+      total,
+    });
+  };
+
+  const handleCopyReceipt = async () => {
+    const text = buildReceiptBody();
+    if (!text) return;
+    const ok = await copyTextToClipboard(text);
+    setReceiptHint(ok ? 'Đã sao chép — dán vào Zalo/Messenger' : 'Không sao chép được, thử trình duyệt khác');
+    window.setTimeout(() => setReceiptHint(null), 2800);
+  };
+
+  const handleShareReceipt = async () => {
+    const text = buildReceiptBody();
+    if (!text) return;
+    const ok = await shareReceiptText(text, 'Hóa đơn Bống Cà Phê');
+    setReceiptHint(ok ? 'Đã mở chia sẻ hoặc sao chép' : 'Hãy dùng Sao chép hóa đơn');
+    window.setTimeout(() => setReceiptHint(null), 2800);
+  };
+
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <h2 style={titleStyle}>Chọn phương thức thanh toán</h2>
         <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
+
+        {receipt && receipt.items.length > 0 && (
+          <div style={secondaryRowStyle}>
+            <button type="button" style={secondaryBtnStyle} onClick={handleCopyReceipt}>
+              📋 Sao chép hóa đơn (Zalo/Messenger)
+            </button>
+            <button type="button" style={{ ...secondaryBtnStyle, backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }} onClick={handleShareReceipt}>
+              📤 Chia sẻ / Gửi
+            </button>
+            {receiptHint && (
+              <p style={{ margin: 0, fontSize: '13px', color: '#059669', textAlign: 'center' }}>{receiptHint}</p>
+            )}
+          </div>
+        )}
+
         <div style={methodsContainerStyle}>
           <button
+            type="button"
             style={methodButtonStyle}
             onClick={() => onSelect('Cash')}
             onMouseOver={(e) => {
@@ -99,6 +166,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
             💵 Cash (Tiền mặt)
           </button>
           <button
+            type="button"
             style={methodButtonStyle}
             onClick={() => onSelect('BIDV')}
             onMouseOver={(e) => {
@@ -113,6 +181,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
             🏦 BIDV
           </button>
           <button
+            type="button"
             style={methodButtonStyle}
             onClick={() => onSelect('Tintin')}
             onMouseOver={(e) => {
@@ -128,6 +197,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
           </button>
         </div>
         <button
+          type="button"
           style={cancelButtonStyle}
           onClick={onClose}
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
@@ -141,4 +211,3 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
 };
 
 export default PaymentMethodModal;
-

@@ -45,6 +45,33 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
     }
   }
 
-  // Thêm các điều kiện `else if` khác ở đây cho các lần nâng cấp trong tương lai
-  // else if (oldVersion < 3 && newVersion >= 3) { ... }
+  if ((oldVersion === null || oldVersion < 3) && newVersion >= 3) {
+    const tablesJSON = localStorage.getItem('tables');
+    if (!tablesJSON) return;
+    try {
+      const tableEntries: [number, TableData][] = JSON.parse(tablesJSON);
+      const tablesMap = new Map(tableEntries);
+      let changed = false;
+      const fallbackSince = new Date().toISOString();
+      for (const [id, t] of tablesMap.entries()) {
+        if (t.order.length === 0 && t.occupiedSince != null) {
+          tablesMap.set(id, { ...t, occupiedSince: undefined });
+          changed = true;
+        } else if (
+          t.status === 'occupied' &&
+          t.order.length > 0 &&
+          (t.occupiedSince == null || t.occupiedSince === '')
+        ) {
+          tablesMap.set(id, { ...t, occupiedSince: fallbackSince });
+          changed = true;
+        }
+      }
+      if (changed) {
+        localStorage.setItem('tables', JSON.stringify(Array.from(tablesMap.entries())));
+        console.log('Đã chuẩn hóa occupiedSince cho bàn (v3).');
+      }
+    } catch (e) {
+      console.error('Lỗi nâng cấp dữ liệu v3 (tables)', e);
+    }
+  }
 }

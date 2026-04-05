@@ -1,8 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { TableData, MenuCategory, MenuItem, OrderItem } from '../types';
 import SearchBar from './SearchBar';
 import NoteModal from './NoteModal';
 import PaymentMethodModal, { PaymentMethod } from './PaymentMethodModal';
+import TableTransferModal, { TableTransferMode } from './TableTransferModal';
+import Toast from './Toast';
+import { useTheme } from '../src/context/ThemeContext';
+import { formatOccupiedDuration } from '../src/lib/table-utils';
 
 // A simple note icon
 const NoteIcon = () => (
@@ -15,36 +19,57 @@ const NoteIcon = () => (
 interface OrderViewProps {
   table: TableData;
   menuCategories: MenuCategory[];
+  allTables: TableData[];
   onBack: () => void;
   onAddItem: (tableId: number, menuItem: MenuItem) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
+  onMoveTable: (fromId: number, toId: number) => void;
+  onMergeFromTable: (currentId: number, sourceId: number) => void;
 }
 
 const OrderView: React.FC<OrderViewProps> = ({
   table,
   menuCategories,
+  allTables,
   onBack,
   onAddItem,
   onUpdateQuantity,
   onPayment,
   onUpdateNote,
+  onMoveTable,
+  onMergeFromTable,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [transferMode, setTransferMode] = useState<TableTransferMode | null>(null);
+  const [, headerTick] = useState(0);
+  const currentOrderRef = useRef<HTMLDivElement>(null);
 
-  if (!table || !table.order) {
-    return <div>Đang tải...</div>;
-  }
+  const scrollToCurrentOrder = useCallback(() => {
+    currentOrderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
-  const total = table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
-  const totalQuantity = table.order.reduce((sum, item) => sum + item.quantity, 0);
+  useEffect(() => {
+    if (table.status !== 'occupied' || !table.occupiedSince) return;
+    const id = window.setInterval(() => headerTick((n) => n + 1), 30000);
+    return () => window.clearInterval(id);
+  }, [table.status, table.occupiedSince]);
+
+  const order = table?.order ?? [];
+  const total = order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+  const totalQuantity = order.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleAddItem = (menuItem: MenuItem) => {
     onAddItem(table.id, menuItem);
+    setToastMessage(`Đã thêm «${menuItem.name}»`);
   };
 
   const handleUpdateQuantity = (menuItemId: number, change: number) => {
@@ -103,7 +128,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         });
     });
 
-    table.order.forEach(item => {
+    order.forEach(item => {
       const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
       if (!grouped[categoryName]) {
         grouped[categoryName] = [];
@@ -111,40 +136,87 @@ const OrderView: React.FC<OrderViewProps> = ({
       grouped[categoryName].push(item);
     });
     return grouped;
-  }, [table.order, menuCategories]);
+  }, [order, menuCategories]);
+
+  const moveCandidates = useMemo(
+    () =>
+      allTables.filter(
+        (t) => t.id !== table.id && t.status === 'available' && t.order.length === 0
+      ),
+    [allTables, table.id]
+  );
+
+  const mergeCandidates = useMemo(
+    () =>
+      allTables.filter(
+        (t) => t.id !== table.id && t.status === 'occupied' && t.order.length > 0
+      ),
+    [allTables, table.id]
+  );
+
+  const surface = isDark ? '#1e293b' : '#ffffff';
+  const pageBg = isDark ? '#0f172a' : '#f5f5f5';
+  const textMain = isDark ? '#f1f5f9' : '#2c3e50';
+  const textMuted = isDark ? '#94a3b8' : '#7f8c8d';
+  const borderColor = isDark ? '#334155' : '#eaeaea';
+  const cardBorder = isDark ? '#475569' : '#eee';
 
   const containerStyle: React.CSSProperties = {
     maxWidth: '480px',
     margin: '0 auto',
     padding: '0 15px',
+    paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
     paddingBottom: '100px',
+    backgroundColor: pageBg,
+    minHeight: '100vh',
+    boxSizing: 'border-box',
   };
 
-  const headerStyle: React.CSSProperties = {
+  const headerBarStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    maxWidth: '480px',
+    margin: '0 auto',
     display: 'flex',
     alignItems: 'center',
-    padding: '15px 0',
-    borderBottom: '1px solid #eaeaea',
-    backgroundColor: '#fff',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
+    flexWrap: 'wrap',
+    gap: '6px',
+    paddingLeft: '15px',
+    paddingRight: '15px',
+    paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))',
+    paddingBottom: '10px',
+    borderBottom: `1px solid ${borderColor}`,
+    backgroundColor: surface,
+    boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
+    zIndex: 101,
   };
 
   const backBtnStyle: React.CSSProperties = {
     fontSize: '24px',
     marginRight: '15px',
     textDecoration: 'none',
-    color: '#2c3e50',
+    color: textMain,
     background: 'none',
     border: 'none',
     cursor: 'pointer',
   };
 
   const headerTitleStyle: React.CSSProperties = {
-    fontSize: '18px',
+    fontSize: '17px',
     fontWeight: 600,
-    color: '#2c3e50',
+    color: textMain,
+    margin: 0,
+    flex: '1 1 120px',
+    minWidth: 0,
+  };
+
+  const subHeaderStyle: React.CSSProperties = {
+    fontSize: '13px',
+    color: textMuted,
+    margin: '4px 0 0 0',
+    width: '100%',
   };
 
   const searchContainerStyle: React.CSSProperties = {
@@ -159,14 +231,14 @@ const OrderView: React.FC<OrderViewProps> = ({
   };
 
   const categoryItemStyle: React.CSSProperties = {
-    backgroundColor: '#fff',
+    backgroundColor: surface,
     borderRadius: '10px',
     padding: '15px 10px',
     textAlign: 'center',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
     transition: 'transform 0.2s, box-shadow 0.2s',
     cursor: 'pointer',
-    border: '1px solid #eee',
+    border: `1px solid ${cardBorder}`,
   };
   
   const categoryItemActiveStyle: React.CSSProperties = {
@@ -179,7 +251,7 @@ const OrderView: React.FC<OrderViewProps> = ({
   const categoryNameStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 500,
-    color: '#2c3e50',
+    color: textMain,
   };
 
   const menuListStyle: React.CSSProperties = {
@@ -191,16 +263,18 @@ const OrderView: React.FC<OrderViewProps> = ({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '15px',
-    backgroundColor: '#fff',
+    backgroundColor: surface,
     borderRadius: '8px',
     marginBottom: '10px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
     cursor: 'pointer',
+    border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
   };
 
   const menuItemNameStyle: React.CSSProperties = {
     fontSize: '16px',
     fontWeight: 600,
+    color: textMain,
   };
 
   const menuItemPriceStyle: React.CSSProperties = {
@@ -210,24 +284,26 @@ const OrderView: React.FC<OrderViewProps> = ({
   };
 
   const orderPanelStyle: React.CSSProperties = {
-    backgroundColor: '#fff',
+    backgroundColor: surface,
     borderRadius: '12px',
     padding: '20px',
     marginBottom: '20px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+    boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.08)',
+    scrollMarginTop: 'calc(52px + env(safe-area-inset-top, 0px))',
+    border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
   };
 
   const orderTitleStyle: React.CSSProperties = {
     fontSize: '18px',
     fontWeight: 600,
     marginBottom: '15px',
-    color: '#2c3e50',
+    color: textMain,
   };
 
   const emptyOrderStyle: React.CSSProperties = {
     textAlign: 'center',
     padding: '30px 0',
-    color: '#95a5a6',
+    color: textMuted,
   };
 
   const orderItemStyle: React.CSSProperties = {
@@ -235,11 +311,12 @@ const OrderView: React.FC<OrderViewProps> = ({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 0',
-    borderBottom: '1px solid #f0f0f0',
+    borderBottom: `1px solid ${isDark ? '#334155' : '#f0f0f0'}`,
   };
 
   const orderItemNameStyle: React.CSSProperties = {
     fontSize: '16px',
+    color: textMain,
   };
 
   const quantityControlStyle: React.CSSProperties = {
@@ -251,9 +328,10 @@ const OrderView: React.FC<OrderViewProps> = ({
   const quantityButtonStyle: React.CSSProperties = {
     width: '28px',
     height: '28px',
-    border: '1px solid #ddd',
+    border: `1px solid ${isDark ? '#475569' : '#ddd'}`,
     borderRadius: '50%',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: isDark ? '#334155' : '#f8f9fa',
+    color: textMain,
     cursor: 'pointer',
     fontSize: '18px',
     lineHeight: '24px',
@@ -266,19 +344,20 @@ const OrderView: React.FC<OrderViewProps> = ({
     right: 0,
     maxWidth: '480px',
     margin: '0 auto',
-    backgroundColor: '#fff',
+    backgroundColor: surface,
     padding: '15px 20px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+    boxShadow: isDark ? '0 -2px 10px rgba(0,0,0,0.35)' : '0 -2px 10px rgba(0,0,0,0.1)',
     zIndex: 100,
+    borderTop: `1px solid ${borderColor}`,
   };
 
   const totalAmountStyle: React.CSSProperties = {
     fontSize: '18px',
     fontWeight: 600,
-    color: '#2c3e50',
+    color: textMain,
   };
 
   const checkoutBtnStyle: React.CSSProperties = {
@@ -295,10 +374,10 @@ const OrderView: React.FC<OrderViewProps> = ({
   const categoryHeaderStyle: React.CSSProperties = {
     fontSize: '16px',
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: textMain,
     marginTop: '20px',
     marginBottom: '10px',
-    borderBottom: '1px solid #eaeaea',
+    borderBottom: `1px solid ${borderColor}`,
     paddingBottom: '5px',
   };
 
@@ -316,17 +395,68 @@ const OrderView: React.FC<OrderViewProps> = ({
     color: '#3498db',
   };
 
+  const actionRowBtn: React.CSSProperties = {
+    flex: 1,
+    padding: '8px 10px',
+    fontSize: '13px',
+    fontWeight: 600,
+    borderRadius: '8px',
+    border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
+    background: isDark ? '#334155' : '#f1f5f9',
+    color: textMain,
+    cursor: 'pointer',
+  };
+
+  if (!table || table.order === undefined) {
+    return <div style={{ padding: 24, color: textMain }}>Đang tải...</div>;
+  }
+
+  const durationLabel =
+    table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
+
   return (
     <div style={containerStyle}>
-      <div style={headerStyle}>
-        <button style={backBtnStyle} onClick={onBack}>←</button>
-        <h1 style={headerTitleStyle}>
-          {table.name} - {table.status === 'available' ? 'Trống' : 'Có khách'}
-        </h1>
+      <div style={headerBarStyle}>
+        <button type="button" style={backBtnStyle} onClick={onBack} aria-label="Quay lại chọn bàn">
+          ←
+        </button>
+        <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+          <h1 style={headerTitleStyle}>
+            {table.name} — {table.status === 'available' ? 'Trống' : 'Có khách'}
+            {durationLabel ? ` · ${durationLabel}` : ''}
+          </h1>
+        </div>
+      </div>
+
+      <p style={subHeaderStyle}>
+        Chuyển / gộp bàn khi khách đổi chỗ. Thêm món sẽ có thông báo nhỏ phía dưới.
+      </p>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+        <button
+          type="button"
+          style={actionRowBtn}
+          onClick={() => setTransferMode('move')}
+          disabled={table.order.length === 0 || moveCandidates.length === 0}
+        >
+          Chuyển bàn
+        </button>
+        <button
+          type="button"
+          style={actionRowBtn}
+          onClick={() => setTransferMode('merge')}
+          disabled={mergeCandidates.length === 0}
+        >
+          Gộp bàn
+        </button>
       </div>
 
       <div style={searchContainerStyle}>
-        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} placeholder="Tìm kiếm món ăn..."/>
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          placeholder="Tìm kiếm món ăn..."
+          darkMode={isDark}
+        />
       </div>
 
       <div style={categoriesGridStyle}>
@@ -356,7 +486,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         ))}
       </div>
 
-      <div style={orderPanelStyle}>
+      <div ref={currentOrderRef} style={orderPanelStyle}>
         <h2 style={orderTitleStyle}>Đơn hàng hiện tại ({totalQuantity})</h2>
         {table.order.length === 0 ? (
           <div style={emptyOrderStyle}>Chưa có món nào trong đơn hàng</div>
@@ -374,12 +504,12 @@ const OrderView: React.FC<OrderViewProps> = ({
                         </button>
                         {item.note && <div style={noteTextStyle}>{item.note}</div>}
                     </div>
-                    <div style={{color: '#888'}}>{item.menuItem.price.toLocaleString()}đ</div>
+                    <div style={{ color: textMuted }}>{item.menuItem.price.toLocaleString()}đ</div>
                   </div>
                   <div style={quantityControlStyle}>
-                    <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
-                    <span>{item.quantity}</span>
-                    <button style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
+                    <button type="button" style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
+                    <span style={{ color: textMain, minWidth: '22px', textAlign: 'center' }}>{item.quantity}</span>
+                    <button type="button" style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
                   </div>
                 </div>
               ))}
@@ -388,12 +518,26 @@ const OrderView: React.FC<OrderViewProps> = ({
         )}
       </div>
 
-      <div style={{textAlign: 'center', padding: '15px 0', color: '#7f8c8d', fontSize: '12px'}}>
+      <div style={{ textAlign: 'center', padding: '15px 0', color: textMuted, fontSize: '12px' }}>
         pospos.vercel.app
       </div>
 
       <div style={checkoutBarStyle}>
-        <div style={totalAmountStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
+        <button
+          type="button"
+          onClick={scrollToCurrentOrder}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            textAlign: 'left',
+            ...totalAmountStyle,
+          }}
+          aria-label="Cuộn tới đơn hàng hiện tại"
+        >
+          Tổng cộng: {total.toLocaleString()}đ
+        </button>
         <button 
           style={checkoutBtnStyle} 
           onClick={handlePayment}
@@ -416,7 +560,32 @@ const OrderView: React.FC<OrderViewProps> = ({
           total={total}
           onSelect={handleSelectPaymentMethod}
           onClose={() => setShowPaymentModal(false)}
+          receipt={
+            table.order.length > 0
+              ? { tableLabel: table.name, items: table.order }
+              : undefined
+          }
         />
+      )}
+
+      {transferMode && (
+        <TableTransferModal
+          mode={transferMode}
+          tables={transferMode === 'move' ? moveCandidates : mergeCandidates}
+          onClose={() => setTransferMode(null)}
+          onPick={(targetId) => {
+            if (transferMode === 'move') {
+              onMoveTable(table.id, targetId);
+            } else {
+              onMergeFromTable(table.id, targetId);
+            }
+            setTransferMode(null);
+          }}
+        />
+      )}
+
+      {toastMessage && (
+        <Toast message={toastMessage} onDone={() => setToastMessage(null)} />
       )}
     </div>
   );

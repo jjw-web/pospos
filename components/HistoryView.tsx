@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Bill, MenuCategory, OrderItem } from '../types';
+import { useTheme } from '../src/context/ThemeContext';
 
 interface HistoryViewProps {
   history: Bill[];
@@ -10,6 +11,14 @@ interface HistoryViewProps {
 }
 
 const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDeleteSelected, onBack, menuCategories }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const surface = isDark ? '#1e293b' : '#ffffff';
+  const pageBg = isDark ? '#0f172a' : '#f5f5f5';
+  const textMain = isDark ? '#f1f5f9' : '#2c3e50';
+  const textMuted = isDark ? '#94a3b8' : '#7f8c8d';
+  const borderColor = isDark ? '#334155' : '#eaeaea';
+
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
 
   const itemToCategoryMap = useMemo(() => {
@@ -56,20 +65,22 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     }
   };
 
-  // Styles inspired by the new OrderView
   const containerStyle: React.CSSProperties = {
     maxWidth: '480px',
     margin: '0 auto',
     padding: '0 15px',
-    paddingBottom: '100px', // Space for potential bottom bar
+    paddingBottom: '100px',
+    minHeight: '100vh',
+    backgroundColor: pageBg,
+    boxSizing: 'border-box',
   };
 
   const headerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     padding: '15px 0',
-    borderBottom: '1px solid #eaeaea',
-    backgroundColor: '#fff',
+    borderBottom: `1px solid ${borderColor}`,
+    backgroundColor: surface,
     position: 'sticky',
     top: 0,
     zIndex: 100,
@@ -79,7 +90,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     fontSize: '24px',
     marginRight: '15px',
     textDecoration: 'none',
-    color: '#2c3e50',
+    color: textMain,
     background: 'none',
     border: 'none',
     cursor: 'pointer',
@@ -88,7 +99,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
   const headerTitleStyle: React.CSSProperties = {
     fontSize: '18px',
     fontWeight: 600,
-    color: '#2c3e50',
+    color: textMain,
   };
 
   const actionsBarSyle: React.CSSProperties = {
@@ -99,9 +110,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
   };
 
   const actionButtonStyle: React.CSSProperties = {
-      backgroundColor: '#ecf0f1',
-      color: '#2c3e50',
-      border: '1px solid #bdc3c7',
+      backgroundColor: isDark ? '#334155' : '#ecf0f1',
+      color: textMain,
+      border: `1px solid ${isDark ? '#475569' : '#bdc3c7'}`,
       borderRadius: '8px',
       padding: '8px 15px',
       fontSize: '14px',
@@ -117,11 +128,11 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
   }
 
   const billItemStyle: React.CSSProperties = {
-    backgroundColor: '#fff',
+    backgroundColor: surface,
     borderRadius: '12px',
     padding: '20px',
     marginBottom: '15px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+    boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.08)',
     border: '2px solid transparent',
     cursor: 'pointer',
     transition: 'border-color 0.3s',
@@ -147,7 +158,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
 
   const billMetaStyle: React.CSSProperties = {
     fontSize: '13px',
-    color: '#7f8c8d',
+    color: textMuted,
   };
 
   const orderItemListStyle: React.CSSProperties = {
@@ -161,19 +172,20 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     padding: '8px 0',
-    borderBottom: '1px solid #f9f9f9',
+    borderBottom: `1px solid ${isDark ? '#334155' : '#f9f9f9'}`,
+    color: textMain,
   };
 
   const emptyHistoryStyle: React.CSSProperties = {
     textAlign: 'center',
     padding: '50px 0',
-    color: '#95a5a6',
+    color: textMuted,
   };
 
   const categoryHeaderStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 'bold',
-    color: '#555',
+    color: isDark ? '#cbd5e1' : '#555',
     marginTop: '15px',
     marginBottom: '8px',
   };
@@ -223,7 +235,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                 onClick={() => handleSelectBill(bill.id)}
                 >
                 <div style={billHeaderStyle}>
-                    <div style={{fontWeight: 'bold'}}>Bàn {bill.table} ({totalQuantity} món)</div>
+                    <div style={{fontWeight: 'bold', color: textMain}}>Bàn {bill.table} ({totalQuantity} món)</div>
                     <div style={billTotalStyle}>{bill.total.toLocaleString()}đ</div>
                 </div>
                 <div style={billMetaStyle}>
@@ -234,7 +246,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                       </span>
                     )}
                 </div>
-                <hr style={{border: 'none', borderTop: '1px solid #f0f0f0', margin: '15px 0'}} />
+                <hr style={{border: 'none', borderTop: `1px solid ${borderColor}`, margin: '15px 0'}} />
                 
                 {Object.entries(groupedItems).map(([category, items]) => (
                     <div key={category}>
@@ -244,7 +256,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                             <li key={item.menuItem.id} style={orderItemStyle}>
                                 <div style={{flex: 1}}>
                                     <span>{item.menuItem.name}</span>
-                                    <div style={{fontSize: '12px', color: '#777'}}>{item.quantity} x {item.menuItem.price.toLocaleString()}đ</div>
+                                    <div style={{fontSize: '12px', color: textMuted}}>{item.quantity} x {item.menuItem.price.toLocaleString()}đ</div>
                                     {item.note && <div style={noteTextStyle}>{item.note}</div>}
                                 </div>
                                 <span style={{fontWeight: 'bold'}}>{(item.menuItem.price * item.quantity).toLocaleString()}đ</span>

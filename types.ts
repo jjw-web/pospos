@@ -5,6 +5,8 @@ export interface TableData {
   layout: ViewType;
   status: 'available' | 'occupied';
   order: OrderItem[];
+  /** Thời điểm bắt đầu có khách (món đầu tiên), ISO string */
+  occupiedSince?: string | null;
   user_id?: string; // Thêm user_id để phân biệt dữ liệu giữa các user
 }
 
@@ -29,14 +31,22 @@ export interface MenuCategory {
 
 export type ViewType = 'Inside' | 'Outside';
 
+export interface TableAreaStats {
+  occupied: number;
+  total: number;
+}
+
 // Props cho từng View Component
 export interface StartViewProps {
   onStart: () => void;
 }
 
 export interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside') => void;
+  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu' | 'dailySummary') => void;
   onBack: () => void;
+  onHistory: () => void;
+  insideStats: TableAreaStats;
+  outsideStats: TableAreaStats;
 }
 
 export interface InsideViewProps {

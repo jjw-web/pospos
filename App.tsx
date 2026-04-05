@@ -9,9 +9,21 @@ import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
 import QuickOrderView from './components/QuickOrderView';
 import MenuView from './components/MenuView';
+import DailySummaryView from './components/DailySummaryView';
 import { checkVersion } from './src/lib/version-manager';
+import { mergeMenuWithDefaults } from './src/lib/merge-menu-defaults';
+import { mergeOrderItems } from './src/lib/merge-orders';
 
-type Screen = 'start' | 'viewSelection' | 'inside' | 'outside' | 'order' | 'history' | 'quickOrder' | 'menu';
+type Screen =
+  | 'start'
+  | 'viewSelection'
+  | 'inside'
+  | 'outside'
+  | 'order'
+  | 'history'
+  | 'quickOrder'
+  | 'menu'
+  | 'dailySummary';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -24,7 +36,13 @@ const App: React.FC = () => {
   });
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(() => {
     const savedMenu = localStorage.getItem('menuCategories');
-    return savedMenu ? JSON.parse(savedMenu) : MENU_CATEGORIES;
+    if (!savedMenu) return MENU_CATEGORIES;
+    try {
+      const parsed = JSON.parse(savedMenu) as MenuCategory[];
+      return mergeMenuWithDefaults(parsed);
+    } catch {
+      return MENU_CATEGORIES;
+    }
   });
   const [tables, setTables] = useState<Map<number, TableData>>(() => {
     const savedTables = localStorage.getItem('tables');
@@ -100,7 +118,12 @@ const App: React.FC = () => {
     } else {
       newOrder = [...table.order, { menuItem, quantity: 1 }];
     }
-    updateTable(tableId, { order: newOrder, status: 'occupied' });
+    const wasEmpty = table.order.length === 0;
+    const patch: Partial<TableData> = { order: newOrder, status: 'occupied' };
+    if (wasEmpty) {
+      patch.occupiedSince = new Date().toISOString();
+    }
+    updateTable(tableId, patch);
   }, [tables, updateTable]);
 
   const handleUpdateItemQuantity = useCallback((tableId: number, menuItemId: number, change: number) => {
@@ -112,7 +135,11 @@ const App: React.FC = () => {
         : item
     ).filter(item => item.quantity > 0);
     const newStatus = newOrder.length > 0 ? 'occupied' : 'available';
-    updateTable(tableId, { order: newOrder, status: newStatus });
+    const patch: Partial<TableData> = { order: newOrder, status: newStatus };
+    if (newOrder.length === 0) {
+      patch.occupiedSince = undefined;
+    }
+    updateTable(tableId, patch);
   }, [tables, updateTable]);
 
   const handleUpdateItemNote = useCallback((tableId: number, menuItemId: number, note: string) => {
@@ -141,7 +168,7 @@ const App: React.FC = () => {
     setHistory(prevHistory => [...prevHistory, bill]);
 
     const previousScreen = table.layout === 'Inside' ? 'inside' : 'outside';
-    updateTable(tableId, { order: [], status: 'available' });
+    updateTable(tableId, { order: [], status: 'available', occupiedSince: undefined });
     setCurrentScreen(previousScreen);
     setSelectedTableId(null);
   }, [tables, updateTable]);
@@ -164,6 +191,91 @@ const App: React.FC = () => {
     setHistory(prevHistory => prevHistory.filter(bill => !selectedIds.includes(bill.id)));
   }, []);
 
+  const handleMoveTable = useCallback((fromId: number, toId: number) => {
+    setTables((prev) => {
+      const next = new Map(prev);
+      const from = next.get(fromId);
+      const to = next.get(toId);
+      if (!from || !to) return prev;
+      if (to.status !== 'available' || to.order.length > 0) return prev;
+      if (from.order.length === 0) return prev;
+      next.set(toId, {
+        ...to,
+        order: [...from.order],
+        status: 'occupied',
+        occupiedSince: from.occupiedSince ?? new Date().toISOString(),
+      });
+      next.set(fromId, {
+        ...from,
+        order: [],
+        status: 'available',
+        occupiedSince: undefined,
+      });
+      return next;
+    });
+    setSelectedTableId(toId);
+  }, []);
+
+  const handleMergeFromTable = useCallback((currentId: number, sourceId: number) => {
+    if (currentId === sourceId) return;
+    setTables((prev) => {
+      const next = new Map(prev);
+      const current = next.get(currentId);
+      const source = next.get(sourceId);
+      if (!current || !source) return prev;
+      if (source.order.length === 0) return prev;
+      const merged = mergeOrderItems(current.order, source.order);
+      const since =
+        current.occupiedSince && source.occupiedSince
+          ? current.occupiedSince < source.occupiedSince
+            ? current.occupiedSince
+            : source.occupiedSince
+          : current.occupiedSince ?? source.occupiedSince ?? new Date().toISOString();
+      next.set(currentId, {
+        ...current,
+        order: merged,
+        status: 'occupied',
+        occupiedSince: since,
+      });
+      next.set(sourceId, {
+        ...source,
+        order: [],
+        status: 'available',
+        occupiedSince: undefined,
+      });
+      return next;
+    });
+  }, []);
+
+  const handleTransferOrderToTable = useCallback((tableId: number, items: any[]) => {
+    setTables((prev) => {
+      const next = new Map(prev);
+      const table = next.get(tableId);
+      if (!table) return prev;
+
+      // Chuyển đổi items từ QuickOrder format sang Table OrderItem format
+      const tableOrderItems = items.map(item => ({
+        menuItem: {
+          id: item.id,
+          name: item.name,
+          price: item.price,
+        },
+        quantity: item.quantity,
+        note: item.note,
+      }));
+
+      next.set(tableId, {
+        ...table,
+        order: [...table.order, ...tableOrderItems],
+        status: 'occupied',
+        occupiedSince: table.occupiedSince ?? new Date().toISOString(),
+      });
+      return next;
+    });
+    setSelectedTableId(tableId);
+    setCurrentScreen('viewSelection'); // Quay về view selection để user có thể chọn vào bàn
+  }, []);
+
   const selectedTable = useMemo(() => {
     if (selectedTableId === null) return null;
     return tables.get(selectedTableId) || null;
@@ -172,33 +284,78 @@ const App: React.FC = () => {
   const insideTables = useMemo(() => Array.from(tables.values()).filter(t => t.layout === 'Inside'), [tables]);
   const outsideTables = useMemo(() => Array.from(tables.values()).filter(t => t.layout === 'Outside'), [tables]);
 
+  const insideStats = useMemo(
+    () => ({
+      occupied: insideTables.filter((t) => t.status === 'occupied').length,
+      total: insideTables.length,
+    }),
+    [insideTables]
+  );
+  const outsideStats = useMemo(
+    () => ({
+      occupied: outsideTables.filter((t) => t.status === 'occupied').length,
+      total: outsideTables.length,
+    }),
+    [outsideTables]
+  );
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'start':
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
       case 'viewSelection':
-        return <ViewSelectionView onSelect={(view) => setCurrentScreen(view)} onBack={() => setCurrentScreen('start')} onHistory={() => setCurrentScreen('history')} />;
+        return (
+          <ViewSelectionView
+            onSelect={(view) => setCurrentScreen(view as Screen)}
+            onBack={() => setCurrentScreen('start')}
+            onHistory={() => setCurrentScreen('history')}
+            insideStats={insideStats}
+            outsideStats={outsideStats}
+          />
+        );
       case 'inside':
         return <InsideView tables={insideTables} onTableSelect={handleTableSelect} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'outside':
         return <OutsideView tables={outsideTables} onTableSelect={handleTableSelect} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'order':
-        if (!selectedTable) return <ViewSelectionView onSelect={(view) => setCurrentScreen(view)} onBack={() => setCurrentScreen('start')} onHistory={() => setCurrentScreen('history')} />;
+        if (!selectedTable) {
+          return (
+            <ViewSelectionView
+              onSelect={(view) => setCurrentScreen(view as Screen)}
+              onBack={() => setCurrentScreen('start')}
+              onHistory={() => setCurrentScreen('history')}
+              insideStats={insideStats}
+              outsideStats={outsideStats}
+            />
+          );
+        }
         return (
           <OrderView
             table={selectedTable}
             menuCategories={menuCategories}
+            allTables={Array.from(tables.values())}
             onBack={() => setCurrentScreen(selectedTable.layout === 'Inside' ? 'inside' : 'outside')}
             onAddItem={handleAddItem}
             onUpdateQuantity={handleUpdateItemQuantity}
             onPayment={handlePayment}
             onUpdateNote={handleUpdateItemNote}
+            onMoveTable={handleMoveTable}
+            onMergeFromTable={handleMergeFromTable}
           />
         );
+      case 'dailySummary':
+        return <DailySummaryView history={history} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'history':
         return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} />;
       case 'quickOrder':
-        return <QuickOrderView onBack={() => setCurrentScreen('viewSelection')} onCompleteOrder={handleCompleteQuickOrder} menuCategories={menuCategories} />;
+        return <QuickOrderView 
+          onBack={() => setCurrentScreen('viewSelection')} 
+          onCompleteOrder={handleCompleteQuickOrder} 
+          menuCategories={menuCategories} 
+          tables={tables}
+          selectedTableId={selectedTableId}
+          onTransferOrderToTable={handleTransferOrderToTable}
+        />;
       case 'menu':
         return <MenuView 
           onBack={() => setCurrentScreen('viewSelection')} 

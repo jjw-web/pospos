@@ -1,14 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { parseOrderText } from '../src/lib/order-parser';
 import { MenuItem, ParsedLine } from '../src/types';
+import { Bill, OrderItem as BillOrderItem, MenuCategory, TableData } from '../types';
 import SearchBar from './SearchBar';
-
-import { Bill, OrderItem as BillOrderItem, MenuCategory } from '../types';
 
 interface QuickOrderViewProps {
   onBack: () => void;
   onCompleteOrder: (order: Omit<Bill, 'id' | 'date'>) => void;
   menuCategories: MenuCategory[];
+  tables: Map<number, TableData>;
+  selectedTableId?: number | null;
+  onTransferOrderToTable?: (tableId: number, items: OrderItem[]) => void;
 }
 
 interface OrderItem {
@@ -26,10 +28,11 @@ interface Order {
   createdAt: string;
 }
 
-const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder, menuCategories }) => {
+const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder, menuCategories, tables, selectedTableId, onTransferOrderToTable }) => {
   const [text, setText] = useState('');
   const [parsedLines, setParsedLines] = useState<ParsedLine[]>([]);
   const [orderCreated, setOrderCreated] = useState(false);
+  const [currentTableId, setCurrentTableId] = useState<number | null>(selectedTableId || null);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null);
@@ -37,6 +40,11 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
   const [searchQuery, setSearchQuery] = useState('');
 
   const allMenuItems = useMemo(() => menuCategories.flatMap(category => category.items), [menuCategories]);
+
+  // Helper function để kiểm tra table có order đang hoạt động
+  const hasActiveOrder = (tableId: number) => {
+    return localStorage.getItem(`quickOrder_table_${tableId}`) !== null;
+  };
 
   // Hàm loại bỏ dấu tiếng Việt
   const removeVietnameseTones = (str: string): string => {
@@ -81,6 +89,40 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
     }
   }, []);
 
+  // Lưu và khôi phục order theo table
+  React.useEffect(() => {
+    if (currentTableId) {
+      // Lưu order hiện tại cho table này
+      if (currentOrder) {
+        localStorage.setItem(`quickOrder_table_${currentTableId}`, JSON.stringify(currentOrder));
+      }
+    }
+  }, [currentOrder, currentTableId]);
+
+  // Khi switch table, khôi phục order của table đó
+  React.useEffect(() => {
+    if (currentTableId) {
+      const savedTableOrder = localStorage.getItem(`quickOrder_table_${currentTableId}`);
+      if (savedTableOrder) {
+        try {
+          const order = JSON.parse(savedTableOrder);
+          setCurrentOrder(order);
+          setOrderCreated(true);
+        } catch (error) {
+          console.error('Error parsing saved table order:', error);
+          setCurrentOrder(null);
+          setOrderCreated(false);
+        }
+      } else {
+        setCurrentOrder(null);
+        setOrderCreated(false);
+      }
+    } else {
+      setCurrentOrder(null);
+      setOrderCreated(false);
+    }
+  }, [currentTableId]);
+
   // Tính tổng tiền
   const totalAmount = useMemo(() => {
     return parsedLines.reduce((total, line) => {
@@ -112,13 +154,22 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
     // Tạo đơn hàng
     const order: Order = {
       id: Date.now(),
-      items: validLines.map(line => ({
-        id: line.matchedItem!.id,
-        name: line.matchedItem!.name,
-        price: line.matchedItem!.price,
-        quantity: line.quantity,
-        note: line.note || ''
-      })),
+      items: validLines.map(line => {
+        // Combine note và toppings
+        let combinedNote = line.note || '';
+        if (line.toppings && line.toppings.length > 0) {
+          const toppingsText = line.toppings.join(', ');
+          combinedNote = combinedNote ? `${combinedNote}, ${toppingsText}` : toppingsText;
+        }
+        
+        return {
+          id: line.matchedItem!.id,
+          name: line.matchedItem!.name,
+          price: line.matchedItem!.price,
+          quantity: line.quantity,
+          note: combinedNote
+        };
+      }),
       totalAmount,
       createdAt: new Date().toISOString()
     };
@@ -181,7 +232,13 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
     setCurrentOrder(null);
     setShowAddMenu(false);
     setEditingNoteIndex(null);
-    localStorage.removeItem('currentQuickOrder');
+    
+    // Xóa order của table hiện tại
+    if (currentTableId) {
+      localStorage.removeItem(`quickOrder_table_${currentTableId}`);
+    } else {
+      localStorage.removeItem('currentQuickOrder');
+    }
   };
 
   const handleAddMenuItem = (menuItem: MenuItem) => {
@@ -248,22 +305,57 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
       note: item.note,
     }));
 
+    // Lấy tên bàn hoặc fallback về Quick Order nếu không chọn bàn
+    const tableName = currentTableId ? tables.get(currentTableId)?.name || `Bàn ${currentTableId}` : 'Quick Order';
+
     const orderForHistory: Omit<Bill, 'id' | 'date'> = {
-      table: 'Quick Order',
+      table: tableName,
       items: billItems,
       total: currentOrder.totalAmount,
     };
 
     onCompleteOrder(orderForHistory);
 
-    // Xóa đơn hàng hiện tại
-    localStorage.removeItem('currentQuickOrder');
+    // Xóa đơn hàng hiện tại của table
+    if (currentTableId) {
+      localStorage.removeItem(`quickOrder_table_${currentTableId}`);
+    } else {
+      localStorage.removeItem('currentQuickOrder');
+    }
     setCurrentOrder(null);
     setOrderCreated(false);
     setText('');
     setParsedLines([]);
     
     alert(`Đơn hàng đã hoàn thành và lưu vào lịch sử!\nTổng tiền: ${currentOrder.totalAmount.toLocaleString('vi-VN')} VNĐ`);
+  };
+
+  const handleTransferOrderToTable = () => {
+    if (!currentOrder || !currentTableId || !onTransferOrderToTable) return;
+
+    // Chuyển đổi OrderItem sang format tương thích với table
+    const tableOrderItems = currentOrder.items.map(item => ({
+      menuItem: {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+      },
+      quantity: item.quantity,
+      note: item.note,
+    }));
+
+    onTransferOrderToTable(currentTableId, currentOrder.items);
+    
+    // Xóa đơn hàng hiện tại
+    if (currentTableId) {
+      localStorage.removeItem(`quickOrder_table_${currentTableId}`);
+    }
+    setCurrentOrder(null);
+    setOrderCreated(false);
+    setText('');
+    setParsedLines([]);
+    
+    alert(`Đơn hàng đã được chuyển sang bàn ${tables.get(currentTableId)?.name}!`);
   };
 
   // Nhóm các món theo danh mục
@@ -351,6 +443,41 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
         Quay lại
       </button>
       <h1>Quick Order</h1>
+      
+      {/* Table Selection */}
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#333' }}>
+          Chọn bàn:
+        </label>
+        <select
+          value={currentTableId || ''}
+          onChange={(e) => setCurrentTableId(e.target.value ? parseInt(e.target.value, 10) : null)}
+          style={{
+            width: '100%',
+            padding: '10px',
+            fontSize: '16px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            backgroundColor: 'white'
+          }}
+        >
+          <option value="">-- Chọn bàn --</option>
+          {Array.from(tables.values())
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(table => (
+              <option key={table.id} value={table.id}>
+                {table.name} ({table.layout === 'Inside' ? 'Trong nhà' : 'Ngoài trời'})
+                {hasActiveOrder(table.id) && ' 📝'}
+              </option>
+            ))}
+        </select>
+        {currentTableId && (
+          <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
+            Đang làm việc với: <strong>{tables.get(currentTableId)?.name}</strong>
+          </div>
+        )}
+      </div>
+      
       <p>Dán nội dung đơn hàng vào ô bên dưới. Mỗi món một dòng.</p>
       <textarea
         style={textAreaStyle}
@@ -383,6 +510,45 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Hiển thị kết quả phân tích */}
+      {parsedLines.length > 0 && !parsedLines.some(line => line.error) && (
+        <div style={{ marginTop: '20px' }}>
+          <h3 style={{ color: '#28a745', marginBottom: '15px' }}>Kết quả phân tích:</h3>
+          {parsedLines.map((line, index) => (
+            <div key={index} style={{
+              marginBottom: '10px',
+              padding: '12px',
+              backgroundColor: '#d4edda',
+              border: '1px solid #c3e6cb',
+              borderRadius: '6px'
+            }}>
+              <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#155724' }}>
+                {line.quantity} x {line.matchedItem?.name} - {(line.matchedItem?.price! * line.quantity).toLocaleString('vi-VN')} VNĐ
+              </div>
+              {line.toppings && line.toppings.length > 0 && (
+                <div style={{ 
+                  marginTop: '5px', 
+                  fontSize: '14px', 
+                  color: '#666',
+                  fontStyle: 'italic'
+                }}>
+                  Toppings: {line.toppings.join(', ')}
+                </div>
+              )}
+              {line.note && (
+                <div style={{ 
+                  marginTop: '5px', 
+                  fontSize: '14px', 
+                  color: '#666'
+                }}>
+                  Ghi chú: {line.note}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -460,6 +626,22 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
               >
                 Hoàn thành
               </button>
+              {currentTableId && onTransferOrderToTable && (
+                <button 
+                  onClick={handleTransferOrderToTable}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Chuyển sang bàn
+                </button>
+              )}
               <button 
                 onClick={handleNewOrder}
                 style={{

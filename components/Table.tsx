@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TableData } from '../types';
+import { formatOccupiedDuration } from '../src/lib/table-utils';
 
 interface TableProps {
   table: TableData;
@@ -8,6 +9,16 @@ interface TableProps {
 
 const Table: React.FC<TableProps> = ({ table, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    if (table.status !== 'occupied' || !table.occupiedSince) return;
+    const id = window.setInterval(() => tick((n) => n + 1), 60000);
+    return () => window.clearInterval(id);
+  }, [table.status, table.occupiedSince]);
+
+  const durationLabel =
+    table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
 
   // Oval card container style
   const cardContainerStyle: React.CSSProperties = {
@@ -94,6 +105,19 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
       {/* Teal/Amber Body */}
       <div style={bodyStyle}>
         <h3 style={mainTextStyle}>{table.name}</h3>
+        {durationLabel && (
+          <span
+            style={{
+              color: 'white',
+              fontSize: '13px',
+              fontWeight: 600,
+              marginTop: '4px',
+              opacity: 0.95,
+            }}
+          >
+            {durationLabel}
+          </span>
+        )}
         <div style={statusStyle}></div>
       </div>
     </div>

@@ -1,0 +1,141 @@
+import React, { useMemo } from 'react';
+import type { Bill } from '../types';
+import { computeDailySummary, todayDateKey } from '../src/lib/daily-summary';
+import { useTheme } from '../src/context/ThemeContext';
+
+interface DailySummaryViewProps {
+  history: Bill[];
+  onBack: () => void;
+}
+
+const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const dateKey = todayDateKey();
+
+  const summary = useMemo(() => computeDailySummary(history, dateKey), [history, dateKey]);
+
+  const topList = useMemo(() => {
+    return Array.from(summary.itemSales.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
+  }, [summary.itemSales]);
+
+  const bg = isDark ? '#0f172a' : '#f8fafc';
+  const card = isDark ? '#1e293b' : '#ffffff';
+  const text = isDark ? '#f1f5f9' : '#0f172a';
+  const muted = isDark ? '#94a3b8' : '#64748b';
+  const border = isDark ? '#334155' : '#e2e8f0';
+
+  const formatDayVi = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return `${d}/${m}/${y}`;
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: bg,
+        padding: '16px',
+        paddingBottom: '32px',
+        boxSizing: 'border-box',
+        color: text,
+      }}
+    >
+      <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+          <button
+            type="button"
+            onClick={onBack}
+            style={{
+              padding: '8px 14px',
+              borderRadius: '8px',
+              border: 'none',
+              background: isDark ? '#334155' : '#e2e8f0',
+              color: text,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ← Quay lại
+          </button>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>Tổng kết ngày</h1>
+        </div>
+
+        <p style={{ margin: '0 0 16px', color: muted, fontSize: '14px' }}>
+          Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn
+        </p>
+
+        <div
+          style={{
+            backgroundColor: card,
+            borderRadius: '14px',
+            padding: '18px',
+            marginBottom: '14px',
+            border: `1px solid ${border}`,
+            boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+          }}
+        >
+          <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Tổng doanh thu</div>
+          <div style={{ fontSize: '26px', fontWeight: 800, color: '#38bdf8' }}>
+            {summary.totalRevenue.toLocaleString('vi-VN')}đ
+          </div>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: card,
+            borderRadius: '14px',
+            padding: '18px',
+            marginBottom: '14px',
+            border: `1px solid ${border}`,
+          }}
+        >
+          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Theo hình thức thanh toán</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: muted }}>💵 Tiền mặt</span>
+              <strong>{summary.cashTotal.toLocaleString('vi-VN')}đ</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: muted }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
+              <strong>{summary.transferTotal.toLocaleString('vi-VN')}đ</strong>
+            </div>
+            {summary.otherTotal > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: muted }}>Khác / chưa ghi</span>
+                <strong>{summary.otherTotal.toLocaleString('vi-VN')}đ</strong>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: card,
+            borderRadius: '14px',
+            padding: '18px',
+            border: `1px solid ${border}`,
+          }}
+        >
+          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Món bán chạy (số lượng)</div>
+          {topList.length === 0 ? (
+            <p style={{ color: muted, margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
+          ) : (
+            <ol style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {topList.map(([name, qty]) => (
+                <li key={name} style={{ fontSize: '14px' }}>
+                  <strong>{name}</strong>
+                  <span style={{ color: muted }}> — {qty} ly/phần</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DailySummaryView;

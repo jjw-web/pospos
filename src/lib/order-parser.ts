@@ -22,6 +22,80 @@ const abbreviations: { [key: string]: string } = {
   'dc': 'dẻo cacao',
   'hq': 'hoa quả',
   'vs': 'việt quất',
+  // Các từ viết tắt cho sữa chua dẻo
+  'dẻo hqua': 'sữa chua dẻo hoa quả',
+  'dẻo hq': 'sữa chua dẻo hoa quả',
+  'dẻo bơ': 'sữa chua dẻo bơ',
+  'dẻo xoài': 'sữa chua dẻo xoài',
+  'dẻo dâu': 'sữa chua dẻo dâu',
+  'dẻo mc': 'sữa chua dẻo mãng cầu',
+  'dẻo dx': 'sữa chua dẻo dâu xoài',
+  'dẻo bx': 'sữa chua dẻo bơ xoài',
+  // Các từ viết tắt cho hạt
+  'hd': 'hướng dương',
+  'hs': 'hạt sen',
+  'hđ': 'hạt dẻ',
+  // Các từ viết tắt cho loại đồ uống
+  'n': 'nóng',
+  'l': 'lạnh',
+  'ld': 'lạnh',
+  'xc': 'xay',
+  'đ': 'đá',
+  'kđ': 'không đá',
+  'ítđ': 'ít đá',
+  'nhiềuđ': 'nhiều đá',
+  // Các từ viết tắt cho đường
+  'ítđg': 'ít đường',
+  'nhiềuđg': 'nhiều đường',
+  'kđg': 'không đường',
+  'đđ': 'đường đen',
+  // Các từ viết tắt cho dầm sữa chua
+  'hq dầm': 'hoa quả dầm sữa chua',
+  'bơ dầm': 'bơ dầm sữa chua',
+  'xoài dầm': 'xoài dầm sữa chua',
+  'mc dầm': 'mãng cầu dầm sữa chua',
+  'dâu dầm': 'dâu dầm sữa chua',
+  'bm dầm': 'bơ mãng cầu dầm sữa chua',
+  'bd dầm': 'bơ dâu dầm sữa chua',
+  'bx dầm': 'bơ xoài dầm sữa chua',
+  'dx dầm': 'dâu xoài dầm sữa chua',
+  'mít dầm': 'mít dầm sữa chua',
+  // Các từ viết tắt khác
+  'cn': 'chanh',
+  'cam': 'cam',
+  'táo': 'táo',
+  'ổi': 'ổi',
+  'thơm': 'thơm',
+  'xoài': 'xoài',
+  'dâu': 'dâu',
+  'cherry': 'cherry',
+  'dừa': 'dừa',
+  'sầu': 'sầu riêng',
+  'mít': 'mít',
+  'vải': 'vải',
+  'nhãn': 'nhãn',
+  'long': 'long nhãn',
+  // Các từ viết tắt cho topping
+  'hạt nổ': 'topping hạt nổ',
+  'hạt đác': 'topping hạt đác',
+  'tc trắng': 'topping trân châu trắng',
+  'tc đen': 'topping trân châu đen',
+  'thập cẩm': 'topping thập cẩm',
+  'hạt sen': 'topping hạt sen',
+  'hạt điều': 'topping hạt điều',
+  'dừa khô': 'topping dừa khô',
+  'hạt': 'topping hạt',
+  'kem': 'topping kem',
+  'kem cheese': 'topping kem cheese',
+  'pudding': 'topping pudding',
+  'flan': 'topping flan',
+  // Các từ viết tắt cho số lượng topping
+  'thêm': 'thêm topping',
+  'thêm tc': 'thêm topping trân châu',
+  'thêm hạt': 'thêm topping hạt',
+  '1 thêm': '1 topping',
+  '2 thêm': '2 topping',
+  '3 thêm': '3 topping',
 };
 
 /**
@@ -84,11 +158,12 @@ function parseSingleLine(line: string, menuItems: MenuItem[]): ParsedLine {
       expandedLine.substring(bestMatchIndex + bestMatch.name.length)
     ).trim();
 
-    // 3. Phân tích phần còn lại để tìm số lượng và ghi chú
+    // 3. Phân tích phần còn lại để tìm số lượng, topping và ghi chú
     const quantityRegex = /^(?:sl:?|x)?\s*(\d+)\s*(.*)|(.*)\s*(?:x|sl:?)\s*(\d+)$/i;
     const match = remainingText.match(quantityRegex);
 
     let noteText = remainingText;
+    let toppings: string[] = [];
 
     if (match) {
       const quantity = parseInt(match[1] || match[4], 10);
@@ -105,8 +180,49 @@ function parseSingleLine(line: string, menuItems: MenuItem[]): ParsedLine {
       }
     }
 
+    // 4. Phân tích topping từ noteText
+    if (noteText) {
+      // Tìm các pattern topping trong note
+      const toppingPatterns = [
+        /(\d+)\s*(thêm|topping)\s*(.+)/i,
+        /(thêm|topping)\s*(.+)/i,
+        /(.+)\s*(thêm|topping)/i
+      ];
+
+      for (const pattern of toppingPatterns) {
+        const toppingMatch = noteText.match(pattern);
+        if (toppingMatch) {
+          const quantity = toppingMatch[1] ? parseInt(toppingMatch[1], 10) : 1;
+          const toppingText = toppingMatch[toppingMatch[1] ? 3 : 2];
+          toppings = toppingText.split(/,\s*|\s+và\s+|\s+and\s+/i).map(t => t.trim());
+          noteText = noteText.replace(toppingMatch[0], '').trim();
+          break;
+        }
+      }
+
+      // Nếu vẫn còn text và có chứa từ topping, extract ra
+      if (noteText) {
+        const remainingWords = noteText.split(/\s+/);
+        const toppingWords = ['topping', 'thêm', 'hạt', 'tc', 'trân châu', 'kem', 'cheese', 'pudding', 'flan'];
+        const foundToppings = remainingWords.filter(word => 
+          toppingWords.some(topping => word.toLowerCase().includes(topping))
+        );
+        
+        if (foundToppings.length > 0) {
+          toppings = [...toppings, ...foundToppings];
+          noteText = remainingWords.filter(word => 
+            !toppingWords.some(topping => word.toLowerCase().includes(topping))
+          ).join(' ');
+        }
+      }
+    }
+
     if (noteText) {
       result.note = noteText;
+    }
+    
+    if (toppings.length > 0) {
+      result.toppings = toppings;
     }
 
   } else {

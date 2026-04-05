@@ -1,11 +1,14 @@
 import React from 'react';
 import startAnimation from '../src/assets/start-animation.gif';
+import { useTheme } from '../src/context/ThemeContext';
 
 interface StartViewProps {
   onStart: () => void;
 }
 
 const StartView: React.FC<StartViewProps> = ({ onStart }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const mainContainerStyle: React.CSSProperties = {
     width: '100%',
@@ -18,7 +21,8 @@ const StartView: React.FC<StartViewProps> = ({ onStart }) => {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: isDark ? '#0f172a' : '#f0f0f0',
+    transition: 'background-color 0.2s ease',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -27,6 +31,7 @@ const StartView: React.FC<StartViewProps> = ({ onStart }) => {
     margin: '20px 0 10px 0',
     padding: '0 10px',
     textAlign: 'center',
+    color: isDark ? '#f8fafc' : '#1e293b',
   };
 
   const imageContainerStyle: React.CSSProperties = {
@@ -37,7 +42,7 @@ const StartView: React.FC<StartViewProps> = ({ onStart }) => {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '10px',
-    background: '#e5e5e5',
+    background: isDark ? '#1e293b' : '#e5e5e5',
     borderRadius: '20px',
     overflow: 'hidden',
     boxSizing: 'border-box',
