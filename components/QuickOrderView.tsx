@@ -3,6 +3,7 @@ import { parseOrderText } from '../src/lib/order-parser';
 import { MenuItem, ParsedLine } from '../src/types';
 import { Bill, OrderItem as BillOrderItem, MenuCategory, TableData } from '../types';
 import SearchBar from './SearchBar';
+import QuickOrderGuide from './QuickOrderGuide';
 
 interface QuickOrderViewProps {
   onBack: () => void;
@@ -38,6 +39,7 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
   const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null);
   const [editingNoteValue, setEditingNoteValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   const allMenuItems = useMemo(() => menuCategories.flatMap(category => category.items), [menuCategories]);
 
@@ -485,7 +487,19 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
         onChange={(e) => setText(e.target.value)}
         placeholder="Dán đơn hàng vào đây..."
       />
-      <button style={buttonStyle} onClick={handleParse}>Xử lý đơn</button>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+        <button style={buttonStyle} onClick={handleParse}>Xử lý đơn</button>
+        <button 
+          style={{
+            ...buttonStyle,
+            backgroundColor: '#17a2b8',
+            fontSize: '14px'
+          }} 
+          onClick={() => setShowGuide(true)}
+        >
+          📖 Hướng dẫn
+        </button>
+      </div>
 
       {/* Hiển thị lỗi nếu có */}
       {parsedLines.some(line => line.error) && (
@@ -519,27 +533,54 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
       {parsedLines.length > 0 && !parsedLines.some(line => line.error) && (
         <div style={{ marginTop: '20px' }}>
           <h3 style={{ color: '#28a745', marginBottom: '15px' }}>Kết quả phân tích:</h3>
-          {parsedLines.map((line, index) => (
+          {parsedLines.map((line, index) => {
+            // Calculate total including toppings
+            const mainItemTotal = (line.matchedItem?.price || 0) * line.quantity;
+            const toppingsTotal = line.toppings?.reduce((sum, t) => sum + (t.price * t.quantity), 0) || 0;
+            const lineTotal = mainItemTotal + toppingsTotal;
+            
+            return (
             <div key={index} style={{
-              marginBottom: '10px',
+              marginBottom: '15px',
               padding: '12px',
               backgroundColor: '#d4edda',
               border: '1px solid #c3e6cb',
               borderRadius: '6px'
             }}>
+              {/* Main item */}
               <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#155724' }}>
-                {line.quantity} x {line.matchedItem?.name} - {(line.matchedItem?.price! * line.quantity).toLocaleString('vi-VN')} VNĐ
+                {line.quantity} x {line.matchedItem?.name} - {mainItemTotal.toLocaleString('vi-VN')} VNĐ
               </div>
+              
+              {/* Toppings as separate items */}
               {line.toppings && line.toppings.length > 0 && (
-                <div style={{ 
-                  marginTop: '5px', 
-                  fontSize: '14px', 
-                  color: '#666',
-                  fontStyle: 'italic'
-                }}>
-                  Toppings: {line.toppings.join(', ')}
+                <div style={{ marginTop: '8px', marginLeft: '20px' }}>
+                  {line.toppings.map((topping, tIndex) => (
+                    <div key={tIndex} style={{ 
+                      fontSize: '14px', 
+                      color: '#1e7e34',
+                      marginTop: '3px'
+                    }}>
+                      + {topping.quantity} x {topping.name} - {(topping.price * topping.quantity).toLocaleString('vi-VN')} VNĐ
+                    </div>
+                  ))}
                 </div>
               )}
+              
+              {/* Line total */}
+              {line.toppings && line.toppings.length > 0 && (
+                <div style={{ 
+                  marginTop: '8px', 
+                  paddingTop: '5px',
+                  borderTop: '1px dashed #28a745',
+                  fontSize: '15px',
+                  fontWeight: 'bold',
+                  color: '#155724'
+                }}>
+                  Tổng dòng: {lineTotal.toLocaleString('vi-VN')} VNĐ
+                </div>
+              )}
+              
               {line.note && (
                 <div style={{ 
                   marginTop: '5px', 
@@ -550,7 +591,8 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -962,6 +1004,9 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
           </div>
         </div>
       )}
+
+      {/* Hiển thị hướng dẫn */}
+      {showGuide && <QuickOrderGuide onClose={() => setShowGuide(false)} />}
     </div>
   );
 };

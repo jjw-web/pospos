@@ -11,11 +11,17 @@ export interface MenuCategory {
   items: MenuItem[];
 }
 
+export interface ToppingItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface ParsedLine {
   originalLine: string;
   quantity: number;
   matchedItem?: MenuItem;
   note?: string;
-  toppings?: string[];
+  toppings?: ToppingItem[]; // Thay đổi từ string[] sang ToppingItem[]
   error?: string;
 }

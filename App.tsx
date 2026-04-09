@@ -147,11 +147,37 @@ const App: React.FC = () => {
     if (!table) return;
     const newOrder = table.order.map(item =>
         item.menuItem.id === menuItemId
-        ? {...item, note: note}
-        : item
+            ? { ...item, note }
+            : item
     );
     updateTable(tableId, { order: newOrder });
   }, [tables, updateTable]);
+
+  const handleAddTopping = useCallback((tableId: number, mainItemId: number, toppingItem: MenuItem) => {
+    const table = tables.get(tableId);
+    if (!table) return;
+    
+    // Tìm món chính và thêm topping vào
+    const newOrder = table.order.map(item => {
+        if (item.menuItem.id === mainItemId) {
+            // Thêm topping vào món chính (hiện tại chưa có field toppings)
+            const existingToppings = (item as any).toppings || [];
+            const newTopping = {
+                name: toppingItem.name,
+                price: toppingItem.price,
+                quantity: 1
+            };
+            
+            return {
+                ...item,
+                toppings: [...existingToppings, newTopping]
+            };
+        }
+        return item;
+    });
+    
+    updateTable(tableId, { order: newOrder });
+}, [tables, updateTable]);
 
   const handlePayment = useCallback((tableId: number, paymentMethod: PaymentMethod) => {
     const table = tables.get(tableId);
@@ -341,6 +367,7 @@ const App: React.FC = () => {
             onUpdateNote={handleUpdateItemNote}
             onMoveTable={handleMoveTable}
             onMergeFromTable={handleMergeFromTable}
+            onAddTopping={handleAddTopping}
           />
         );
       case 'dailySummary':

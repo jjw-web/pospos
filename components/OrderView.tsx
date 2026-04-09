@@ -27,6 +27,7 @@ interface OrderViewProps {
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
   onMoveTable: (fromId: number, toId: number) => void;
   onMergeFromTable: (currentId: number, sourceId: number) => void;
+  onAddTopping?: (tableId: number, mainItemId: number, toppingItem: MenuItem) => void;
 }
 
 const OrderView: React.FC<OrderViewProps> = ({
@@ -40,6 +41,7 @@ const OrderView: React.FC<OrderViewProps> = ({
   onUpdateNote,
   onMoveTable,
   onMergeFromTable,
+  onAddTopping,
 }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -52,6 +54,10 @@ const OrderView: React.FC<OrderViewProps> = ({
   const [transferMode, setTransferMode] = useState<TableTransferMode | null>(null);
   const [, headerTick] = useState(0);
   const currentOrderRef = useRef<HTMLDivElement>(null);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const scrollToCurrentOrder = useCallback(() => {
     currentOrderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -420,7 +426,11 @@ const OrderView: React.FC<OrderViewProps> = ({
         <button type="button" style={backBtnStyle} onClick={onBack} aria-label="Quay lại chọn bàn">
           ←
         </button>
-        <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+        <div 
+          style={{ flex: '1 1 160px', minWidth: 0, cursor: 'pointer' }}
+          onClick={scrollToTop}
+          title="Click để cuộn lên đầu trang"
+        >
           <h1 style={headerTitleStyle}>
             {table.name} — {table.status === 'available' ? 'Trống' : 'Có khách'}
             {durationLabel ? ` · ${durationLabel}` : ''}

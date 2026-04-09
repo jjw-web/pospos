@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { TableData } from '../types';
-import { formatOccupiedDuration } from '../src/lib/table-utils';
 
 interface TableProps {
   table: TableData;
@@ -9,16 +8,20 @@ interface TableProps {
 
 const Table: React.FC<TableProps> = ({ table, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [, tick] = useState(0);
 
-  useEffect(() => {
-    if (table.status !== 'occupied' || !table.occupiedSince) return;
-    const id = window.setInterval(() => tick((n) => n + 1), 60000);
-    return () => window.clearInterval(id);
-  }, [table.status, table.occupiedSince]);
+  // Calculate total bill amount
+  const totalAmount = table.order?.reduce((sum, item) => {
+    return sum + (item.menuItem.price * item.quantity);
+  }, 0) || 0;
 
-  const durationLabel =
-    table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
 
   // Oval card container style
   const cardContainerStyle: React.CSSProperties = {
@@ -105,7 +108,7 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
       {/* Teal/Amber Body */}
       <div style={bodyStyle}>
         <h3 style={mainTextStyle}>{table.name}</h3>
-        {durationLabel && (
+        {table.status === 'occupied' && table.order && table.order.length > 0 && (
           <span
             style={{
               color: 'white',
@@ -115,7 +118,7 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
               opacity: 0.95,
             }}
           >
-            {durationLabel}
+            {formatCurrency(totalAmount)}
           </span>
         )}
         <div style={statusStyle}></div>
