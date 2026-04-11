@@ -1,7 +1,6 @@
 import type { OrderItem } from '../../types';
 
 const LINE = '────────────────';
-const TOPPING_CATEGORY = 'TOPPING';
 
 export function formatReceiptText(params: {
   shopName?: string;
@@ -10,10 +9,6 @@ export function formatReceiptText(params: {
   total: number;
 }): string {
   const { shopName = 'Bống Cà Phê', tableLabel, items, total } = params;
-
-  const mainItems = items.filter(row => row.menuItem.category !== TOPPING_CATEGORY);
-  const toppingItems = items.filter(row => row.menuItem.category === TOPPING_CATEGORY);
-
   const lines: string[] = [
     `🧾 ${shopName}`,
     LINE,
@@ -21,23 +16,11 @@ export function formatReceiptText(params: {
     '',
   ];
 
-  // Món chính
-  mainItems.forEach((row) => {
+  items.forEach((row) => {
     const sub = row.menuItem.price * row.quantity;
-    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ`);
-    if (row.note) {
-      lines.push(`  ↳ ${row.note}`);
-    }
+    const note = row.note ? `  (Ghi chú: ${row.note})` : '';
+    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ${note}`);
   });
-
-  // Topping section
-  if (toppingItems.length > 0) {
-    lines.push('', '── Topping ──');
-    toppingItems.forEach((row) => {
-      const sub = row.menuItem.price * row.quantity;
-      lines.push(`+ ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ`);
-    });
-  }
 
   lines.push('', LINE, `Tổng cộng: ${total.toLocaleString('vi-VN')}đ`, '', 'Cảm ơn quý khách! 💚');
 
