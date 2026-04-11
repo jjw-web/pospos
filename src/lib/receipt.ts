@@ -1,6 +1,7 @@
 import type { OrderItem } from '../../types';
 
 const LINE = '────────────────';
+const TOPPING_CATEGORY = 'TOPPING';
 
 export function formatReceiptText(params: {
   shopName?: string;
@@ -9,6 +10,10 @@ export function formatReceiptText(params: {
   total: number;
 }): string {
   const { shopName = 'Bống Cà Phê', tableLabel, items, total } = params;
+
+  const mainItems = items.filter(row => row.menuItem.category !== TOPPING_CATEGORY);
+  const toppingItems = items.filter(row => row.menuItem.category === TOPPING_CATEGORY);
+
   const lines: string[] = [
     `🧾 ${shopName}`,
     LINE,
@@ -16,10 +21,27 @@ export function formatReceiptText(params: {
     '',
   ];
 
-  items.forEach((row) => {
+  // Món chính
+  mainItems.forEach((row) => {
     const sub = row.menuItem.price * row.quantity;
-    const note = row.note ? `  (Ghi chú: ${row.note})` : '';
-    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ${note}`);
+    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ`);
+    if (row.note) {
+      lines.push(`  ↳ ${row.note}`);
+    }
+    
+    // Hiển thị toppings đi kèm món chính
+    const itemToppings = toppingItems.filter(topping => 
+      // Giả sử dụng một cách để liên kết topping với món chính
+      // Có thể cần thêm field để liên kết
+      mainItems.some(main => main.menuItem.id === row.menuItem.id)
+    );
+    
+    if (itemToppings.length > 0) {
+      itemToppings.forEach((topping) => {
+        const toppingSub = topping.menuItem.price * topping.quantity;
+        lines.push(`  + ${topping.menuItem.name} × ${topping.quantity} — ${toppingSub.toLocaleString('vi-VN')}đ`);
+      });
+    }
   });
 
   lines.push('', LINE, `Tổng cộng: ${total.toLocaleString('vi-VN')}đ`, '', 'Cảm ơn quý khách! 💚');
