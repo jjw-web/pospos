@@ -28,21 +28,16 @@ export function formatReceiptText(params: {
     if (row.note) {
       lines.push(`  ↳ ${row.note}`);
     }
-    
-    // Hiển thị toppings đi kèm món chính
-    const itemToppings = toppingItems.filter(topping => 
-      // Giả sử dụng một cách để liên kết topping với món chính
-      // Có thể cần thêm field để liên kết
-      mainItems.some(main => main.menuItem.id === row.menuItem.id)
-    );
-    
-    if (itemToppings.length > 0) {
-      itemToppings.forEach((topping) => {
-        const toppingSub = topping.menuItem.price * topping.quantity;
-        lines.push(`  + ${topping.menuItem.name} × ${topping.quantity} — ${toppingSub.toLocaleString('vi-VN')}đ`);
-      });
-    }
   });
+
+  // Topping section
+  if (toppingItems.length > 0) {
+    lines.push('', '── Topping ──');
+    toppingItems.forEach((row) => {
+      const sub = row.menuItem.price * row.quantity;
+      lines.push(`+ ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ`);
+    });
+  }
 
   lines.push('', LINE, `Tổng cộng: ${total.toLocaleString('vi-VN')}đ`, '', 'Cảm ơn quý khách! 💚');
 
