@@ -218,7 +218,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
                 style={methodButtonStyle}
                 onClick={() => onSelect('Tintin')}
               >
-                💳 Tintin
+                💳 JJW
               </button>
               <button
                 type="button"
