@@ -6,6 +6,7 @@ export const QR_ACCOUNTS = [
   { name: 'QR Nguyen Viet Trinh Tech', path: '/QR code/QR Nguyen Viet Trinh Tech.png' },
   { name: 'QR Nguyen Viet Trinh VCB', path: '/QR code/QR Nguyen Viet Trinh VCB.png' },
   { name: 'QR Truong Duc Huy VCB', path: '/QR code/QR Truong Duc Huy VCB.png' },
+  { name: 'QR HKD Bong Tingee BIDV', path: '/QR code/QR HKD Bong Tingee BIDV.png' },
 ];
 
 export const MENU_CATEGORIES: MenuCategory[] = [
