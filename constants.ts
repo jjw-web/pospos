@@ -1,5 +1,13 @@
 import { MenuCategory, TableData, ViewType } from './types';
 
+export const QR_ACCOUNTS = [
+  { name: 'QR Cao Bich Lan Tech', path: '/QR code/QR Cao Bich Lan Tech.png' },
+  { name: 'QR Nguyen Quynh Anh Tech', path: '/QR code/QR Nguyen Quynh Anh Tech.png' },
+  { name: 'QR Nguyen Viet Trinh Tech', path: '/QR code/QR Nguyen Viet Trinh Tech.png' },
+  { name: 'QR Nguyen Viet Trinh VCB', path: '/QR code/QR Nguyen Viet Trinh VCB.png' },
+  { name: 'QR Truong Duc Huy VCB', path: '/QR code/QR Truong Duc Huy VCB.png' },
+];
+
 export const MENU_CATEGORIES: MenuCategory[] = [
   {
     name: 'CÀ PHÊ',

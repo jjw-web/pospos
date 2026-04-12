@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { OrderItem } from '../types';
+import { QR_ACCOUNTS } from '../constants';
 import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
 
 export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
@@ -16,6 +17,7 @@ interface PaymentMethodModalProps {
 
 const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose, receipt }) => {
   const [receiptHint, setReceiptHint] = useState<string | null>(null);
+  const [showQRList, setShowQRList] = useState(false);
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
@@ -37,6 +39,8 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     maxWidth: '400px',
     width: '90%',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+    maxHeight: '80vh',
+    overflowY: 'auto',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -129,13 +133,42 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     window.setTimeout(() => setReceiptHint(null), 2800);
   };
 
+  const handleShareWithQR = async (qrAccount: typeof QR_ACCOUNTS[0]) => {
+    const text = buildReceiptBody();
+    if (!text) return;
+    
+    // Copy text to clipboard
+    await copyTextToClipboard(text);
+    
+    // Web Share API if supported
+    if (navigator.share) {
+      try {
+        const response = await fetch(qrAccount.path);
+        const blob = await response.blob();
+        const file = new File([blob], 'qr_code.png', { type: 'image/png' });
+        
+        await navigator.share({
+          text: text,
+          files: [file],
+          title: 'Hóa đơn Bống Cà Phê'
+        });
+        setReceiptHint('Đã chia sẻ hóa đơn kèm QR');
+      } catch (err) {
+        setReceiptHint('Đã copy text, hãy dán QR thủ công');
+      }
+    } else {
+      setReceiptHint('Đã copy hóa đơn, vui lòng lưu ảnh QR bên dưới');
+    }
+    setShowQRList(false);
+  };
+
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <h2 style={titleStyle}>Chọn phương thức thanh toán</h2>
+        <h2 style={titleStyle}>{showQRList ? 'Chọn tài khoản QR' : 'Chọn phương thức thanh toán'}</h2>
         <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
 
-        {receipt && receipt.items.length > 0 && (
+        {receipt && receipt.items.length > 0 && !showQRList && (
           <div style={secondaryRowStyle}>
             <button type="button" style={secondaryBtnStyle} onClick={handleCopyReceipt}>
               📋 Sao chép hóa đơn (Zalo/Messenger)
@@ -150,61 +183,63 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
         )}
 
         <div style={methodsContainerStyle}>
-          <button
-            type="button"
-            style={methodButtonStyle}
-            onClick={() => onSelect('Cash')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#e3f2fd';
-              e.currentTarget.style.borderColor = '#3498db';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8f9fa';
-              e.currentTarget.style.borderColor = '#e0e0e0';
-            }}
-          >
-            💵 Cash (Tiền mặt)
-          </button>
-          <button
-            type="button"
-            style={methodButtonStyle}
-            onClick={() => onSelect('BIDV')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#e3f2fd';
-              e.currentTarget.style.borderColor = '#3498db';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8f9fa';
-              e.currentTarget.style.borderColor = '#e0e0e0';
-            }}
-          >
-            🏦 BIDV
-          </button>
-          <button
-            type="button"
-            style={methodButtonStyle}
-            onClick={() => onSelect('Tintin')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#e3f2fd';
-              e.currentTarget.style.borderColor = '#3498db';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8f9fa';
-              e.currentTarget.style.borderColor = '#e0e0e0';
-            }}
-          >
-            💳 Tintin
-          </button>
+          {showQRList ? (
+            <>
+              {QR_ACCOUNTS.map((account) => (
+                <button
+                  key={account.name}
+                  type="button"
+                  style={methodButtonStyle}
+                  onClick={() => handleShareWithQR(account)}
+                >
+                  📷 {account.name}
+                </button>
+              ))}
+              <button type="button" style={{ ...cancelButtonStyle, marginTop: '8px' }} onClick={() => setShowQRList(false)}>Quay lại</button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                style={methodButtonStyle}
+                onClick={() => onSelect('Cash')}
+              >
+                💵 Cash (Tiền mặt)
+              </button>
+              <button
+                type="button"
+                style={methodButtonStyle}
+                onClick={() => onSelect('BIDV')}
+              >
+                🏦 BIDV
+              </button>
+              <button
+                type="button"
+                style={methodButtonStyle}
+                onClick={() => onSelect('Tintin')}
+              >
+                💳 Tintin
+              </button>
+              <button
+                type="button"
+                style={{ ...methodButtonStyle, backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }}
+                onClick={() => setShowQRList(true)}
+              >
+                💳 Gửi hóa đơn kèm QR
+              </button>
+            </>
+          )}
         </div>
-        <button
-          type="button"
-          style={cancelButtonStyle}
-          onClick={onClose}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
-        >
-          Hủy
-        </button>
+
+        {!showQRList && (
+          <button
+            type="button"
+            style={cancelButtonStyle}
+            onClick={onClose}
+          >
+            Hủy
+          </button>
+        )}
       </div>
     </div>
   );
