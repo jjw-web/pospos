@@ -17,10 +17,11 @@ function showUpdateNotification(message: string) {
  */
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string) {
   console.log(`Nâng cấp phiên bản ứng dụng từ ${oldVersion || 'chưa có'} lên ${newVersion}`);
-  // Service worker được quản lý bởi vite-plugin-pwa với chế độ autoUpdate
-  // sẽ tự động xóa cache cũ và tải phiên bản mới.
-  // Nếu cần xóa các loại cache khác (vd: cache API), có thể thêm logic ở đây.
-  showUpdateNotification(`Ứng dụng đã được cập nhật lên phiên bản ${newVersion}.`);
+  
+  // Thông báo và ép tải lại trang để đảm bảo code mới nhất được nạp
+  alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
+  localStorage.setItem('app_version', newVersion);
+  window.location.reload();
 }
 
 /**
