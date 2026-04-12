@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { TableAreaStats } from '../types';
 import { useTheme } from '../src/context/ThemeContext';
+import QRCodeModal from './QRCodeModal';
 
 interface ViewSelectionViewProps {
   onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu' | 'dailySummary') => void;
@@ -18,6 +19,8 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
   outsideStats,
 }) => {
   const { theme, toggleTheme } = useTheme();
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
   const areaHintStyle: React.CSSProperties = {
     fontSize: '14px',
     fontWeight: 500,
@@ -141,7 +144,12 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     ...baseButtonStyle,
     background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
     color: 'white',
-    gridColumn: '1 / -1',
+  };
+
+  const qrButtonStyle: React.CSSProperties = {
+    ...baseButtonStyle,
+    background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)',
+    color: 'white',
   };
 
   const menuButtonStyle: React.CSSProperties = {
@@ -249,7 +257,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
             style={dailySummaryButtonStyle}
             onClick={() => onSelect('dailySummary')}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.transform = 'scale(1.05)';
               e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)';
             }}
             onMouseOut={(e) => {
@@ -258,7 +266,24 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
             }}
           >
             <div>Tổng kết ngày</div>
-            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Doanh thu & món bán chạy</div>
+            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Doanh thu</div>
+          </button>
+
+          <button
+            type="button"
+            style={qrButtonStyle}
+            onClick={() => setIsQRModalOpen(true)}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+            }}
+          >
+            <div>Mã QR</div>
+            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Thanh toán nhanh</div>
           </button>
 
           <button 
@@ -277,6 +302,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
           </button>
         </div>
       </div>
+      <QRCodeModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} />
     </div>
   );
 };
