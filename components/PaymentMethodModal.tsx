@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { OrderItem } from '../types';
 import { QR_ACCOUNTS } from '../constants';
 import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
@@ -15,20 +15,19 @@ interface PaymentMethodModalProps {
   };
 }
 
-const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose, receipt }) => {
-  const [receiptHint, setReceiptHint] = useState<string | null>(null);
-  const [showQRList, setShowQRList] = useState(false);
+type Screen = 'main' | 'qrList' | 'fullscreen';
 
+const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose, receipt }) => {
+  const [screen, setScreen] = useState<Screen>('main');
+  const [selectedQR, setSelectedQR] = useState<typeof QR_ACCOUNTS[0] | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
+  const wakeLockRef = useRef<any>(null);
+
+  // ─── Styles ───────────────────────────────────────────────
   const overlayStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'fixed', inset: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex', justifyContent: 'center', alignItems: 'center',
     zIndex: 1000,
   };
 
@@ -38,210 +37,160 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     padding: '24px',
     maxWidth: '400px',
     width: '90%',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-    maxHeight: '80vh',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+    maxHeight: '85vh',
     overflowY: 'auto',
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: '20px',
-    fontWeight: 600,
-    marginBottom: '20px',
-    color: '#2c3e50',
-    textAlign: 'center',
+    fontSize: '20px', fontWeight: 600,
+    marginBottom: '16px', color: '#2c3e50', textAlign: 'center',
   };
 
   const totalStyle: React.CSSProperties = {
-    fontSize: '18px',
-    fontWeight: 600,
-    marginBottom: '24px',
-    color: '#3498db',
-    textAlign: 'center',
+    fontSize: '18px', fontWeight: 600,
+    marginBottom: '20px', color: '#3498db', textAlign: 'center',
   };
 
-  const methodsContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    marginBottom: '20px',
-  };
-
-  const methodButtonStyle: React.CSSProperties = {
-    padding: '16px 20px',
-    backgroundColor: '#f8f9fa',
+  const btnBase: React.CSSProperties = {
+    padding: '14px 16px',
     border: '2px solid #e0e0e0',
     borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    color: '#2c3e50',
+    fontSize: '15px', fontWeight: 500,
+    cursor: 'pointer', width: '100%',
+    backgroundColor: '#f8f9fa', color: '#2c3e50',
   };
 
-  const secondaryRowStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    marginBottom: '16px',
+  const blueBtn: React.CSSProperties = {
+    ...btnBase,
+    backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af',
   };
 
-  const secondaryBtnStyle: React.CSSProperties = {
-    padding: '12px 16px',
-    backgroundColor: '#ecfdf5',
-    border: '1px solid #6ee7b7',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: 600,
-    cursor: 'pointer',
-    color: '#065f46',
+  const cancelBtn: React.CSSProperties = {
+    padding: '12px 24px', backgroundColor: '#6b7280',
+    color: 'white', border: 'none', borderRadius: '8px',
+    fontSize: '15px', fontWeight: 500, cursor: 'pointer', width: '100%',
   };
 
-  const cancelButtonStyle: React.CSSProperties = {
-    padding: '12px 24px',
-    backgroundColor: '#6b7280',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    width: '100%',
+  // ─── Helpers ──────────────────────────────────────────────
+  const showHint = (msg: string) => {
+    setHint(msg);
+    window.setTimeout(() => setHint(null), 3000);
   };
 
-  const buildReceiptBody = () => {
+  const buildReceiptText = () => {
     if (!receipt) return '';
-    return formatReceiptText({
-      tableLabel: receipt.tableLabel,
-      items: receipt.items,
-      total,
-    });
+    return formatReceiptText({ tableLabel: receipt.tableLabel, items: receipt.items, total });
   };
 
   const handleCopyReceipt = async () => {
-    const text = buildReceiptBody();
+    const text = buildReceiptText();
     if (!text) return;
     const ok = await copyTextToClipboard(text);
-    setReceiptHint(ok ? 'Đã sao chép — dán vào Zalo/Messenger' : 'Không sao chép được, thử trình duyệt khác');
-    window.setTimeout(() => setReceiptHint(null), 2800);
+    showHint(ok ? '✅ Đã sao chép — dán vào Zalo/Messenger' : '❌ Không sao chép được');
   };
 
   const handleShareReceipt = async () => {
-    const text = buildReceiptBody();
+    const text = buildReceiptText();
     if (!text) return;
     const ok = await shareReceiptText(text, 'Hóa đơn Bống Cà Phê');
-    setReceiptHint(ok ? 'Đã mở chia sẻ hoặc sao chép' : 'Hãy dùng Sao chép hóa đơn');
-    window.setTimeout(() => setReceiptHint(null), 2800);
+    showHint(ok ? '✅ Đã mở chia sẻ' : 'Hãy dùng Sao chép hóa đơn');
   };
 
-  const handleShareWithQR = async (qrAccount: typeof QR_ACCOUNTS[0]) => {
-    const text = buildReceiptBody();
+  const handleShareWithQR = async (account: typeof QR_ACCOUNTS[0]) => {
+    const text = buildReceiptText();
     if (!text) return;
-    
-    // Copy text to clipboard
+
     await copyTextToClipboard(text);
-    
-    // Web Share API if supported
-    if (navigator.share) {
-      try {
-        const response = await fetch(qrAccount.path);
-        const blob = await response.blob();
-        const file = new File([blob], 'qr_code.png', { type: 'image/png' });
-        
-        await navigator.share({
-          text: text,
-          files: [file],
-          title: 'Hóa đơn Bống Cà Phê'
-        });
-        setReceiptHint('Đã chia sẻ hóa đơn kèm QR');
-      } catch (err) {
-        setReceiptHint('Đã copy text, hãy dán QR thủ công');
+
+    try {
+      const response = await fetch(encodeURI(account.path));
+      const blob = await response.blob();
+      const file = new File([blob], 'qr_payment.png', { type: 'image/png' });
+
+      // @ts-ignore
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: 'Hóa đơn Bống Cà Phê', text, files: [file] });
+        showHint('✅ Đã chia sẻ hóa đơn kèm QR');
+        return;
       }
-    } else {
-      setReceiptHint('Đã copy hóa đơn, vui lòng lưu ảnh QR bên dưới');
-    }
-    setShowQRList(false);
+    } catch {}
+
+    showHint('📋 Đã copy hóa đơn — lưu ảnh QR bên dưới để gửi kèm');
   };
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <h2 style={titleStyle}>{showQRList ? 'Chọn tài khoản QR' : 'Chọn phương thức thanh toán'}</h2>
-        <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
+    <>
+      <div style={overlayStyle} onClick={onClose}>
+        <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+          <h2 style={titleStyle}>
+            {screen === 'qrList' ? '🏦 Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
+          </h2>
+          <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
 
-        {receipt && receipt.items.length > 0 && !showQRList && (
-          <div style={secondaryRowStyle}>
-            <button type="button" style={secondaryBtnStyle} onClick={handleCopyReceipt}>
-              📋 Sao chép hóa đơn (Zalo/Messenger)
-            </button>
-            <button type="button" style={{ ...secondaryBtnStyle, backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }} onClick={handleShareReceipt}>
-              📤 Chia sẻ / Gửi
-            </button>
-            {receiptHint && (
-              <p style={{ margin: 0, fontSize: '13px', color: '#059669', textAlign: 'center' }}>{receiptHint}</p>
-            )}
-          </div>
-        )}
+          {/* Màn hình chính */}
+          {screen === 'main' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button style={btnBase} onClick={handleCopyReceipt}>📋 Sao chép hóa đơn</button>
+              <div style={{ height: '1px', backgroundColor: '#e0e0e0', margin: '10px 0' }} />
+              <button style={btnBase} onClick={() => onSelect('Cash')}>💵 Cash (Tiền mặt)</button>              <button style={btnBase} onClick={() => onSelect('BIDV')}>🏦 BIDV</button>
+              <button style={btnBase} onClick={() => onSelect('Tintin')}>💳 JJW</button>
+              <button style={blueBtn} onClick={() => setScreen('qrList')}>📷 QR Thanh toán</button>
+              <button style={cancelBtn} onClick={onClose}>Hủy</button>
+              {hint && <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center' }}>{hint}</p>}
+            </div>
+          )}
 
-        <div style={methodsContainerStyle}>
-          {showQRList ? (
-            <>
+          {/* Màn hình danh sách QR */}
+          {screen === 'qrList' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {QR_ACCOUNTS.map((account) => (
-                <button
-                  key={account.name}
-                  type="button"
-                  style={methodButtonStyle}
-                  onClick={() => handleShareWithQR(account)}
-                >
-                  📷 {account.name}
-                </button>
+                <div key={account.name} style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    style={{ ...blueBtn, flex: 1, textAlign: 'left' }}
+                    onClick={() => handleShareWithQR(account)}
+                  >
+                    📤 {account.name.replace('QR ', '')}
+                  </button>
+                  <button
+                    style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
+                    onClick={() => { setSelectedQR(account); setScreen('fullscreen'); }}
+                    title="Khách quét tại chỗ"
+                  >
+                    🖥️
+                  </button>
+                  <button
+                    style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px', backgroundColor: '#dcfce7', borderColor: '#86efac' }}
+                    onClick={() => onSelect('Tintin')}
+                    title="Xác nhận thu tiền"
+                  >
+                    ✅
+                  </button>
+                </div>
               ))}
-              <button type="button" style={{ ...cancelButtonStyle, marginTop: '8px' }} onClick={() => setShowQRList(false)}>Quay lại</button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                style={methodButtonStyle}
-                onClick={() => onSelect('Cash')}
-              >
-                💵 Cash (Tiền mặt)
-              </button>
-              <button
-                type="button"
-                style={methodButtonStyle}
-                onClick={() => onSelect('BIDV')}
-              >
-                🏦 BIDV
-              </button>
-              <button
-                type="button"
-                style={methodButtonStyle}
-                onClick={() => onSelect('Tintin')}
-              >
-                💳 JJW
-              </button>
-              <button
-                type="button"
-                style={{ ...methodButtonStyle, backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af' }}
-                onClick={() => setShowQRList(true)}
-              >
-                💳 Gửi hóa đơn kèm QR
-              </button>
-            </>
+              <button style={cancelBtn} onClick={() => setScreen('main')}>← Quay lại</button>
+            </div>
           )}
         </div>
-
-        {!showQRList && (
-          <button
-            type="button"
-            style={cancelButtonStyle}
-            onClick={onClose}
-          >
-            Hủy
-          </button>
-        )}
       </div>
-    </div>
+
+      {/* Fullscreen QR */}
+      {selectedQR && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: '#fff', zIndex: 9999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: '16px', padding: '24px'
+        }}>
+          <img src={selectedQR.path} alt={selectedQR.name} style={{ width: '100%', maxWidth: '320px', borderRadius: '12px' }} />
+          <p style={{ fontSize: '32px', fontWeight: 700, color: '#1e40af' }}>{total.toLocaleString()}đ</p>
+          <button
+            onClick={() => { setSelectedQR(null); setScreen('qrList'); }}
+            style={cancelBtn}>
+            ← Chọn tài khoản khác
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 
