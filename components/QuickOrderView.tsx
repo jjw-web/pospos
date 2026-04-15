@@ -715,6 +715,7 @@ const QuickOrderView: React.FC<QuickOrderViewProps> = ({ onBack, onCompleteOrder
                 searchQuery={searchQuery} 
                 setSearchQuery={setSearchQuery} 
                 placeholder="Tìm món..." 
+                onClear={() => setSearchQuery('')}
               />
               <div style={{
                 display: 'grid',
