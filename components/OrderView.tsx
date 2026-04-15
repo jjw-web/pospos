@@ -466,6 +466,7 @@ const OrderView: React.FC<OrderViewProps> = ({
           setSearchQuery={setSearchQuery}
           placeholder="Tìm kiếm món ăn..."
           darkMode={isDark}
+          onClear={() => setSearchQuery('')}
         />
       </div>
 
