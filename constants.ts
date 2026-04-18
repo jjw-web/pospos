@@ -1,13 +1,6 @@
 import { MenuCategory, TableData, ViewType } from './types';
 
-export const QR_ACCOUNTS = [
-  { name: 'QR Cao Bich Lan Tech', path: '/QR code/QR Cao Bich Lan Tech.png' },
-  { name: 'QR Nguyen Quynh Anh Tech', path: '/QR code/QR Nguyen Quynh Anh Tech.png' },
-  { name: 'QR Nguyen Viet Trinh Tech', path: '/QR code/QR Nguyen Viet Trinh Tech.png' },
-  { name: 'QR Nguyen Viet Trinh VCB', path: '/QR code/QR Nguyen Viet Trinh VCB.png' },
-  { name: 'QR Truong Duc Huy VCB', path: '/QR code/QR Truong Duc Huy VCB.png' },
-  { name: 'QR HKD Bong Tingee BIDV', path: '/QR code/QR HKD Bong Tingee BIDV2.png' },
-];
+export const QR_ACCOUNTS = [\n  { name: \'QR Cao Bich Lan Tech\', path: \'/QR code/QR Cao Bich Lan Tech.png\', method: \'Tintin\' as const },\n  { name: \'QR Nguyen Quynh Anh Tech\', path: \'/QR code/QR Nguyen Quynh Anh Tech.png\', method: \'Tintin\' as const },\n  { name: \'QR Nguyen Viet Trinh Tech\', path: \'/QR code/QR Nguyen Viet Trinh Tech.png\', method: \'Tintin\' as const },\n  { name: \'QR Nguyen Viet Trinh VCB\', path: \'/QR code/QR Nguyen Viet Trinh VCB.png\', method: \'Tintin\' as const },\  { name: \'QR Truong Duc Huy VCB\', path: \'/QR code/QR Truong Duc Huy VCB.png\', method: \'Tintin\' as const },\n  { name: \'QR HKD Bong Tingee BIDV\', path: \'/QR code/QR HKD Bong Tingee BIDV2.png\', method: \'BIDV\' as const },\n];
 
 export const MENU_CATEGORIES: MenuCategory[] = [
   {

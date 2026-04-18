@@ -1,9 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { OrderItem } from '../types';
 import { QR_ACCOUNTS } from '../constants';
 import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
 
 export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
+
+// Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
+// Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
+type QRAccount = typeof QR_ACCOUNTS[number] & { method?: PaymentMethod };
 
 interface PaymentMethodModalProps {
   total: number;
@@ -15,13 +19,32 @@ interface PaymentMethodModalProps {
   };
 }
 
-type Screen = 'main' | 'qrList' | 'fullscreen';
+type Screen = 'main' | 'qrList'; // bỏ 'fullscreen' vì không dùng
 
 const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect, onClose, receipt }) => {
   const [screen, setScreen] = useState<Screen>('main');
-  const [selectedQR, setSelectedQR] = useState<typeof QR_ACCOUNTS[0] | null>(null);
+  const [selectedQR, setSelectedQR] = useState<QRAccount | null>(null);
   const [hint, setHint] = useState<string | null>(null);
-  const wakeLockRef = useRef<any>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const hintTimeoutRef = useRef<number>();
+
+  // ─── Wake Lock: giữ màn hình sáng khi show QR fullscreen ──────────────────
+  useEffect(() => {
+    if (selectedQR && 'wakeLock' in navigator) {
+      navigator.wakeLock.request('screen')
+       .then(lock => { wakeLockRef.current = lock; })
+       .catch(() => {}); // user từ chối thì thôi
+    }
+    return () => {
+      wakeLockRef.current?.release();
+      wakeLockRef.current = null;
+    };
+  }, [selectedQR]);
+
+  // ─── Cleanup timeout hint khi unmount ────────────────────────────────────
+  useEffect(() => {
+    return () => clearTimeout(hintTimeoutRef.current);
+  }, []);
 
   // ─── Styles ───────────────────────────────────────────────
   const overlayStyle: React.CSSProperties = {
@@ -54,7 +77,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
 
   const btnBase: React.CSSProperties = {
     padding: '14px 16px',
-    border: '2px solid #e0e0e0',
+    border: '2px solid #e0e0',
     borderRadius: '8px',
     fontSize: '15px', fontWeight: 500,
     cursor: 'pointer', width: '100%',
@@ -62,7 +85,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
   };
 
   const blueBtn: React.CSSProperties = {
-    ...btnBase,
+   ...btnBase,
     backgroundColor: '#eff6ff', borderColor: '#93c5fd', color: '#1e40af',
   };
 
@@ -75,7 +98,8 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
   // ─── Helpers ──────────────────────────────────────────────
   const showHint = (msg: string) => {
     setHint(msg);
-    window.setTimeout(() => setHint(null), 3000);
+    clearTimeout(hintTimeoutRef.current);
+    hintTimeoutRef.current = window.setTimeout(() => setHint(null), 3000);
   };
 
   const buildReceiptText = () => {
@@ -87,36 +111,43 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     const text = buildReceiptText();
     if (!text) return;
     const ok = await copyTextToClipboard(text);
-    showHint(ok ? '✅ Đã sao chép — dán vào Zalo/Messenger' : '❌ Không sao chép được');
+    showHint(ok? '✅ Đã sao chép — dán vào Zalo/Messenger' : '❌ Không sao chép được');
   };
 
   const handleShareReceipt = async () => {
     const text = buildReceiptText();
     if (!text) return;
     const ok = await shareReceiptText(text, 'Hóa đơn Bống Cà Phê');
-    showHint(ok ? '✅ Đã mở chia sẻ' : 'Hãy dùng Sao chép hóa đơn');
+    showHint(ok? '✅ Đã mở chia sẻ' : 'Hãy dùng Sao chép hóa đơn');
   };
 
-  const handleShareWithQR = async (account: typeof QR_ACCOUNTS[0]) => {
+  const handleShareWithQR = async (account: QRAccount) => {
     const text = buildReceiptText();
     if (!text) return;
-
     await copyTextToClipboard(text);
 
     try {
-      const response = await fetch(encodeURI(account.path));
-      const blob = await response.blob();
-      const file = new File([blob], 'qr_payment.png', { type: 'image/png' });
+      const response = await fetch(account.path); // bỏ encodeURI
+      if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
 
-      // @ts-ignore
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      const blob = await response.blob();
+      const file = new File([blob], 'qr_payment.png', { type: blob.type }); // dùng đúng type
+
+      if ('canShare' in navigator && navigator.canShare({ files: [file] })) {
         await navigator.share({ title: 'Hóa đơn Bống Cà Phê', text, files: [file] });
         showHint('✅ Đã chia sẻ hóa đơn kèm QR');
         return;
       }
-    } catch {}
+    } catch (err) {
+      console.error('Share QR error:', err);
+    }
 
-    showHint('📋 Đã copy hóa đơn — lưu ảnh QR bên dưới để gửi kèm');
+    showHint('📋 Đã copy hóa đơn — tải ảnh QR về để gửi kèm');
+  };
+
+  const closeFullscreen = () => {
+    setSelectedQR(null);
+    setScreen('qrList');
   };
 
   return (
@@ -124,7 +155,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
       <div style={overlayStyle} onClick={onClose}>
         <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
           <h2 style={titleStyle}>
-            {screen === 'qrList' ? '🏦 Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
+            {screen === 'qrList'? '🏦 Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
           </h2>
           <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
 
@@ -132,37 +163,37 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
           {screen === 'main' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button style={btnBase} onClick={handleCopyReceipt}>📋 Sao chép hóa đơn</button>
-              <div style={{ height: '1px', backgroundColor: '#e0e0e0', margin: '10px 0' }} />
+              <div style={{ height: '1px', backgroundColor: '#e0e0', margin: '10px 0' }} />
               <button style={btnBase} onClick={() => onSelect('Cash')}>💵 Cash (Tiền mặt)</button>
               <button style={btnBase} onClick={() => onSelect('BIDV')}>🏦 BIDV</button>
               <button style={btnBase} onClick={() => onSelect('Tintin')}>💳 JJW</button>
               <button style={blueBtn} onClick={() => setScreen('qrList')}>📷 QR Thanh toán</button>
               <button style={cancelBtn} onClick={onClose}>Hủy</button>
-              {hint && <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center' }}>{hint}</p>}
+              {hint && <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center', margin: '8px 0 0' }}>{hint}</p>}
             </div>
           )}
 
           {/* Màn hình danh sách QR */}
           {screen === 'qrList' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {QR_ACCOUNTS.map((account) => (
+              {(QR_ACCOUNTS as QRAccount[]).map((account) => (
                 <div key={account.name} style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    style={{ ...blueBtn, flex: 1, textAlign: 'left' }}
+                    style={{...blueBtn, flex: 1, textAlign: 'left' }}
                     onClick={() => handleShareWithQR(account)}
                   >
                     📤 {account.name.replace('QR ', '')}
                   </button>
                   <button
-                    style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
-                    onClick={() => { setSelectedQR(account); setScreen('fullscreen'); }}
+                    style={{...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
+                    onClick={() => setSelectedQR(account)}
                     title="Khách quét tại chỗ"
                   >
                     🖥️
                   </button>
                   <button
-                    style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px', backgroundColor: '#dcfce7', borderColor: '#86efac' }}
-                    onClick={() => onSelect('Tintin')}
+                    style={{...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px', backgroundColor: '#dcfce7', borderColor: '#86efac' }}
+                    onClick={() => onSelect(account.method?? 'Tintin')} // fix: map đúng method
                     title="Xác nhận thu tiền"
                   >
                     ✅
@@ -177,15 +208,23 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
 
       {/* Fullscreen QR */}
       {selectedQR && (
-        <div style={{
-          position: 'fixed', inset: 0, backgroundColor: '#fff', zIndex: 9999,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: '16px', padding: '24px'
-        }}>
-          <img src={selectedQR.path} alt={selectedQR.name} style={{ width: '100%', maxWidth: '320px', borderRadius: '12px' }} />
+        <div
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: '#fff', zIndex: 9999,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: '16px', padding: '24px'
+          }}
+          onClick={closeFullscreen} // bấm ra ngoài để thoát
+        >
+          <img
+            src={selectedQR.path}
+            alt={selectedQR.name}
+            style={{ width: '100%', maxWidth: '320px', borderRadius: '12px' }}
+            onClick={(e) => e.stopPropagation()}
+          />
           <p style={{ fontSize: '32px', fontWeight: 700, color: '#1e40af' }}>{total.toLocaleString()}đ</p>
           <button
-            onClick={() => { setSelectedQR(null); setScreen('qrList'); }}
+            onClick={closeFullscreen}
             style={cancelBtn}>
             ← Chọn tài khoản khác
           </button>
