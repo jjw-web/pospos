@@ -71,12 +71,55 @@ const OrderView: React.FC<OrderViewProps> = ({
 
   const order = table?.order ?? [];
   const total = order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+
+  const groupedOrder = useMemo(() => {
+    const grouped: { [category: string]: OrderItem[] } = {};
+    const itemToCategoryMap = new Map<number, string>();
+    menuCategories.forEach(category => {
+      category.items.forEach(item => {
+        itemToCategoryMap.set(item.id, category.name);
+      });
+    });
+
+    order.forEach(item => {
+      const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = [];
+      }
+      grouped[categoryName].push(item);
+    });
+    return grouped;
+  }, [order, menuCategories]);
+
   const totalQuantity = order.reduce((sum, item) => sum + item.quantity, 0);
+
+  let mainCount = 0;
+  let toppingCount = 0;
+  let snackCount = 0;
+
+  Object.entries(groupedOrder).forEach(([categoryName, items]) => {
+    const categoryLower = categoryName.toLowerCase();
+    const totalQuantityInCategory = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    if (categoryLower.includes('topping') || categoryLower.includes('phụ gia') || categoryLower.includes('gia vị')) {
+      toppingCount += totalQuantityInCategory;
+    } else if (categoryLower.includes('snack') || categoryLower.includes('khai vị') || categoryLower.includes('đồ ăn nhẹ')) {
+      snackCount += totalQuantityInCategory;
+    } else {
+      // Tất cả category khác (bao gồm đồ uống, món chính, món lẻ, etc.) đều tính vào đồ uống
+      mainCount += totalQuantityInCategory;
+    }
+  });
+
+  const orderSummaryTitle = mainCount === 0 && toppingCount === 0 && snackCount === 0
+    ? 'Đơn hàng hiện tại (0 món)'
+    : `Đơn hàng hiện tại — Đồ uống: ${mainCount}, Topping: ${toppingCount}, Snack: ${snackCount}`;
 
   const handleAddItem = (menuItem: MenuItem) => {
     onAddItem(table.id, menuItem);
     setToastMessage(`Đã thêm «${menuItem.name}»`);
   };
+
 
   const handleUpdateQuantity = (menuItemId: number, change: number) => {
     onUpdateQuantity(table.id, menuItemId, change);
@@ -124,25 +167,6 @@ const OrderView: React.FC<OrderViewProps> = ({
     const category = menuCategories.find((cat) => cat.name === selectedCategory);
     return category ? category.items : [];
   }, [selectedCategory, searchQuery, menuCategories]);
-
-  const groupedOrder = useMemo(() => {
-    const grouped: { [category: string]: OrderItem[] } = {};
-    const itemToCategoryMap = new Map<number, string>();
-    menuCategories.forEach(category => {
-        category.items.forEach(item => {
-            itemToCategoryMap.set(item.id, category.name);
-        });
-    });
-
-    order.forEach(item => {
-      const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
-      if (!grouped[categoryName]) {
-        grouped[categoryName] = [];
-      }
-      grouped[categoryName].push(item);
-    });
-    return grouped;
-  }, [order, menuCategories]);
 
   const moveCandidates = useMemo(
     () =>
@@ -498,7 +522,7 @@ const OrderView: React.FC<OrderViewProps> = ({
       </div>
 
       <div ref={currentOrderRef} style={orderPanelStyle}>
-        <h2 style={orderTitleStyle}>Đơn hàng hiện tại ({totalQuantity})</h2>
+        <h2 style={orderTitleStyle}>{orderSummaryTitle}</h2>
         {table.order.length === 0 ? (
           <div style={emptyOrderStyle}>Chưa có món nào trong đơn hàng</div>
         ) : (

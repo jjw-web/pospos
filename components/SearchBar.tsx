@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -15,6 +15,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   darkMode = false,
   onClear,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const searchInputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px 15px',
@@ -26,12 +28,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
     boxSizing: 'border-box',
   };
 
+  const handleClear = () => {
+    onClear();
+    inputRef.current?.focus();
+  };
+
   return (
     <div style={{
       position: 'relative',
       width: '100%'
     }}>
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         value={searchQuery}
@@ -41,7 +49,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {searchQuery && (
         <button
           type="button"
-          onClick={onClear}
+          onClick={handleClear}
           style={{
             position: 'absolute',
             right: '10px',
