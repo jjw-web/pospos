@@ -31,6 +31,30 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     return map;
   }, [menuCategories]);
 
+  const historySummary = useMemo(() => {
+    const totalRevenue = history.reduce((sum, bill) => sum + bill.total, 0);
+    const totalItemsSold = history.reduce((sum, bill) => {
+      return sum + bill.items.reduce((itemSum, item) => {
+        const toppingCount = item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0;
+        return itemSum + item.quantity + toppingCount;
+      }, 0);
+    }, 0);
+    return {
+      totalRevenue,
+      totalBills: history.length,
+      totalItemsSold,
+    };
+  }, [history]);
+
+  const isAllSelected = selectedBills.length === history.length && history.length > 0;
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedBills([]);
+    } else {
+      setSelectedBills(history.map((bill) => bill.id));
+    }
+  };
+
   const getGroupedItems = (items: OrderItem[]) => {
     const grouped: { [category: string]: OrderItem[] } = {};
     items.forEach(item => {
@@ -107,6 +131,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
       justifyContent: 'flex-end',
       gap: '10px',
       padding: '15px 0',
+      flexWrap: 'wrap',
+  };
+
+  const summaryCardStyle: React.CSSProperties = {
+    backgroundColor: surface,
+    borderRadius: '16px',
+    padding: '14px 18px',
+    border: `1px solid ${borderColor}`,
+    color: textMain,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
   };
 
   const actionButtonStyle: React.CSSProperties = {
@@ -203,7 +239,29 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
         <h1 style={headerTitleStyle}>Lịch sử thanh toán</h1>
       </div>
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginTop: '16px' }}>
+        <div style={summaryCardStyle}>
+          <span style={{ color: textMuted, fontSize: '13px' }}>Số hóa đơn</span>
+          <strong style={{ fontSize: '22px' }}>{historySummary.totalBills}</strong>
+        </div>
+        <div style={summaryCardStyle}>
+          <span style={{ color: textMuted, fontSize: '13px' }}>Doanh thu</span>
+          <strong style={{ fontSize: '22px' }}>{historySummary.totalRevenue.toLocaleString()}đ</strong>
+        </div>
+        <div style={summaryCardStyle}>
+          <span style={{ color: textMuted, fontSize: '13px' }}>Tổng số món</span>
+          <strong style={{ fontSize: '22px' }}>{historySummary.totalItemsSold}</strong>
+        </div>
+      </div>
+
       <div style={actionsBarSyle}>
+        <button
+          style={actionButtonStyle}
+          onClick={handleToggleSelectAll}
+          disabled={history.length === 0}
+        >
+          {isAllSelected ? 'Bỏ chọn tất cả' : `Chọn tất cả (${history.length})`}
+        </button>
         <button 
             style={actionButtonStyle}
             onClick={handleDeleteSelected} 
@@ -235,8 +293,21 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                 onClick={() => handleSelectBill(bill.id)}
                 >
                 <div style={billHeaderStyle}>
-                    <div style={{fontWeight: 'bold', color: textMain}}>Bàn {bill.table} ({totalQuantity} món)</div>
-                    <div style={billTotalStyle}>{bill.total.toLocaleString()}đ</div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedBills.includes(bill.id)}
+                        onChange={(e) => { e.stopPropagation(); handleSelectBill(bill.id); }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span style={{ fontWeight: 'bold', color: textMain }}>Bàn {bill.table}</span>
+                    </label>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 600, color: textMain }}>{bill.total.toLocaleString()}đ</div>
+                      <div style={{ fontSize: '12px', color: textMuted }}>
+                        {totalQuantity} món{bill.items.some(item => item.toppings && item.toppings.length > 0) ? ` + topping` : ''}
+                      </div>
+                    </div>
                 </div>
                 <div style={billMetaStyle}>
                     {new Date(bill.date).toLocaleString('vi-VN')}
@@ -252,14 +323,23 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                     <div key={category}>
                         <h4 style={categoryHeaderStyle}>{category}</h4>
                         <ul style={orderItemListStyle}>
-                            {items.map(item => (
-                            <li key={item.menuItem.id} style={orderItemStyle}>
+                            {items.map((item, index) => (
+                            <li key={`${item.menuItem.id}-${index}`} style={orderItemStyle}>
                                 <div style={{flex: 1}}>
                                     <span>{item.menuItem.name}</span>
                                     <div style={{fontSize: '12px', color: textMuted}}>{item.quantity} x {item.menuItem.price.toLocaleString()}đ</div>
                                     {item.note && <div style={noteTextStyle}>{item.note}</div>}
+                                    {item.toppings && item.toppings.length > 0 && (
+                                      <div style={{ marginTop: '6px', fontSize: '12px', color: textMuted, paddingLeft: '10px' }}>
+                                        {item.toppings.map((topping, tIndex) => (
+                                          <div key={`${item.menuItem.id}-topping-${tIndex}`}>
+                                            + {topping.quantity} x {topping.name} — {(topping.price * topping.quantity).toLocaleString()}đ
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                 </div>
-                                <span style={{fontWeight: 'bold'}}>{(item.menuItem.price * item.quantity).toLocaleString()}đ</span>
+                                <span style={{fontWeight: 'bold'}}>{((item.menuItem.price * item.quantity) + (item.toppings?.reduce((tSum, t) => tSum + t.price * t.quantity, 0) || 0)).toLocaleString()}đ</span>
                             </li>
                             ))}
                         </ul>

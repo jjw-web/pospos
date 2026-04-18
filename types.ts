@@ -18,10 +18,17 @@ export interface MenuItem {
   user_id?: string; // Thêm user_id để phân biệt menu giữa các user
 }
 
+export interface ToppingItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface OrderItem {
   menuItem: MenuItem;
   quantity: number;
   note?: string;
+  toppings?: ToppingItem[];
 }
 
 export interface MenuCategory {
@@ -42,7 +49,7 @@ export interface StartViewProps {
 }
 
 export interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu' | 'dailySummary') => void;
+  onSelect: (view: 'inside' | 'outside' | 'menu' | 'dailySummary') => void;
   onBack: () => void;
   onHistory: () => void;
   insideStats: TableAreaStats;
@@ -67,7 +74,11 @@ export interface OrderViewProps {
   onBack: () => void;
   onAddItem: (tableId: number, menuItem: MenuItem) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
-  onPayment: (tableId: number) => void;
+  onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
+  onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
+  onMoveTable: (fromId: number, toId: number) => void;
+  onMergeFromTable: (currentId: number, sourceId: number) => void;
+  onAddTopping?: (tableId: number, mainItemId: number, toppingItem: MenuItem) => void;
 }
 
 export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';

@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { OrderItem } from '../types';
+import type { OrderItem, PaymentMethod } from '../types';
 import { QR_ACCOUNTS } from '../constants';
 import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
-
-export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
 
 // Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
 // Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
@@ -127,7 +125,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     await copyTextToClipboard(text);
 
     try {
-      const response = await fetch(account.path); // bỏ encodeURI
+      const response = await fetch(encodeURI(account.path));
       if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
 
       const blob = await response.blob();
@@ -145,6 +143,12 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     showHint('📋 Đã copy hóa đơn — tải ảnh QR về để gửi kèm');
   };
 
+  const handleCloseModal = () => {
+    setSelectedQR(null);
+    setScreen('main');
+    onClose();
+  };
+
   const closeFullscreen = () => {
     setSelectedQR(null);
     setScreen('qrList');
@@ -152,7 +156,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
 
   return (
     <>
-      <div style={overlayStyle} onClick={onClose}>
+      <div style={overlayStyle} onClick={handleCloseModal}>
         <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
           <h2 style={titleStyle}>
             {screen === 'qrList'? '🏦 Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
@@ -168,7 +172,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
               <button style={btnBase} onClick={() => onSelect('BIDV')}>🏦 BIDV</button>
               <button style={btnBase} onClick={() => onSelect('Tintin')}>💳 JJW</button>
               <button style={blueBtn} onClick={() => setScreen('qrList')}>📷 QR Thanh toán</button>
-              <button style={cancelBtn} onClick={onClose}>Hủy</button>
+              <button style={cancelBtn} onClick={handleCloseModal}>Hủy</button>
               {hint && <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center', margin: '8px 0 0' }}>{hint}</p>}
             </div>
           )}

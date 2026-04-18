@@ -17,9 +17,16 @@ export function formatReceiptText(params: {
   ];
 
   items.forEach((row) => {
-    const sub = row.menuItem.price * row.quantity;
+    const mainTotal = row.menuItem.price * row.quantity;
+    const toppingsTotal = row.toppings?.reduce((sum, topping) => sum + topping.price * topping.quantity, 0) || 0;
+    const itemTotal = mainTotal + toppingsTotal;
     const note = row.note ? `  (Ghi chú: ${row.note})` : '';
-    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${sub.toLocaleString('vi-VN')}đ${note}`);
+    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${itemTotal.toLocaleString('vi-VN')}đ${note}`);
+    if (row.toppings && row.toppings.length > 0) {
+      row.toppings.forEach((topping) => {
+        lines.push(`   + ${topping.name} × ${topping.quantity} — ${(topping.price * topping.quantity).toLocaleString('vi-VN')}đ`);
+      });
+    }
   });
 
   lines.push('', LINE, `Tổng cộng: ${total.toLocaleString('vi-VN')}đ`, '', 'Cảm ơn quý khách! 💚');

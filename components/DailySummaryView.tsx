@@ -21,6 +21,8 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
       .slice(0, 12);
   }, [summary.itemSales]);
 
+  const avgBill = summary.bills.length ? Math.round(summary.totalRevenue / summary.bills.length) : 0;
+
   const bg = isDark ? '#0f172a' : '#f8fafc';
   const card = isDark ? '#1e293b' : '#ffffff';
   const text = isDark ? '#f1f5f9' : '#0f172a';
@@ -64,8 +66,47 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
         </div>
 
         <p style={{ margin: '0 0 16px', color: muted, fontSize: '14px' }}>
-          Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn
+          Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn · {summary.totalItemsSold} món bán
         </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '14px' }}>
+          <div
+            style={{
+              backgroundColor: card,
+              borderRadius: '14px',
+              padding: '18px',
+              border: `1px solid ${border}`,
+              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Tổng hóa đơn</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.bills.length}</div>
+          </div>
+          <div
+            style={{
+              backgroundColor: card,
+              borderRadius: '14px',
+              padding: '18px',
+              border: `1px solid ${border}`,
+              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Số món bán</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.totalItemsSold}</div>
+          </div>
+          <div
+            style={{
+              backgroundColor: card,
+              borderRadius: '14px',
+              padding: '18px',
+              border: `1px solid ${border}`,
+              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+            }}
+          >
+            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Trung bình mỗi hóa đơn</div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{avgBill.toLocaleString('vi-VN')}đ</div>
+          </div>
+        </div>
 
         <div
           style={{
@@ -74,7 +115,6 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
             padding: '18px',
             marginBottom: '14px',
             border: `1px solid ${border}`,
-            boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
           }}
         >
           <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Tổng doanh thu</div>

@@ -7,12 +7,12 @@ interface QRCodeModalProps {
 }
 
 const QR_CODES = [
-  { name: 'Cao Bích Lan - Techcombank', path: '/QR code/QR Cao Bich Lan Tech.png' },
-  { name: 'HKD Bống Tingee - BIDV', path: '/QR code/QR HKD Bong Tingee BIDV2.png' },
-  { name: 'Nguyễn Quỳnh Anh - Techcombank', path: '/QR code/QR Nguyen Quynh Anh Tech.png' },
-  { name: 'Nguyễn Việt Trinh - Techcombank', path: '/QR code/QR Nguyen Viet Trinh Tech.png' },
-  { name: 'Nguyễn Việt Trinh - VCB', path: '/QR code/QR Nguyen Viet Trinh VCB.png' },
-  { name: 'Trương Đức Huy - VCB', path: '/QR code/QR Truong Duc Huy VCB.png' },
+  { name: 'Cao Bích Lan - Techcombank', path: encodeURI('/QR code/QR Cao Bich Lan Tech.png') },
+  { name: 'HKD Bống Tingee - BIDV', path: encodeURI('/QR code/QR HKD Bong Tingee BIDV2.png') },
+  { name: 'Nguyễn Quỳnh Anh - Techcombank', path: encodeURI('/QR code/QR Nguyen Quynh Anh Tech.png') },
+  { name: 'Nguyễn Việt Trinh - Techcombank', path: encodeURI('/QR code/QR Nguyen Viet Trinh Tech.png') },
+  { name: 'Nguyễn Việt Trinh - VCB', path: encodeURI('/QR code/QR Nguyen Viet Trinh VCB.png') },
+  { name: 'Trương Đức Huy - VCB', path: encodeURI('/QR code/QR Truong Duc Huy VCB.png') },
 ];
 
 const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {

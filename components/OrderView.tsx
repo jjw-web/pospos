@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { TableData, MenuCategory, MenuItem, OrderItem } from '../types';
+import { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod } from '../types';
 import SearchBar from './SearchBar';
 import NoteModal from './NoteModal';
-import PaymentMethodModal, { PaymentMethod } from './PaymentMethodModal';
+import PaymentMethodModal from './PaymentMethodModal';
 import TableTransferModal, { TableTransferMode } from './TableTransferModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
@@ -70,7 +70,10 @@ const OrderView: React.FC<OrderViewProps> = ({
   }, [table.status, table.occupiedSince]);
 
   const order = table?.order ?? [];
-  const total = order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+  const total = order.reduce((sum, item) => {
+    const toppingsTotal = item.toppings?.reduce((tSum, topping) => tSum + topping.price * topping.quantity, 0) || 0;
+    return sum + item.menuItem.price * item.quantity + toppingsTotal;
+  }, 0);
 
   const groupedOrder = useMemo(() => {
     const grouped: { [category: string]: OrderItem[] } = {};
@@ -100,6 +103,10 @@ const OrderView: React.FC<OrderViewProps> = ({
   Object.entries(groupedOrder).forEach(([categoryName, items]) => {
     const categoryLower = categoryName.toLowerCase();
     const totalQuantityInCategory = items.reduce((sum, item) => sum + item.quantity, 0);
+    const extraToppings = items.reduce(
+      (sum, item) => sum + (item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0),
+      0
+    );
 
     if (categoryLower.includes('topping') || categoryLower.includes('phụ gia') || categoryLower.includes('gia vị')) {
       toppingCount += totalQuantityInCategory;
@@ -109,6 +116,8 @@ const OrderView: React.FC<OrderViewProps> = ({
       // Tất cả category khác (bao gồm đồ uống, món chính, món lẻ, etc.) đều tính vào đồ uống
       mainCount += totalQuantityInCategory;
     }
+
+    toppingCount += extraToppings;
   });
 
   const orderSummaryTitle = mainCount === 0 && toppingCount === 0 && snackCount === 0
@@ -531,15 +540,26 @@ const OrderView: React.FC<OrderViewProps> = ({
               <h3 style={categoryHeaderStyle}>{category}</h3>
               {items.map((item) => (
                 <div key={item.menuItem.id} style={orderItemStyle}>
-                  <div>
-                    <div style={{display: 'flex', alignItems: 'center'}}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'}}>
                         <div style={orderItemNameStyle}>{item.menuItem.name}</div>
                         <button style={noteButtonStyle} onClick={() => setEditingNoteItem(item)}>
                             <NoteIcon />
                         </button>
-                        {item.note && <div style={noteTextStyle}>{item.note}</div>}
                     </div>
-                    <div style={{ color: textMuted }}>{item.menuItem.price.toLocaleString()}đ</div>
+                    {item.note && <div style={noteTextStyle}>{item.note}</div>}
+                    {item.toppings && item.toppings.length > 0 && (
+                      <div style={{ marginTop: '8px', color: textMuted, fontSize: '13px' }}>
+                        {item.toppings.map((topping, index) => (
+                          <div key={`${item.menuItem.id}-topping-${index}`}>
+                            + {topping.quantity} x {topping.name} — {(topping.price * topping.quantity).toLocaleString()}đ
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ color: textMuted, marginTop: '6px' }}>
+                      {(item.menuItem.price * item.quantity).toLocaleString()}đ
+                    </div>
                   </div>
                   <div style={quantityControlStyle}>
                     <button type="button" style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>

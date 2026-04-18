@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { TableData, MenuItem, Bill, MenuCategory, PaymentMethod } from './types';
+import { TableData, MenuItem, Bill, MenuCategory, PaymentMethod, ToppingItem } from './types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
@@ -7,7 +7,6 @@ import OrderView from './components/OrderView';
 import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
-import QuickOrderView from './components/QuickOrderView';
 import MenuView from './components/MenuView';
 import DailySummaryView from './components/DailySummaryView';
 import { checkVersion } from './src/lib/version-manager';
@@ -21,7 +20,6 @@ type Screen =
   | 'outside'
   | 'order'
   | 'history'
-  | 'quickOrder'
   | 'menu'
   | 'dailySummary';
 
@@ -32,7 +30,11 @@ const App: React.FC = () => {
 
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
     const savedScreen = localStorage.getItem('currentScreen');
-    return (savedScreen as Screen) || 'start';
+    const validScreens: Screen[] = ['start', 'viewSelection', 'inside', 'outside', 'order', 'history', 'menu', 'dailySummary'];
+    if (savedScreen && validScreens.includes(savedScreen as Screen)) {
+      return savedScreen as Screen;
+    }
+    return 'start';
   });
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(() => {
     const savedMenu = localStorage.getItem('menuCategories');
@@ -47,7 +49,16 @@ const App: React.FC = () => {
   const [tables, setTables] = useState<Map<number, TableData>>(() => {
     const savedTables = localStorage.getItem('tables');
     if (savedTables) {
-      return new Map(JSON.parse(savedTables));
+      try {
+        const parsedTables = JSON.parse(savedTables);
+        return new Map(parsedTables);
+      } catch {
+        const initialTables = new Map<number, TableData>();
+        INITIAL_TABLES.forEach(table => {
+          initialTables.set(table.id, table);
+        });
+        return initialTables;
+      }
     }
     const initialTables = new Map<number, TableData>();
     INITIAL_TABLES.forEach(table => {
@@ -57,11 +68,18 @@ const App: React.FC = () => {
   });
   const [selectedTableId, setSelectedTableId] = useState<number | null>(() => {
     const savedTableId = localStorage.getItem('selectedTableId');
-    return savedTableId ? parseInt(savedTableId, 10) : null;
+    if (!savedTableId) return null;
+    const parsedId = parseInt(savedTableId, 10);
+    return Number.isNaN(parsedId) ? null : parsedId;
   });
   const [history, setHistory] = useState<Bill[]>(() => {
     const savedHistory = localStorage.getItem('history');
-    return savedHistory ? JSON.parse(savedHistory) : [];
+    if (!savedHistory) return [];
+    try {
+      return JSON.parse(savedHistory);
+    } catch {
+      return [];
+    }
   });
 
   // Lưu menuCategories vào localStorage khi có sự thay đổi
@@ -156,28 +174,25 @@ const App: React.FC = () => {
   const handleAddTopping = useCallback((tableId: number, mainItemId: number, toppingItem: MenuItem) => {
     const table = tables.get(tableId);
     if (!table) return;
-    
-    // Tìm món chính và thêm topping vào
+
     const newOrder = table.order.map(item => {
-        if (item.menuItem.id === mainItemId) {
-            // Thêm topping vào món chính (hiện tại chưa có field toppings)
-            const existingToppings = (item as any).toppings || [];
-            const newTopping = {
-                name: toppingItem.name,
-                price: toppingItem.price,
-                quantity: 1
-            };
-            
-            return {
-                ...item,
-                toppings: [...existingToppings, newTopping]
-            };
-        }
-        return item;
+      if (item.menuItem.id !== mainItemId) return item;
+
+      const existingToppings = item.toppings ?? [];
+      const newTopping: ToppingItem = {
+        name: toppingItem.name,
+        price: toppingItem.price,
+        quantity: 1,
+      };
+
+      return {
+        ...item,
+        toppings: [...existingToppings, newTopping],
+      };
     });
-    
+
     updateTable(tableId, { order: newOrder });
-}, [tables, updateTable]);
+  }, [tables, updateTable]);
 
   const handlePayment = useCallback((tableId: number, paymentMethod: PaymentMethod) => {
     const table = tables.get(tableId);
@@ -187,7 +202,10 @@ const App: React.FC = () => {
       id: Date.now(),
       table: table.name,
       items: table.order,
-      total: table.order.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0),
+      total: table.order.reduce((sum, item) => {
+        const toppingsTotal = item.toppings?.reduce((tSum, t) => tSum + t.price * t.quantity, 0) || 0;
+        return sum + item.menuItem.price * item.quantity + toppingsTotal;
+      }, 0),
       date: new Date().toISOString(),
       paymentMethod: paymentMethod,
     };
@@ -198,16 +216,6 @@ const App: React.FC = () => {
     setCurrentScreen(previousScreen);
     setSelectedTableId(null);
   }, [tables, updateTable]);
-
-  const handleCompleteQuickOrder = useCallback((order: Omit<Bill, 'id' | 'date'>) => {
-    const newBill: Bill = {
-      ...order,
-      id: Date.now(),
-      date: new Date().toISOString(),
-    };
-    setHistory(prevHistory => [...prevHistory, newBill]);
-    setCurrentScreen('viewSelection');
-  }, []);
 
   const clearHistory = useCallback(() => {
     setHistory([]);
@@ -271,35 +279,6 @@ const App: React.FC = () => {
       });
       return next;
     });
-  }, []);
-
-  const handleTransferOrderToTable = useCallback((tableId: number, items: any[]) => {
-    setTables((prev) => {
-      const next = new Map(prev);
-      const table = next.get(tableId);
-      if (!table) return prev;
-
-      // Chuyển đổi items từ QuickOrder format sang Table OrderItem format
-      const tableOrderItems = items.map(item => ({
-        menuItem: {
-          id: item.id,
-          name: item.name,
-          price: item.price,
-        },
-        quantity: item.quantity,
-        note: item.note,
-      }));
-
-      next.set(tableId, {
-        ...table,
-        order: [...table.order, ...tableOrderItems],
-        status: 'occupied',
-        occupiedSince: table.occupiedSince ?? new Date().toISOString(),
-      });
-      return next;
-    });
-    setSelectedTableId(tableId);
-    setCurrentScreen('viewSelection'); // Quay về view selection để user có thể chọn vào bàn
   }, []);
 
   const selectedTable = useMemo(() => {
@@ -374,15 +353,6 @@ const App: React.FC = () => {
         return <DailySummaryView history={history} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'history':
         return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} />;
-      case 'quickOrder':
-        return <QuickOrderView 
-          onBack={() => setCurrentScreen('viewSelection')} 
-          onCompleteOrder={handleCompleteQuickOrder} 
-          menuCategories={menuCategories} 
-          tables={tables}
-          selectedTableId={selectedTableId}
-          onTransferOrderToTable={handleTransferOrderToTable}
-        />;
       case 'menu':
         return <MenuView 
           onBack={() => setCurrentScreen('viewSelection')} 

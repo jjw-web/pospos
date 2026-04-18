@@ -4,7 +4,7 @@ import { useTheme } from '../src/context/ThemeContext';
 import QRCodeModal from './QRCodeModal';
 
 interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside' | 'quickOrder' | 'menu' | 'dailySummary') => void;
+  onSelect: (view: 'inside' | 'outside' | 'menu' | 'dailySummary') => void;
   onBack: () => void;
   onHistory: () => void;
   insideStats: TableAreaStats;
@@ -125,14 +125,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
   };
 
-  const quickOrderButtonStyle: React.CSSProperties = {
-    ...baseButtonStyle,
-    backgroundColor: '#8b5cf6', // violet-500
-    color: 'white',
-    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
-  };
-
-
   const historyButtonStyle: React.CSSProperties = {
     ...baseButtonStyle,
     backgroundColor: '#f59e0b', // amber-500
@@ -220,21 +212,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
           >
             <div>Ngoài Trời</div>
             <div style={areaHintStyle}>{formatAreaHint(outsideStats)}</div>
-          </button>
-          
-          <button 
-            style={quickOrderButtonStyle} 
-            onClick={() => onSelect('quickOrder')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-            }}
-          >
-            <div>Quick Order</div>
           </button>
           
           <button 

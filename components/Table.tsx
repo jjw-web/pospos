@@ -9,9 +9,10 @@ interface TableProps {
 const Table: React.FC<TableProps> = ({ table, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Calculate total bill amount
+  // Calculate total bill amount including toppings
   const totalAmount = table.order?.reduce((sum, item) => {
-    return sum + (item.menuItem.price * item.quantity);
+    const toppingsTotal = item.toppings?.reduce((tSum, topping) => tSum + topping.price * topping.quantity, 0) || 0;
+    return sum + (item.menuItem.price * item.quantity) + toppingsTotal;
   }, 0) || 0;
 
   // Format currency

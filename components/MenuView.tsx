@@ -392,7 +392,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
                   <button
                     style={{ ...deleteButtonStyle, padding: '4px 8px' }}
                     onClick={() => handleDeleteCategory(category.name)}
-                    disabled={menuCategories.length <= 1}
+                    disabled={localMenuCategories.length <= 1}
                   >
                     Xóa
                   </button>
