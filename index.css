@@ -34,17 +34,19 @@ html[data-theme="dark"] body {
 /* Simple table styles */
 .table-available {
   background-color: #8FBC8F;
-  color: white;
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .table-occupied {
   background-color: #f59e0b;
   color: white;
+  font-weight: 700;
 }
 
 /* Simple button hover */
 .table-available:hover {
-  background-color: #79a179;
+  background-color: #67986e;
 }
 
 .table-occupied:hover {
@@ -86,7 +88,9 @@ html[data-theme="dark"] body {
 
 .nav-button-simple.active {
   background-color: #8FBC8F;
-  color: white;
+  color: #0f172a;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 }
 
 .nav-button-simple:hover:not(.active) {
@@ -115,15 +119,16 @@ html[data-theme="dark"] body {
 /* Simple button */
 .btn-simple {
   background-color: #8FBC8F;
-  color: white;
+  color: #0f172a;
   border-radius: 8px;
   padding: 12px 24px;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.2s;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
 }
 
 .btn-simple:hover {
-  background-color: #79a179;
+  background-color: #67986e;
 }
 
 .btn-simple:disabled {
