@@ -53,48 +53,48 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
   };
 
   const modalStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Nền bán trong suốt, trong hơn
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Nền đen bán trong suốt
     borderRadius: '12px',
     padding: '24px',
     maxWidth: '400px',
     width: '90%',
     backdropFilter: 'blur(10px)', // Hiệu ứng làm mờ nền
-    border: '1px solid rgba(255, 255, 255, 0.3)', // Viền tinh tế
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)', // Đổ bóng nhẹ nhàng
+    border: '1px solid rgba(255, 255, 255, 0.1)', // Viền tinh tế, sáng hơn
+    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)', // Đổ bóng đậm hơn
     maxHeight: '85vh',
     overflowY: 'auto',
   };
 
   const titleStyle: React.CSSProperties = {
     fontSize: '20px', fontWeight: 600,
-    marginBottom: '16px', color: '#2c3e50', textAlign: 'center',
+    marginBottom: '16px', color: '#fff', textAlign: 'center',
   };
 
   const totalStyle: React.CSSProperties = {
     fontSize: '18px', fontWeight: 600,
-    marginBottom: '20px', color: '#3498db', textAlign: 'center',
+    marginBottom: '20px', color: '#fff', textAlign: 'center',
   };
 
   const btnBase: React.CSSProperties = {
     padding: '14px 16px',
-    border: '1px solid rgba(255, 255, 255, 0.4)', // Viền nhạt hơn
+    border: '1px solid rgba(255, 255, 255, 0.2)', // Viền nhạt hơn
     borderRadius: '8px',
     fontSize: '15px', fontWeight: 500,
     cursor: 'pointer', width: '100%',
-    backgroundColor: 'rgba(248, 249, 250, 0.05)', // Nền bán trong suốt, trong hơn
-    color: '#2c3e50',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Nền đen bán trong suốt
+    color: '#fff', // Màu chữ trắng
   };
 
   const blueBtn: React.CSSProperties = {
    ...btnBase,
-    backgroundColor: 'rgba(239, 246, 255, 0.05)', // Nền bán trong suốt, trong hơn
-    borderColor: 'rgba(147, 197, 253, 0.4)', // Viền nhạt hơn
-    color: '#1e40af',
+    backgroundColor: 'rgba(30, 64, 175, 0.2)', // Nền xanh lam bán trong suốt
+    borderColor: 'rgba(147, 197, 253, 0.2)', // Viền nhạt hơn
+    color: '#fff',
   };
 
   const cancelBtn: React.CSSProperties = {
-    padding: '12px 24px', backgroundColor: 'rgba(107, 114, 128, 0.05)', // Nền bán trong suốt, trong hơn
-    color: '#2c3e50', border: '1px solid rgba(255, 255, 255, 0.4)', borderRadius: '8px',
+    padding: '12px 24px', backgroundColor: 'rgba(107, 114, 128, 0.2)', // Nền xám đậm bán trong suốt
+    color: '#fff', border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '8px',
     fontSize: '15px', fontWeight: 500, cursor: 'pointer', width: '100%',
   };
 
