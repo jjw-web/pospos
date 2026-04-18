@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod } from '../types';
+import { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod, ToppingItem } from '../types';
 import SearchBar from './SearchBar';
 import NoteModal from './NoteModal';
 import PaymentMethodModal from './PaymentMethodModal';
 import TableTransferModal, { TableTransferMode } from './TableTransferModal';
+import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
 import { formatOccupiedDuration } from '../src/lib/table-utils';
@@ -21,7 +22,7 @@ interface OrderViewProps {
   menuCategories: MenuCategory[];
   allTables: TableData[];
   onBack: () => void;
-  onAddItem: (tableId: number, menuItem: MenuItem) => void;
+  onAddItem: (tableId: number, menuItem: MenuItem, toppings?: ToppingItem[]) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
@@ -52,6 +53,8 @@ const OrderView: React.FC<OrderViewProps> = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [transferMode, setTransferMode] = useState<TableTransferMode | null>(null);
+  const [showToppingsModal, setShowToppingsModal] = useState(false);
+  const [selectedOrderItemForToppings, setSelectedOrderItemForToppings] = useState<OrderItem | null>(null);
   const [, headerTick] = useState(0);
   const currentOrderRef = useRef<HTMLDivElement>(null);
 
@@ -124,11 +127,48 @@ const OrderView: React.FC<OrderViewProps> = ({
     ? 'Đơn hàng hiện tại (0 món)'
     : `Đơn hàng hiện tại — Đồ uống: ${mainCount}, Topping: ${toppingCount}, Snack: ${snackCount}`;
 
-  const handleAddItem = (menuItem: MenuItem) => {
+  const getAvailableToppings = useMemo(() => {
+    return menuCategories
+      .filter(category =>
+        category.name.toLowerCase().includes('topping') ||
+        category.name.toLowerCase().includes('phụ gia') ||
+        category.name.toLowerCase().includes('gia vị')
+      )
+      .flatMap(category => category.items)
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1, // default
+      }));
+  }, [menuCategories]);
+
+  const openToppingsModal = (orderItem: OrderItem) => {
+    setSelectedOrderItemForToppings(orderItem);
+    setShowToppingsModal(true);
+  };
+
+  const handleConfirmToppings = (selectedToppings: ToppingItem[]) => {
+    if (!selectedOrderItemForToppings) return;
+
+    selectedToppings.forEach((topping) => {
+      const toppingMenuItem = {
+        id: topping.id,
+        name: topping.name,
+        price: topping.price,
+      };
+      for (let i = 0; i < topping.quantity; i += 1) {
+        onAddTopping?.(table.id, selectedOrderItemForToppings.menuItem.id, toppingMenuItem);
+      }
+    });
+
+    setToastMessage(`Đã thêm topping cho «${selectedOrderItemForToppings.menuItem.name}»`);
+  };
+
+  const handleAddMenuItem = (menuItem: MenuItem) => {
     onAddItem(table.id, menuItem);
     setToastMessage(`Đã thêm «${menuItem.name}»`);
   };
-
 
   const handleUpdateQuantity = (menuItemId: number, change: number) => {
     onUpdateQuantity(table.id, menuItemId, change);
@@ -520,7 +560,7 @@ const OrderView: React.FC<OrderViewProps> = ({
 
       <div style={menuListStyle}>
         {filteredMenuItems.map((item) => (
-          <div key={item.id} style={menuItemStyle} onClick={() => handleAddItem(item)}>
+          <div key={item.id} style={menuItemStyle} onClick={() => handleAddMenuItem(item)}>
             <div>
               <div style={menuItemNameStyle}>{item.name}</div>
               <div style={menuItemPriceStyle}>{item.price.toLocaleString()}đ</div>
@@ -545,6 +585,20 @@ const OrderView: React.FC<OrderViewProps> = ({
                         <div style={orderItemNameStyle}>{item.menuItem.name}</div>
                         <button style={noteButtonStyle} onClick={() => setEditingNoteItem(item)}>
                             <NoteIcon />
+                        </button>
+                        <button
+                          style={{
+                            ...noteButtonStyle,
+                            fontSize: '12px',
+                            padding: '4px 8px',
+                            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
+                            borderRadius: '8px',
+                            color: isDark ? '#f8fafc' : '#1f2937',
+                            background: isDark ? '#334155' : '#f8fafc',
+                          }}
+                          onClick={() => openToppingsModal(item)}
+                        >
+                          Topping
                         </button>
                     </div>
                     {item.note && <div style={noteTextStyle}>{item.note}</div>}
@@ -607,6 +661,19 @@ const OrderView: React.FC<OrderViewProps> = ({
           item={editingNoteItem}
           onClose={() => setEditingNoteItem(null)}
           onSave={handleSaveNote}
+        />
+      )}
+
+      {showToppingsModal && selectedOrderItemForToppings && (
+        <ToppingsModal
+          menuItem={selectedOrderItemForToppings.menuItem}
+          availableToppings={getAvailableToppings}
+          onConfirm={handleConfirmToppings}
+          onClose={() => {
+            setShowToppingsModal(false);
+            setSelectedOrderItemForToppings(null);
+          }}
+          isDark={isDark}
         />
       )}
 

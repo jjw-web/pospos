@@ -19,6 +19,7 @@ export interface MenuItem {
 }
 
 export interface ToppingItem {
+  id: number;
   name: string;
   price: number;
   quantity: number;

@@ -124,17 +124,17 @@ const App: React.FC = () => {
     setCurrentScreen('order');
   }, []);
 
-  const handleAddItem = useCallback((tableId: number, menuItem: MenuItem) => {
+  const handleAddItem = useCallback((tableId: number, menuItem: MenuItem, toppings?: ToppingItem[]) => {
     const table = tables.get(tableId);
     if (!table) return;
-    const existingItem = table.order.find((item) => item.menuItem.id === menuItem.id);
+    const existingItem = table.order.find((item) => item.menuItem.id === menuItem.id && (!toppings || toppings.length === 0));
     let newOrder;
     if (existingItem) {
       newOrder = table.order.map((item) =>
         item.menuItem.id === menuItem.id ? { ...item, quantity: item.quantity + 1 } : item
       );
     } else {
-      newOrder = [...table.order, { menuItem, quantity: 1 }];
+      newOrder = [...table.order, { menuItem, quantity: 1, toppings: toppings || [] }];
     }
     const wasEmpty = table.order.length === 0;
     const patch: Partial<TableData> = { order: newOrder, status: 'occupied' };
@@ -179,7 +179,16 @@ const App: React.FC = () => {
       if (item.menuItem.id !== mainItemId) return item;
 
       const existingToppings = item.toppings ?? [];
+      const toppingIndex = existingToppings.findIndex((t) => t.id === toppingItem.id);
+      if (toppingIndex >= 0) {
+        const updatedToppings = existingToppings.map((t, index) =>
+          index === toppingIndex ? { ...t, quantity: t.quantity + 1 } : t
+        );
+        return { ...item, toppings: updatedToppings };
+      }
+
       const newTopping: ToppingItem = {
+        id: toppingItem.id,
         name: toppingItem.name,
         price: toppingItem.price,
         quantity: 1,
