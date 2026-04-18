@@ -53,7 +53,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
   };
 
   const modalStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Nền bán trong suốt
+    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Nền bán trong suốt, trong hơn
     borderRadius: '12px',
     padding: '24px',
     maxWidth: '400px',
@@ -81,19 +81,19 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
     borderRadius: '8px',
     fontSize: '15px', fontWeight: 500,
     cursor: 'pointer', width: '100%',
-    backgroundColor: 'rgba(248, 249, 250, 0.1)', // Nền bán trong suốt
+    backgroundColor: 'rgba(248, 249, 250, 0.05)', // Nền bán trong suốt, trong hơn
     color: '#2c3e50',
   };
 
   const blueBtn: React.CSSProperties = {
    ...btnBase,
-    backgroundColor: 'rgba(239, 246, 255, 0.1)', // Nền bán trong suốt
+    backgroundColor: 'rgba(239, 246, 255, 0.05)', // Nền bán trong suốt, trong hơn
     borderColor: 'rgba(147, 197, 253, 0.4)', // Viền nhạt hơn
     color: '#1e40af',
   };
 
   const cancelBtn: React.CSSProperties = {
-    padding: '12px 24px', backgroundColor: 'rgba(107, 114, 128, 0.1)',
+    padding: '12px 24px', backgroundColor: 'rgba(107, 114, 128, 0.05)', // Nền bán trong suốt, trong hơn
     color: '#2c3e50', border: '1px solid rgba(255, 255, 255, 0.4)', borderRadius: '8px',
     fontSize: '15px', fontWeight: 500, cursor: 'pointer', width: '100%',
   };
