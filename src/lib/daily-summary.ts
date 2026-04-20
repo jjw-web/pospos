@@ -22,7 +22,7 @@ export function isCash(m?: PaymentMethod): boolean {
 }
 
 export function isTransfer(m?: PaymentMethod): boolean {
-  return m === 'BIDV' || m === 'Tintin';
+  return m === 'BIDV' || m === 'JJW';
 }
 
 export interface DailySummaryResult {

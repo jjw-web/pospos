@@ -8,7 +8,7 @@ import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
 import MenuView from './components/MenuView';
-import DailySummaryView from './components/DailySummaryView';
+
 import { checkVersion } from './src/lib/version-manager';
 import { mergeMenuWithDefaults } from './src/lib/merge-menu-defaults';
 import { mergeOrderItems } from './src/lib/merge-orders';
@@ -20,8 +20,7 @@ type Screen =
   | 'outside'
   | 'order'
   | 'history'
-  | 'menu'
-  | 'dailySummary';
+  | 'menu';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -358,8 +357,6 @@ const App: React.FC = () => {
             onAddTopping={handleAddTopping}
           />
         );
-      case 'dailySummary':
-        return <DailySummaryView history={history} onBack={() => setCurrentScreen('viewSelection')} />;
       case 'history':
         return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} />;
       case 'menu':

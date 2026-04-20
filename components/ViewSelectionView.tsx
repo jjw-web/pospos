@@ -4,7 +4,7 @@ import { useTheme } from '../src/context/ThemeContext';
 import QRCodeModal from './QRCodeModal';
 
 interface ViewSelectionViewProps {
-  onSelect: (view: 'inside' | 'outside' | 'menu' | 'dailySummary') => void;
+  onSelect: (view: 'inside' | 'outside' | 'menu') => void;
   onBack: () => void;
   onHistory: () => void;
   insideStats: TableAreaStats;
@@ -229,22 +229,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
             <div>Lịch Sử</div>
           </button>
 
-          <button
-            type="button"
-            style={dailySummaryButtonStyle}
-            onClick={() => onSelect('dailySummary')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-            }}
-          >
-            <div>Tổng kết ngày</div>
-            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Doanh thu</div>
-          </button>
+
 
           <button
             type="button"

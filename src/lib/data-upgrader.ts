@@ -25,24 +25,7 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
       tablesMap = new Map();
     }
 
-    // Nếu đang có 8 bàn, thêm 4 bàn mới
-    if (tablesMap.size === 8) {
-      console.log('Phát hiện 8 bàn, đang thêm 4 bàn mới...');
-      for (let i = 9; i <= 12; i++) {
-        tablesMap.set(i, {
-          id: i,
-          name: `Bàn ${i}`,
-          layout: 'Inside', // Giả định layout mặc định
-          status: 'available',
-          order: [],
-        });
-      }
-      
-      // Lưu lại dữ liệu đã cập nhật theo đúng định dạng Map.entries()
-      const newTableEntries = Array.from(tablesMap.entries());
-      localStorage.setItem('tables', JSON.stringify(newTableEntries));
-      console.log('Đã thêm 4 bàn mới. Tổng số bàn hiện tại:', tablesMap.size);
-    }
+    // Logic để thêm 4 bàn mới khi có 8 bàn đã được xóa vì không còn phù hợp.
   }
 
   if ((oldVersion === null || oldVersion < 3) && newVersion >= 3) {

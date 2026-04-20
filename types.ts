@@ -82,7 +82,7 @@ export interface OrderViewProps {
   onAddTopping?: (tableId: number, mainItemId: number, toppingItem: MenuItem) => void;
 }
 
-export type PaymentMethod = 'Cash' | 'BIDV' | 'Tintin';
+export type PaymentMethod = 'Cash' | 'BIDV' | 'JJW';
 
 export interface Bill {
   id: number;

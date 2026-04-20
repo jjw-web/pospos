@@ -244,13 +244,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
           <span style={{ color: textMuted, fontSize: '13px' }}>Số hóa đơn</span>
           <strong style={{ fontSize: '22px' }}>{historySummary.totalBills}</strong>
         </div>
+
+
+
         <div style={summaryCardStyle}>
           <span style={{ color: textMuted, fontSize: '13px' }}>Doanh thu</span>
           <strong style={{ fontSize: '22px' }}>{historySummary.totalRevenue.toLocaleString()}đ</strong>
-        </div>
-        <div style={summaryCardStyle}>
-          <span style={{ color: textMuted, fontSize: '13px' }}>Tổng số món</span>
-          <strong style={{ fontSize: '22px' }}>{historySummary.totalItemsSold}</strong>
         </div>
       </div>
 
@@ -313,7 +312,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                     {new Date(bill.date).toLocaleString('vi-VN')}
                     {bill.paymentMethod && (
                       <span style={{marginLeft: '10px', color: '#3498db', fontWeight: 500}}>
-                        • {bill.paymentMethod === 'Cash' ? '💵 Tiền mặt' : bill.paymentMethod === 'BIDV' ? '🏦 BIDV' : '💳 Tintin'}
+                        • {bill.paymentMethod === 'Cash' ? '💵 Tiền mặt' : bill.paymentMethod === 'BIDV' ? '🏦 BIDV' : '💳 JJW'}
                       </span>
                     )}
                 </div>

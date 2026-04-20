@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
 import { useTheme } from '../src/context/ThemeContext';
+import { QR_ACCOUNTS, QRAccount } from '../constants';
 
 interface QRCodeModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const QR_CODES = [
-  { name: 'Cao Bích Lan - Techcombank', path: encodeURI('/QR code/QR Cao Bich Lan Tech.png') },
-  { name: 'HKD Bống Tingee - BIDV', path: encodeURI('/QR code/QR HKD Bong Tingee BIDV2.png') },
-  { name: 'Nguyễn Quỳnh Anh - Techcombank', path: encodeURI('/QR code/QR Nguyen Quynh Anh Tech.png') },
-  { name: 'Nguyễn Việt Trinh - Techcombank', path: encodeURI('/QR code/QR Nguyen Viet Trinh Tech.png') },
-  { name: 'Nguyễn Việt Trinh - VCB', path: encodeURI('/QR code/QR Nguyen Viet Trinh VCB.png') },
-  { name: 'Trương Đức Huy - VCB', path: encodeURI('/QR code/QR Truong Duc Huy VCB.png') },
-];
-
 const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const [selectedQR, setSelectedQR] = useState<typeof QR_CODES[0] | null>(null);
+  const [selectedQR, setSelectedQR] = useState<QRAccount | null>(null);
 
   if (!isOpen) return null;
 
@@ -105,7 +97,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
 
         {!selectedQR ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {QR_CODES.map((qr, index) => (
+            {QR_ACCOUNTS.map((qr, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedQR(qr)}

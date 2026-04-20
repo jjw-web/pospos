@@ -175,7 +175,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
               <div style={{ height: '1px', backgroundColor: '#e0e0', margin: '10px 0' }} />
               <button style={btnBase} onClick={() => onSelect('Cash')}>💵 Cash (Tiền mặt)</button>
               <button style={btnBase} onClick={() => onSelect('BIDV')}>🏦 BIDV</button>
-              <button style={btnBase} onClick={() => onSelect('Tintin')}>💳 JJW</button>
+              <button style={btnBase} onClick={() => onSelect('JJW')}>💳 JJW</button>
               <button style={blueBtn} onClick={() => setScreen('qrList')}>📷 QR Thanh toán</button>
               <button style={cancelBtn} onClick={handleCloseModal}>Hủy</button>
               {hint && <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center', margin: '8px 0 0' }}>{hint}</p>}
