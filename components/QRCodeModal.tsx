@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../src/context/ThemeContext';
-import { QR_ACCOUNTS, QRAccount } from '../constants';
+
 
 interface QRCodeModalProps {
   isOpen: boolean;

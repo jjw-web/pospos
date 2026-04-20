@@ -29,7 +29,7 @@ const App: React.FC = () => {
 
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
     const savedScreen = localStorage.getItem('currentScreen');
-    const validScreens: Screen[] = ['start', 'viewSelection', 'inside', 'outside', 'order', 'history', 'menu', 'dailySummary'];
+    const validScreens: Screen[] = ['start', 'viewSelection', 'inside', 'outside', 'order', 'history', 'menu'];
     if (savedScreen && validScreens.includes(savedScreen as Screen)) {
       return savedScreen as Screen;
     }
