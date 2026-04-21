@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Bill, MenuCategory, OrderItem } from '../types';
 import { useTheme } from '../src/context/ThemeContext';
+import { toPng } from 'html-to-image';
 
 interface HistoryViewProps {
   history: Bill[];
@@ -8,11 +9,13 @@ interface HistoryViewProps {
   onDeleteSelected: (selectedIds: number[]) => void;
   onBack: () => void;
   menuCategories: MenuCategory[];
+  onRevertBill?: (bill: Bill) => void;
 }
 
-const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDeleteSelected, onBack, menuCategories }) => {
+const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDeleteSelected, onBack, menuCategories, onRevertBill }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const surface = isDark ? '#1e293b' : '#ffffff';
   const pageBg = isDark ? '#0f172a' : '#f5f5f5';
   const textMain = isDark ? '#f1f5f9' : '#2c3e50';
@@ -89,6 +92,45 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     }
   };
 
+  const handleExportSelected = async () => {
+    if (selectedBills.length === 0) {
+      alert("Vui lòng chọn hóa đơn cần xuất ảnh");
+      return;
+    }
+    
+    const bill = history.find(b => b.id === selectedBills[0]);
+    if (!bill) return;
+
+    const element = cardRefs.current.get(bill.id);
+    if (!element) {
+      alert("Không tìm thấy hóa đơn để xuất ảnh");
+      return;
+    }
+
+    try {
+      const dataUrl = await toPng(element, { pixelRatio: 2, backgroundColor: surface });
+      const link = document.createElement('a');
+      link.download = `Hoa-don-Ban-${bill.table}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Lỗi xuất ảnh:', err);
+      alert("Không thể xuất ảnh lúc này.");
+    }
+  };
+
+  const handleRevertSelected = () => {
+    if (selectedBills.length === 0 || !onRevertBill) {
+      alert("Vui lòng chọn hóa đơn cần hoàn tác");
+      return;
+    }
+    const bill = history.find(b => b.id === selectedBills[0]);
+    if (bill) {
+      onRevertBill(bill);
+      setSelectedBills([]);
+    }
+  };
+
   const containerStyle: React.CSSProperties = {
     maxWidth: '480px',
     margin: '0 auto',
@@ -127,11 +169,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
   };
 
   const actionsBarSyle: React.CSSProperties = {
-      display: 'flex',
-      justifyContent: 'flex-end',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
       gap: '10px',
       padding: '15px 0',
-      flexWrap: 'wrap',
   };
 
   const summaryCardStyle: React.CSSProperties = {
@@ -150,10 +191,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
       color: textMain,
       border: `1px solid ${isDark ? '#475569' : '#bdc3c7'}`,
       borderRadius: '8px',
-      padding: '8px 15px',
-      fontSize: '14px',
+      padding: '10px 12px',
+      fontSize: '13px',
       fontWeight: 600,
       cursor: 'pointer',
+      textAlign: 'center',
+      minHeight: '42px',
   }
 
   const deleteButtonStyle: React.CSSProperties = {
@@ -275,6 +318,20 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
         >
             Xóa tất cả
         </button>
+        <button 
+            style={actionButtonStyle}
+            onClick={handleExportSelected} 
+            disabled={selectedBills.length === 0}
+        >
+            Xuất ảnh ({selectedBills.length})
+        </button>
+        <button 
+            style={actionButtonStyle}
+            onClick={handleRevertSelected} 
+            disabled={selectedBills.length === 0 || !onRevertBill}
+        >
+            Hoàn tác
+        </button>
       </div>
 
       {history.length === 0 ? (
@@ -282,12 +339,33 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
       ) : (
         <div>
           {history.map(bill => {
-            const totalQuantity = bill.items.reduce((sum, item) => sum + item.quantity, 0);
+            let mainCount = 0;
+            let toppingCount = 0;
+            let snackCount = 0;
+
+            bill.items.forEach(item => {
+              const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
+              const categoryLower = categoryName.toLowerCase();
+              const itemQty = item.quantity;
+
+              if (categoryLower.includes('topping') || categoryLower.includes('phụ gia') || categoryLower.includes('gia vị')) {
+                toppingCount += itemQty;
+              } else if (categoryLower.includes('snack') || categoryLower.includes('khai vị') || categoryLower.includes('đồ ăn nhẹ')) {
+                snackCount += itemQty;
+              } else {
+                mainCount += itemQty;
+              }
+
+              const extraToppings = item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0;
+              toppingCount += extraToppings;
+            });
+
             const groupedItems = getGroupedItems(bill.items);
 
             return (
                 <div
                 key={bill.id}
+                ref={(el) => { if (el) cardRefs.current.set(bill.id, el); }}
                 style={selectedBills.includes(bill.id) ? billItemSelectedStyle : billItemStyle}
                 onClick={() => handleSelectBill(bill.id)}
                 >
@@ -304,7 +382,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, color: textMain }}>{bill.total.toLocaleString()}đ</div>
                       <div style={{ fontSize: '12px', color: textMuted }}>
-                        {totalQuantity} món{bill.items.some(item => item.toppings && item.toppings.length > 0) ? ` + topping` : ''}
+                        {mainCount > 0 ? `Đồ uống: ${mainCount}` : ''}
+                        {snackCount > 0 ? `${mainCount > 0 ? ', ' : ''}Snack: ${snackCount}` : ''}
+                        {toppingCount > 0 ? `${mainCount > 0 || snackCount > 0 ? ', ' : ''}Topping: ${toppingCount}` : ''}
                       </div>
                     </div>
                 </div>

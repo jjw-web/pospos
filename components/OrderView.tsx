@@ -22,13 +22,13 @@ interface OrderViewProps {
   menuCategories: MenuCategory[];
   allTables: TableData[];
   onBack: () => void;
-  onAddItem: (tableId: number, menuItem: MenuItem, toppings?: ToppingItem[]) => void;
+  onAddItem: (tableId: number, menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
   onMoveTable: (fromId: number, toId: number) => void;
   onMergeFromTable: (currentId: number, sourceId: number) => void;
-  onAddTopping?: (tableId: number, mainItemId: number, toppingItem: MenuItem) => void;
+  onAddTopping?: (tableId: number, mainItemId: number, toppings: { id: number; name: string; price: number }[]) => void;
 }
 
 const OrderView: React.FC<OrderViewProps> = ({
@@ -151,22 +151,18 @@ const OrderView: React.FC<OrderViewProps> = ({
   const handleConfirmToppings = (selectedToppings: ToppingItem[]) => {
     if (!selectedOrderItemForToppings) return;
 
-    selectedToppings.forEach((topping) => {
-      const toppingMenuItem = {
-        id: topping.id,
-        name: topping.name,
-        price: topping.price,
-      };
-      for (let i = 0; i < topping.quantity; i += 1) {
-        onAddTopping?.(table.id, selectedOrderItemForToppings.menuItem.id, toppingMenuItem);
-      }
-    });
+    const newToppings = selectedToppings.map(t => ({
+      id: t.id,
+      name: t.name,
+      price: t.price,
+    }));
+    onAddTopping?.(table.id, selectedOrderItemForToppings.menuItem.id, newToppings);
 
-    setToastMessage(`Đã thêm topping cho «${selectedOrderItemForToppings.menuItem.name}»`);
+    setToastMessage(`Đã thêm ${selectedToppings.length} topping cho «${selectedOrderItemForToppings.menuItem.name}»`);
   };
 
   const handleAddMenuItem = (menuItem: MenuItem) => {
-    onAddItem(table.id, menuItem);
+    onAddItem(table.id, [{ menuItem }]);
     setToastMessage(`Đã thêm «${menuItem.name}»`);
   };
 

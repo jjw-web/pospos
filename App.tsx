@@ -123,25 +123,39 @@ const App: React.FC = () => {
     setCurrentScreen('order');
   }, []);
 
-  const handleAddItem = useCallback((tableId: number, menuItem: MenuItem, toppings?: ToppingItem[]) => {
-    const table = tables.get(tableId);
-    if (!table) return;
-    const existingItem = table.order.find((item) => item.menuItem.id === menuItem.id && (!toppings || toppings.length === 0));
-    let newOrder;
-    if (existingItem) {
-      newOrder = table.order.map((item) =>
-        item.menuItem.id === menuItem.id ? { ...item, quantity: item.quantity + 1 } : item
-      );
-    } else {
-      newOrder = [...table.order, { menuItem, quantity: 1, toppings: toppings || [] }];
-    }
-    const wasEmpty = table.order.length === 0;
-    const patch: Partial<TableData> = { order: newOrder, status: 'occupied' };
-    if (wasEmpty) {
-      patch.occupiedSince = new Date().toISOString();
-    }
-    updateTable(tableId, patch);
-  }, [tables, updateTable]);
+  const handleAddItems = useCallback((tableId: number, itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => {
+    setTables((prev) => {
+      const table = prev.get(tableId);
+      if (!table) return prev;
+
+      let newOrder = [...table.order];
+      
+      itemsToAdd.forEach(({ menuItem, toppings }) => {
+        const existing = newOrder.find((item) => 
+          item.menuItem.id === menuItem.id && (!toppings || toppings.length === 0)
+        );
+        
+        if (existing) {
+          newOrder = newOrder.map((item) =>
+            item.menuItem.id === menuItem.id 
+              ? { ...item, quantity: item.quantity + 1 } 
+              : item
+          );
+        } else {
+          newOrder = [...newOrder, { menuItem, quantity: 1, toppings: toppings || [] }];
+        }
+      });
+
+      const newTable = { 
+        ...table, 
+        order: newOrder, 
+        status: 'occupied' as const,
+        occupiedSince: table.occupiedSince || new Date().toISOString()
+      };
+      
+      return new Map(prev).set(tableId, newTable);
+    });
+  }, []);
 
   const handleUpdateItemQuantity = useCallback((tableId: number, menuItemId: number, change: number) => {
     const table = tables.get(tableId);
@@ -170,37 +184,34 @@ const App: React.FC = () => {
     updateTable(tableId, { order: newOrder });
   }, [tables, updateTable]);
 
-  const handleAddTopping = useCallback((tableId: number, mainItemId: number, toppingItem: MenuItem) => {
-    const table = tables.get(tableId);
-    if (!table) return;
+  const handleAddTopping = useCallback((tableId: number, mainItemId: number, toppingsToAdd: { id: number; name: string; price: number }[]) => {
+    setTables((prev) => {
+      const table = prev.get(tableId);
+      if (!table) return prev;
 
-    const newOrder = table.order.map(item => {
-      if (item.menuItem.id !== mainItemId) return item;
+      const newOrder = table.order.map(item => {
+        if (item.menuItem.id !== mainItemId) return item;
 
-      const existingToppings = item.toppings ?? [];
-      const toppingIndex = existingToppings.findIndex((t) => t.id === toppingItem.id);
-      if (toppingIndex >= 0) {
-        const updatedToppings = existingToppings.map((t, index) =>
-          index === toppingIndex ? { ...t, quantity: t.quantity + 1 } : t
-        );
-        return { ...item, toppings: updatedToppings };
-      }
+        let toppings = item.toppings || [];
+        
+        toppingsToAdd.forEach((t) => {
+          const idx = toppings.findIndex((tp) => tp.id === t.id);
+          
+          if (idx >= 0) {
+            toppings = toppings.map((tp, i) =>
+              i === idx ? { ...tp, quantity: tp.quantity + 1 } : tp
+            );
+          } else {
+            toppings = [...toppings, { id: t.id, name: t.name, price: t.price, quantity: 1 }];
+          }
+        });
 
-      const newTopping: ToppingItem = {
-        id: toppingItem.id,
-        name: toppingItem.name,
-        price: toppingItem.price,
-        quantity: 1,
-      };
+        return { ...item, toppings };
+      });
 
-      return {
-        ...item,
-        toppings: [...existingToppings, newTopping],
-      };
+      return new Map(prev).set(tableId, { ...table, order: newOrder });
     });
-
-    updateTable(tableId, { order: newOrder });
-  }, [tables, updateTable]);
+  }, []);
 
   const handlePayment = useCallback((tableId: number, paymentMethod: PaymentMethod) => {
     const table = tables.get(tableId);
@@ -231,6 +242,72 @@ const App: React.FC = () => {
 
   const deleteSelectedHistory = useCallback((selectedIds: number[]) => {
     setHistory(prevHistory => prevHistory.filter(bill => !selectedIds.includes(bill.id)));
+  }, []);
+
+  const handleRevertBill = useCallback((bill: Bill) => {
+    if (!window.confirm(`Bạn có chắc muốn hoàn tác hóa đơn bàn ${bill.table}? Món ăn sẽ quay lại bàn này.`)) {
+      return;
+    }
+
+    setTables((prev) => {
+      const next = new Map(prev);
+      
+      // Tìm bàn dựa trên tên bàn trong bill
+      let targetTable = Array.from(next.values()).find(t => t.name === bill.table);
+      
+      if (targetTable) {
+        if (targetTable.status === 'available' && targetTable.order.length === 0) {
+          // Bàn trống -> đưa order cũ quay lại
+          next.set(targetTable.id, {
+            ...targetTable,
+            order: bill.items,
+            status: 'occupied',
+            occupiedSince: bill.date,
+          });
+        } else {
+          // Bàn đang có khách -> tạo bàn tạm
+          const allTables = Array.from(next.values());
+          let tempId = Math.max(...allTables.map(t => t.id)) + 1;
+          let tempName = `${bill.table}-temp`;
+          
+          // Kiểm tra id trùng, nếu trùng thì tăng lên
+          while (next.has(tempId)) {
+            tempId++;
+          }
+          
+          const newTable: TableData = {
+            id: tempId,
+            name: tempName,
+            layout: targetTable.layout,
+            status: 'occupied',
+            order: bill.items,
+            occupiedSince: bill.date,
+          };
+          next.set(tempId, newTable);
+        }
+      } else {
+        // Không tìm thấy bàn -> tạo bàn mới (cho trường hợp bị xóa)
+        const allTables = Array.from(next.values());
+        const maxId = allTables.length > 0 ? Math.max(...allTables.map(t => t.id)) : 0;
+        
+        const newTable: TableData = {
+          id: maxId + 1,
+          name: bill.table,
+          layout: 'Inside', // default
+          status: 'occupied',
+          order: bill.items,
+          occupiedSince: bill.date,
+        };
+        next.set(maxId + 1, newTable);
+      }
+      
+      return next;
+    });
+
+    // Xóa hóa đơn khỏi lịch sử
+    setHistory(prev => prev.filter(b => b.id !== bill.id));
+    
+    alert(`Đã hoàn tác hóa đơn bàn ${bill.table}.`);
   }, []);
 
   const handleMoveTable = useCallback((fromId: number, toId: number) => {
@@ -348,7 +425,7 @@ const App: React.FC = () => {
             menuCategories={menuCategories}
             allTables={Array.from(tables.values())}
             onBack={() => setCurrentScreen(selectedTable.layout === 'Inside' ? 'inside' : 'outside')}
-            onAddItem={handleAddItem}
+            onAddItem={handleAddItems}
             onUpdateQuantity={handleUpdateItemQuantity}
             onPayment={handlePayment}
             onUpdateNote={handleUpdateItemNote}
@@ -358,7 +435,7 @@ const App: React.FC = () => {
           />
         );
       case 'history':
-        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} />;
+        return <HistoryView history={history} onClearHistory={clearHistory} onDeleteSelected={deleteSelectedHistory} onBack={() => setCurrentScreen('viewSelection')} menuCategories={menuCategories} onRevertBill={handleRevertBill} />;
       case 'menu':
         return <MenuView 
           onBack={() => setCurrentScreen('viewSelection')} 

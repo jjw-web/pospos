@@ -146,7 +146,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     padding: '12px',
     borderRadius: '8px',
     border: 'none',
-    backgroundColor: '#10b981',
+    backgroundColor: '#3498db',
     color: 'white',
     fontSize: '16px',
     fontWeight: '500',
@@ -200,15 +200,10 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
                   </div>
                 ) : (
                   <button
-                    style={{
-                      ...quantityBtnStyle,
-                      backgroundColor: '#6b7280',
-                      width: '80px',
-                      borderRadius: '6px',
-                    }}
+                    style={quantityBtnStyle}
                     onClick={() => toggleTopping(topping)}
                   >
-                    Thêm
+                    +
                   </button>
                 )}
               </div>

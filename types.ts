@@ -73,13 +73,13 @@ export interface OrderViewProps {
   table: TableData;
   menuCategories: MenuCategory[];
   onBack: () => void;
-  onAddItem: (tableId: number, menuItem: MenuItem) => void;
+  onAddItem: (tableId: number, menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => void;
   onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
   onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
   onMoveTable: (fromId: number, toId: number) => void;
   onMergeFromTable: (currentId: number, sourceId: number) => void;
-  onAddTopping?: (tableId: number, mainItemId: number, toppingItem: MenuItem) => void;
+  onAddTopping?: (tableId: number, mainItemId: number, toppings: { id: number; name: string; price: number }[]) => void;
 }
 
 export type PaymentMethod = 'Cash' | 'BIDV' | 'JJW';
