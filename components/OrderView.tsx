@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod, ToppingItem } from '../types';
+import type { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod, ToppingItem } from '../src/types';
 import SearchBar from './SearchBar';
 import NoteModal from './NoteModal';
 import PaymentMethodModal from './PaymentMethodModal';

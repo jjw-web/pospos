@@ -1,4 +1,4 @@
-import type { Bill, PaymentMethod } from '../../types';
+import type { Bill, PaymentMethod } from '../types';
 
 /** Cùng ngày theo lịch local (YYYY-MM-DD). */
 export function billDateKey(isoDate: string): string {

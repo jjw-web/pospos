@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { TableAreaStats } from '../types';
+import type { TableAreaStats } from '../src/types';
 import { useTheme } from '../src/context/ThemeContext';
 import QRCodeModal from './QRCodeModal';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { OrderItem } from '../types';
+import type { OrderItem } from '../src/types';
 import { PREDEFINED_NOTES } from '../constants';
 
 interface NoteModalProps {

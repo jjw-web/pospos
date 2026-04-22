@@ -1,4 +1,4 @@
-import type { OrderItem } from '../../types';
+import type { OrderItem } from '../types';
 
 const LINE = '────────────────';
 

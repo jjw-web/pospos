@@ -1,5 +1,5 @@
 import { MENU_CATEGORIES } from '../../constants';
-import type { MenuCategory, MenuItem } from '../../types';
+import type { MenuCategory, MenuItem } from '../types';
 
 /**
  * Gộp menu đã lưu (localStorage) với MENU_CATEGORIES trong code:

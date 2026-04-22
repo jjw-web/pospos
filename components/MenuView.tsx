@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MenuItem, MenuCategory } from '../types';
+import type { MenuItem, MenuCategory } from '../src/types';
 import { MENU_CATEGORIES } from '../constants';
 
 interface MenuViewProps {

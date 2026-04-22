@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Bill } from '../types';
+import type { Bill } from '../src/types';
 import { computeDailySummary, todayDateKey } from '../src/lib/daily-summary';
 import { useTheme } from '../src/context/ThemeContext';
 

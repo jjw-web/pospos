@@ -1,4 +1,4 @@
-import { TableData } from '../../types';
+import type { TableData } from '../types';
 
 /**
  * Nâng cấp cấu trúc dữ liệu trong localStorage từ phiên bản cũ sang phiên bản mới.

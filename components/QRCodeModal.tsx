@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../src/context/ThemeContext';
 import { QR_ACCOUNTS } from '../constants';
-import { PaymentMethod } from '../types';
+import type { PaymentMethod } from '../src/types';
 
 // Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
 // Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }

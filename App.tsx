@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { TableData, MenuItem, Bill, MenuCategory, PaymentMethod, ToppingItem } from './types';
+import type { TableData, MenuItem, Bill, MenuCategory, PaymentMethod, ToppingItem } from './src/types';
 import { INITIAL_TABLES, MENU_CATEGORIES } from './constants';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';

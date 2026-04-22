@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TableData } from '../types';
+import type { TableData } from '../src/types';
 
 export type TableTransferMode = 'move' | 'merge';
 

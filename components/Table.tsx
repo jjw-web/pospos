@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TableData } from '../types';
+import type { TableData } from '../src/types';
 
 interface TableProps {
   table: TableData;

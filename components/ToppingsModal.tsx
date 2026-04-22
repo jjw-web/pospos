@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MenuItem, ToppingItem } from '../types';
+import type { MenuItem, ToppingItem } from '../src/types';
 
 interface ToppingsModalProps {
   menuItem: MenuItem;

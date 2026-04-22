@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Bill, MenuCategory, OrderItem } from '../types';
+import type { Bill, MenuCategory, OrderItem } from '../src/types';
 import { useTheme } from '../src/context/ThemeContext';
 import { toPng } from 'html-to-image';
 

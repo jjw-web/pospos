@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableData } from '../types';
+import type { TableData } from '../src/types';
 import Table from './Table';
 
 interface InsideViewProps {
