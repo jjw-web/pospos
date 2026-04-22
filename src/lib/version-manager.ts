@@ -7,7 +7,6 @@ import { upgradeDataStructure } from './data-upgrader';
  * @param newVersion Phiên bản mới.
  */
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string) {
-  console.log(`Nâng cấp phiên bản ứng dụng từ ${oldVersion || 'chưa có'} lên ${newVersion}`);
   // Set localStorage TRƯỚC khi reload — nếu set sau thì không bao giờ chạy được
   localStorage.setItem('app_version', newVersion);
   alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
@@ -40,9 +39,6 @@ export function checkVersion() {
   }
 
   if (versionChanged || dataChanged) {
-    console.log('Hoàn tất kiểm tra phiên bản. Phiên bản hiện tại:', {
-      app: APP_CONFIG.version,
-      data: APP_CONFIG.dataVersion,
-    });
+    // Version check completed
   }
 }

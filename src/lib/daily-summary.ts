@@ -1,6 +1,10 @@
 import type { Bill, PaymentMethod } from '../types';
 
-/** Cùng ngày theo lịch local (YYYY-MM-DD). */
+/**
+ * Chuyển ISO date string thành key dạng YYYY-MM-DD theo giờ local.
+ * @param isoDate - ISO date string (e.g. "2024-01-15T10:30:00.000Z")
+ * @returns Key dạng "2024-01-15"
+ */
 export function billDateKey(isoDate: string): string {
   const d = new Date(isoDate);
   const y = d.getFullYear();
@@ -9,6 +13,10 @@ export function billDateKey(isoDate: string): string {
   return `${y}-${m}-${day}`;
 }
 
+/**
+ * Trả về key của ngày hôm nay theo giờ local.
+ * @returns Key dạng "YYYY-MM-DD"
+ */
 export function todayDateKey(): string {
   const now = new Date();
   const y = now.getFullYear();
@@ -17,10 +25,21 @@ export function todayDateKey(): string {
   return `${y}-${m}-${day}`;
 }
 
+/**
+ * Kiểm tra phương thức thanh toán có phải tiền mặt không.
+ * @param m - PaymentMethod hoặc undefined
+ * @returns true nếu là Cash
+ */
 export function isCash(m?: PaymentMethod): boolean {
   return m === 'Cash';
 }
 
+/**
+ * Kiểm tra phương thức thanh toán có phải chuyển khoản không.
+ * BIDV và JJW đều được tính là chuyển khoản.
+ * @param m - PaymentMethod hoặc undefined
+ * @returns true nếu là BIDV hoặc JJW
+ */
 export function isTransfer(m?: PaymentMethod): boolean {
   return m === 'BIDV' || m === 'JJW';
 }
@@ -38,6 +57,12 @@ export interface DailySummaryResult {
   itemSales: Map<string, number>;
 }
 
+/**
+ * Tính tổng kết doanh thu và số liệu bán hàng cho một ngày cụ thể.
+ * @param history - Toàn bộ lịch sử hóa đơn
+ * @param dateKey - Ngày cần tổng kết, dạng "YYYY-MM-DD"
+ * @returns DailySummaryResult chứa doanh thu, số món, top items
+ */
 export function computeDailySummary(history: Bill[], dateKey: string): DailySummaryResult {
   const bills = history.filter((b) => billDateKey(b.date) === dateKey);
   let totalRevenue = 0;
@@ -81,7 +106,13 @@ export function computeDailySummary(history: Bill[], dateKey: string): DailySumm
   };
 }
 
-/** Top món theo số lượng (đã sort). */
+/**
+ * Lấy danh sách top món bán chạy trong ngày, đã sort giảm dần.
+ * @param history - Toàn bộ lịch sử hóa đơn
+ * @param dateKey - Ngày cần thống kê, dạng "YYYY-MM-DD"
+ * @param limit - Số lượng tối đa, mặc định 10
+ * @returns Mảng { name, qty } đã sort giảm dần theo qty
+ */
 export function getTopSellingItems(
   history: Bill[],
   dateKey: string,

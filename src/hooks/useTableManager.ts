@@ -23,17 +23,6 @@ function persistTables(tables: Map<number, TableData>): void {
 export function useTableManager() {
   const [tables, setTables] = useState<Map<number, TableData>>(loadTables);
 
-  const updateTable = useCallback((tableId: number, patch: Partial<TableData>) => {
-    setTables((prev) => {
-      const next = new Map(prev);
-      const current = next.get(tableId);
-      if (!current) return prev;
-      next.set(tableId, { ...current, ...patch });
-      persistTables(next);
-      return next;
-    });
-  }, []);
-
   const addItemsToTable = useCallback(
     (tableId: number, itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => {
       setTables((prev) => {

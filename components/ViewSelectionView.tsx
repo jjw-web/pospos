@@ -72,14 +72,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     transition: 'background-color 0.2s ease',
   };
 
-  const titleStyle: React.CSSProperties = {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: theme === 'dark' ? '#f8fafc' : '#0f172a',
-    marginBottom: '20px',
-    textAlign: 'center',
-  };
-
   const buttonsWrapperStyle: React.CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'repeat(2, 1fr)',
@@ -130,12 +122,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     backgroundColor: '#f59e0b', // amber-500
     color: 'white',
     background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-  };
-
-  const dailySummaryButtonStyle: React.CSSProperties = {
-    ...baseButtonStyle,
-    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-    color: 'white',
   };
 
   const qrButtonStyle: React.CSSProperties = {

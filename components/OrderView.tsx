@@ -6,13 +6,14 @@ import type {
   OrderItem,
   PaymentMethod,
   ToppingItem,
+  TableTransferMode,
 } from '../src/types';
 import OrderHeader from './order/OrderHeader';
 import MenuPanel from './order/MenuPanel';
 import OrderPanel from './order/OrderPanel';
 import NoteModal from './NoteModal';
 import PaymentMethodModal from './PaymentMethodModal';
-import TableTransferModal, { TableTransferMode } from './TableTransferModal';
+import TableTransferModal from './TableTransferModal';
 import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
@@ -74,13 +75,13 @@ const OrderView: React.FC<OrderViewProps> = ({
     return () => window.clearInterval(id);
   }, [table.status, table.occupiedSince]);
 
-  const order = table.order ?? [];
+  const total = useMemo(() => calcOrderTotal(table.order ?? []), [table.order]);
 
-  const total = useMemo(() => calcOrderTotal(order), [order]);
+  const order = useMemo(() => table.order ?? [], [table.order]);
 
   const { mainCount, toppingCount, snackCount } = useMemo(
-    () => countOrderItems(order, menuCategories),
-    [order, menuCategories]
+    () => countOrderItems(table.order ?? [], menuCategories),
+    [table.order, menuCategories]
   );
 
   const orderSummaryTitle =

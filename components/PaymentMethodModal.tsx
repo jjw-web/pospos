@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { OrderItem, PaymentMethod } from '../src/types';
 import { QR_ACCOUNTS } from '../constants';
-import { formatReceiptText, copyTextToClipboard, shareReceiptText } from '../src/lib/receipt';
+import { formatReceiptText, copyTextToClipboard } from '../src/lib/receipt';
 
 // Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
 // Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
@@ -140,13 +140,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     if (!text) return;
     const ok = await copyTextToClipboard(text);
     showHint(ok ? '✅ Đã sao chép — dán vào Zalo/Messenger' : '❌ Không sao chép được');
-  };
-
-  const handleShareReceipt = async () => {
-    const text = buildReceiptText();
-    if (!text) return;
-    const ok = await shareReceiptText(text, 'Hóa đơn Bống Cà Phê');
-    showHint(ok ? '✅ Đã mở chia sẻ' : 'Hãy dùng Sao chép hóa đơn');
   };
 
   const handleShareWithQR = async (account: QRAccount) => {

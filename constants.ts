@@ -1,4 +1,4 @@
-import type { MenuCategory, TableData, ViewType } from './src/types';
+import type { MenuCategory, TableData } from './src/types';
 
 export const QR_ACCOUNTS = [
   {

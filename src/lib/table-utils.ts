@@ -1,4 +1,8 @@
-/** Hiển thị thời gian đã ngồi từ `occupiedSince` (ISO). */
+/**
+ * Format thời gian ngồi từ `occupiedSince` (ISO date string).
+ * @param iso - ISO date string hoặc null
+ * @returns Thời gian format: "<1p", "30p", "1g30p", v.v. hoặc null nếu không hợp lệ
+ */
 export function formatOccupiedDuration(iso?: string | null): string | null {
   if (!iso) return null;
   const start = new Date(iso).getTime();

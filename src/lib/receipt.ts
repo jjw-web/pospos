@@ -2,6 +2,11 @@ import type { OrderItem } from '../types';
 
 const LINE = '────────────────';
 
+/**
+ * Format hóa đơn thành text để hiển thị hoặc chia sẻ.
+ * @param params - Các tham số bao gồm shopName, tableLabel, items, total
+ * @returns Text hóa đơn đã format
+ */
 export function formatReceiptText(params: {
   shopName?: string;
   tableLabel: string;
@@ -13,8 +18,6 @@ export function formatReceiptText(params: {
 
   items.forEach((row) => {
     const mainTotal = row.menuItem.price * row.quantity;
-    const toppingsTotal =
-      row.toppings?.reduce((sum, topping) => sum + topping.price * topping.quantity, 0) || 0;
     const note = row.note ? `  (Ghi chú: ${row.note})` : '';
     lines.push(
       `• ${row.menuItem.name} × ${row.quantity} — ${mainTotal.toLocaleString('vi-VN')}đ${note}`
@@ -33,6 +36,11 @@ export function formatReceiptText(params: {
   return lines.join('\n');
 }
 
+/**
+ * Copy text vào clipboard.
+ * @param text - Text cần copy
+ * @returns true nếu thành công
+ */
 export async function copyTextToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
@@ -54,6 +62,12 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 }
 
+/**
+ * Chia sẻ text qua Web Share API (nếu có) hoặc copy vào clipboard.
+ * @param text - Text cần chia sẻ
+ * @param title - Title cho Web Share API
+ * @returns true nếu thành công
+ */
 export async function shareReceiptText(text: string, title: string): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
