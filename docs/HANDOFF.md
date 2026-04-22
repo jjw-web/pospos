@@ -378,3 +378,88 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: d77c795
 Message: "phase-6: performance optimizations - memo, lazy load, useMemo"
+
+---
+
+## [2026-04-22 22:00] — Agent 1 — Kết thúc ca
+### Phase đang làm
+Phase 7 — Code Quality Polish
+### Trạng thái tổng thể
+[x] Phase hoàn thành — chờ agent tiếp theo chạy checklist
+### Tasks đã hoàn thành trong ca này
+Task 7.1 — Cài ESLint và cấu hình — ✅ DONE
+Task 7.2 — Cài Prettier — ✅ DONE
+Task 7.3 — Fix ESLint errors — ✅ DONE
+Task 7.4 — Thêm JSDoc cho src/lib functions — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+- eslint.config.js — tạo mới
+- .prettierrc — tạo mới
+- .prettierignore — tạo mới
+- package.json — thêm scripts lint, lint:fix, format
+- src/lib/data-upgrader.ts — xóa console.log, unused vars
+- src/lib/version-manager.ts — xóa console.log
+- src/lib/receipt.ts — xóa unused toppingsTotal
+- src/lib/daily-summary.ts — thêm JSDoc
+- src/lib/table-utils.ts — thêm JSDoc
+- src/lib/merge-menu-defaults.ts — thêm JSDoc
+- src/lib/merge-orders.ts — verify JSDoc
+- src/lib/string-utils.ts — verify JSDoc
+- src/lib/order-utils.ts — verify JSDoc
+- src/types/index.ts — thêm TableTransferMode
+- components/MenuView.tsx — xóa unused MENU_CATEGORIES
+- components/OrderView.tsx — fix type import, useMemo deps
+- components/PaymentMethodModal.tsx — xóa unused handleShareReceipt
+- components/Table.tsx — xóa unused useEffect
+- components/ViewSelectionView.tsx — xóa unused styles
+- constants.ts — xóa unused ViewType import
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle size:
+- Main chunk: 199.63 kB (61.76 kB gzip)
+- HistoryView: 20.01 kB (lazy loaded)
+- MenuView: 6.42 kB (lazy loaded)
+- DailySummaryView: 5.47 kB (lazy loaded)
+### Kết quả TESTING_CHECKLIST.md
+[ ] Chưa chạy — Phase 7 hoàn thành, checklist chưa test
+### Vấn đề phát sinh trong ca này
+2 ESLint react-hooks/exhaustive-deps warnings (MenuView, NoteModal) — do react-hooks rule mới
+- Không fix vì sẽ thay đổi logic, chỉ warning
+1 ESLint react-refresh warning (ThemeContext) — do export cả provider + hook
+- Đây là pattern đúng, không thay đổi
+### Quyết định đã tự đưa ra trong ca này
+Thêm TableTransferMode vào src/types/index.ts vì OrderView cần type này
+### Packages đã thêm/xóa
+Thêm: eslint, @typescript-eslint/parser, @typescript-eslint/eslint-plugin, eslint-plugin-react, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, prettier, eslint-config-prettier
+### Hướng dẫn cho agent ca tiếp theo
+1. Chạy npm run dev verify app không crash
+2. Chạy TESTING_CHECKLIST.md 89 items
+3. Xem xét Phase 8 (Verification) — phase cuối cùng
+### Commit cuối cùng của ca này
+Hash: d6f1365
+
+Message: "phase-7: fix ESLint errors, unused vars, add JSDoc, add TableTransferMode"
+
+---
+
+## [2026-04-22 22:30] — Agent 1 — Kết thúc ca
+### Phase đang làm
+Phase 8 — Verification
+### Trạng thái tổng thể
+[x] Phase chưa bắt đầu
+### Hướng dẫn cho agent ca tiếp theo
+
+Chạy TESTING_CHECKLIST.md để verify toàn bộ 89 items pass
+
+---
+
+(End of file)
