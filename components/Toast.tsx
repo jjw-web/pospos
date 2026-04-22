@@ -33,4 +33,4 @@ const Toast: React.FC<ToastProps> = ({ message, onDone, durationMs = 2200 }) => 
   return <div style={style} role="status">{message}</div>;
 };
 
-export default Toast;
+export default React.memo(Toast);

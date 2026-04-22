@@ -71,5 +71,4 @@ const SearchBar: React.FC<SearchBarProps> = ({
   );
 };
 
-export default SearchBar;
-// Added a comment to force a commit.
+export default React.memo(SearchBar);

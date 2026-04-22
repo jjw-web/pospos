@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { MenuCategory, MenuItem } from '../../src/types';
 import { includesNormalized } from '../../src/lib/string-utils';
 import SearchBar from '../SearchBar';
@@ -28,7 +28,11 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
   textMain,
   cardBorder,
 }) => {
-  const filteredItems = React.useMemo(() => {
+  const handleClear = useCallback(() => {
+    onSearchChange('');
+  }, [onSearchChange]);
+
+  const filteredItems = useMemo(() => {
     if (searchQuery) {
       return menuCategories
         .flatMap((cat) => cat.items)
@@ -48,7 +52,7 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
           setSearchQuery={onSearchChange}
           placeholder="Tìm kiếm món ăn..."
           darkMode={isDark}
-          onClear={() => onSearchChange('')}
+          onClear={handleClear}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
@@ -8,10 +8,28 @@ import OutsideView from './components/OutsideView';
 import OrderView from './components/OrderView';
 import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
-import HistoryView from './components/HistoryView';
-import MenuView from './components/MenuView';
-import DailySummaryView from './components/DailySummaryView';
+
+const HistoryView = lazy(() => import('./components/HistoryView'));
+const MenuView = lazy(() => import('./components/MenuView'));
+const DailySummaryView = lazy(() => import('./components/DailySummaryView'));
+
 import { checkVersion } from './src/lib/version-manager';
+
+const LoadingScreen: React.FC = () => (
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#f5f5f5',
+      fontSize: '16px',
+      color: '#94a3b8',
+    }}
+  >
+    Đang tải...
+  </div>
+);
 
 function loadScreen(): AppScreen {
   try {
@@ -237,7 +255,11 @@ const App: React.FC = () => {
     }
   };
 
-  return renderScreen();
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      {renderScreen()}
+    </Suspense>
+  );
 };
 
 export default App;

@@ -128,4 +128,4 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
   );
 };
 
-export default Table;
+export default React.memo(Table);

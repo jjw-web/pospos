@@ -23,11 +23,16 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
   const avgBill = summary.bills.length ? Math.round(summary.totalRevenue / summary.bills.length) : 0;
 
-  const bg = isDark ? '#0f172a' : '#f8fafc';
-  const card = isDark ? '#1e293b' : '#ffffff';
-  const text = isDark ? '#f1f5f9' : '#0f172a';
-  const muted = isDark ? '#94a3b8' : '#64748b';
-  const border = isDark ? '#334155' : '#e2e8f0';
+  const colors = useMemo(
+    () => ({
+      bg: isDark ? '#0f172a' : '#f8fafc',
+      card: isDark ? '#1e293b' : '#ffffff',
+      text: isDark ? '#f1f5f9' : '#0f172a',
+      muted: isDark ? '#94a3b8' : '#64748b',
+      border: isDark ? '#334155' : '#e2e8f0',
+    }),
+    [isDark]
+  );
 
   const formatDayVi = (key: string) => {
     const [y, m, d] = key.split('-').map(Number);
@@ -38,11 +43,11 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: bg,
+        backgroundColor: colors.bg,
         padding: '16px',
         paddingBottom: '32px',
         boxSizing: 'border-box',
-        color: text,
+        color: colors.text,
       }}
     >
       <div style={{ maxWidth: '480px', margin: '0 auto' }}>
@@ -55,7 +60,7 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               borderRadius: '8px',
               border: 'none',
               background: isDark ? '#334155' : '#e2e8f0',
-              color: text,
+              color: colors.text,
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -65,59 +70,59 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
           <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>Tổng kết ngày</h1>
         </div>
 
-        <p style={{ margin: '0 0 16px', color: muted, fontSize: '14px' }}>
+        <p style={{ margin: '0 0 16px', color: colors.muted, fontSize: '14px' }}>
           Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn · {summary.totalItemsSold} món bán
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '14px' }}>
           <div
             style={{
-              backgroundColor: card,
+              backgroundColor: colors.card,
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${border}`,
+              border: `1px solid ${colors.border}`,
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Tổng hóa đơn</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Tổng hóa đơn</div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.bills.length}</div>
           </div>
           <div
             style={{
-              backgroundColor: card,
+              backgroundColor: colors.card,
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${border}`,
+              border: `1px solid ${colors.border}`,
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Số món bán</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Số món bán</div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.totalItemsSold}</div>
           </div>
           <div
             style={{
-              backgroundColor: card,
+              backgroundColor: colors.card,
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${border}`,
+              border: `1px solid ${colors.border}`,
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Trung bình mỗi hóa đơn</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Trung bình mỗi hóa đơn</div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{avgBill.toLocaleString('vi-VN')}đ</div>
           </div>
         </div>
 
         <div
           style={{
-            backgroundColor: card,
+            backgroundColor: colors.card,
             borderRadius: '14px',
             padding: '18px',
             marginBottom: '14px',
-            border: `1px solid ${border}`,
+            border: `1px solid ${colors.border}`,
           }}
         >
-          <div style={{ fontSize: '14px', color: muted, marginBottom: '6px' }}>Tổng doanh thu</div>
+          <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Tổng doanh thu</div>
           <div style={{ fontSize: '26px', fontWeight: 800, color: '#38bdf8' }}>
             {summary.totalRevenue.toLocaleString('vi-VN')}đ
           </div>
@@ -125,26 +130,26 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
         <div
           style={{
-            backgroundColor: card,
+            backgroundColor: colors.card,
             borderRadius: '14px',
             padding: '18px',
             marginBottom: '14px',
-            border: `1px solid ${border}`,
+            border: `1px solid ${colors.border}`,
           }}
         >
           <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Theo hình thức thanh toán</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '15px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: muted }}>💵 Tiền mặt</span>
+              <span style={{ color: colors.muted }}>💵 Tiền mặt</span>
               <strong>{summary.cashTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: muted }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
+              <span style={{ color: colors.muted }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
               <strong>{summary.transferTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             {summary.otherTotal > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: muted }}>Khác / chưa ghi</span>
+                <span style={{ color: colors.muted }}>Khác / chưa ghi</span>
                 <strong>{summary.otherTotal.toLocaleString('vi-VN')}đ</strong>
               </div>
             )}
@@ -153,21 +158,21 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
         <div
           style={{
-            backgroundColor: card,
+            backgroundColor: colors.card,
             borderRadius: '14px',
             padding: '18px',
-            border: `1px solid ${border}`,
+            border: `1px solid ${colors.border}`,
           }}
         >
           <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Món bán chạy (số lượng)</div>
           {topList.length === 0 ? (
-            <p style={{ color: muted, margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
+            <p style={{ color: colors.muted, margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
           ) : (
             <ol style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {topList.map(([name, qty]) => (
                 <li key={name} style={{ fontSize: '14px' }}>
                   <strong>{name}</strong>
-                  <span style={{ color: muted }}> — {qty} ly/phần</span>
+                  <span style={{ color: colors.muted }}> — {qty} ly/phần</span>
                 </li>
               ))}
             </ol>
