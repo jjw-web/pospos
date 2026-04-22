@@ -8,6 +8,7 @@ import StartView from './components/StartView';
 import ViewSelectionView from './components/ViewSelectionView';
 import HistoryView from './components/HistoryView';
 import MenuView from './components/MenuView';
+import DailySummaryView from './components/DailySummaryView';
 
 import { checkVersion } from './src/lib/version-manager';
 import { mergeMenuWithDefaults } from './src/lib/merge-menu-defaults';
@@ -20,7 +21,8 @@ type Screen =
   | 'outside'
   | 'order'
   | 'history'
-  | 'menu';
+  | 'menu'
+  | 'dailySummary';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -29,7 +31,7 @@ const App: React.FC = () => {
 
   const [currentScreen, setCurrentScreen] = useState<Screen>(() => {
     const savedScreen = localStorage.getItem('currentScreen');
-    const validScreens: Screen[] = ['start', 'viewSelection', 'inside', 'outside', 'order', 'history', 'menu'];
+    const validScreens: Screen[] = ['start', 'viewSelection', 'inside', 'outside', 'order', 'history', 'menu', 'dailySummary'];
     if (savedScreen && validScreens.includes(savedScreen as Screen)) {
       return savedScreen as Screen;
     }
@@ -442,6 +444,13 @@ const App: React.FC = () => {
           menuCategories={menuCategories}
           onUpdateMenuCategories={setMenuCategories}
         />;
+      case 'dailySummary':
+        return (
+          <DailySummaryView
+            history={history}
+            onBack={() => setCurrentScreen('viewSelection')}
+          />
+        );
       default:
         return <StartView onStart={() => setCurrentScreen('viewSelection')} />;
     }

@@ -202,7 +202,11 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({ total, onSelect
                   </button>
                   <button
                     style={{...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px', backgroundColor: '#dcfce7', borderColor: '#86efac' }}
-                    onClick={() => onSelect(account.method?? 'Tintin')} // fix: map đúng method
+                    onClick={() => {
+                      if (account.method) {
+                        onSelect(account.method);
+                      }
+                    }} // fix: map đúng method
                     title="Xác nhận thu tiền"
                   >
                     ✅

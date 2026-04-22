@@ -2,25 +2,15 @@ import { APP_CONFIG } from './config';
 import { upgradeDataStructure } from './data-upgrader';
 
 /**
- * Hiển thị thông báo cập nhật cho người dùng.
- * @param message Nội dung thông báo.
- */
-function showUpdateNotification(message: string) {
-  // Tạm thời dùng alert, sau này có thể thay bằng một component UI đẹp hơn
-  alert(message);
-}
-
-/**
  * Xử lý khi có phiên bản ứng dụng mới.
  * @param oldVersion Phiên bản cũ.
  * @param newVersion Phiên bản mới.
  */
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string) {
   console.log(`Nâng cấp phiên bản ứng dụng từ ${oldVersion || 'chưa có'} lên ${newVersion}`);
-  
-  // Thông báo và ép tải lại trang để đảm bảo code mới nhất được nạp
-  alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
+  // Set localStorage TRƯỚC khi reload — nếu set sau thì không bao giờ chạy được
   localStorage.setItem('app_version', newVersion);
+  alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
   window.location.reload();
 }
 
@@ -38,7 +28,7 @@ export function checkVersion() {
   // 1. Kiểm tra phiên bản ứng dụng (App Version)
   if (currentAppVersion !== APP_CONFIG.version) {
     handleVersionUpgrade(currentAppVersion, APP_CONFIG.version);
-    localStorage.setItem('app_version', APP_CONFIG.version);
+    // localStorage.setItem đã được xử lý trong handleVersionUpgrade
     versionChanged = true;
   }
 
