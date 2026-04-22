@@ -270,3 +270,57 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: e6fed53
 Message: "phase-3: refactor HistoryView to use order-utils"
+
+---
+
+## [2026-04-22 21:00] — Agent 1 — Kết thúc ca
+### Phase đang làm
+Phase 4 — Custom Hooks + Phase 5 — Components
+### Trạng thái tổng thể
+[x] Phase hoàn thành — chờ agent tiếp theo chạy checklist
+### Tasks đã hoàn thành trong ca này
+Task 4.1 — Tạo src/hooks/useTableManager.ts — ✅ DONE
+Task 4.2 — Tạo src/hooks/useHistoryManager.ts — ✅ DONE
+Task 4.3 — Tạo src/hooks/useMenuManager.ts — ✅ DONE
+Task 4.4 — Refactor App.tsx dùng hooks — ✅ DONE
+Task 5.1 — Tạo order sub-components (OrderHeader, OrderItemRow, OrderPanel, MenuPanel) — ✅ DONE
+Task 5.2 — Refactor OrderView.tsx dùng sub-components — ✅ DONE
+Task 5.3 — Tạo history sub-components (HistorySummaryBar, HistoryActionBar, BillCard) — ✅ DONE
+Task 5.4 — Refactor HistoryView.tsx dùng sub-components — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+- App.tsx — refactor hoàn toàn dùng hooks mới
+### Files đã tạo mới trong ca này
+- src/hooks/useTableManager.ts (addItemsToTable, updateItemQuantity, updateItemNote, addToppingToItem, moveTable, mergeTables, checkoutTable, revertBill)
+- src/hooks/useHistoryManager.ts (addBill, deleteBills, clearHistory, removeBill)
+- src/hooks/useMenuManager.ts (updateMenuCategories)
+- components/order/OrderHeader.tsx
+- components/order/OrderItemRow.tsx
+- components/order/OrderPanel.tsx
+- components/order/MenuPanel.tsx
+- components/history/HistorySummaryBar.tsx
+- components/history/HistoryActionBar.tsx
+- components/history/BillCard.tsx
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Chưa chạy
+### Kết quả TESTING_CHECKLIST.md
+Chưa chạy — Phase 4+5 hoàn thành, checklist chưa test
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Sửa props textMuted trong OrderHeader và MenuPanel vì không dùng trong component
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+1. Chạy npm run dev verify app không crash
+2. Chạy TESTING_CHECKLIST.md 89 items
+3. Báo cáo kết quả tổng thể cho người quản lý
+### Commit cuối cùng của ca này
+Hash: 43f1afc
+Message: "phase-5: create and use sub-components for OrderView and HistoryView"
