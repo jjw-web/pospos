@@ -324,3 +324,57 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: 43f1afc
 Message: "phase-5: create and use sub-components for OrderView and HistoryView"
+
+---
+
+## [2026-04-22 21:30] — Agent 1 — Kết thúc ca
+### Phase đang làm
+Phase 6 — Performance
+### Trạng thái tổng thể
+[x] Phase hoàn thành — chờ agent tiếp theo chạy checklist
+### Tasks đã hoàn thành trong ca này
+Task 6.1 — Thêm React.memo cho Toast, Table — ✅ DONE
+Task 6.2 — Memoize color objects trong DailySummaryView — ✅ DONE
+Task 6.3 — Lazy load HistoryView, MenuView, DailySummaryView trong App.tsx — ✅ DONE
+Task 6.5 — Stabilize onClear callback trong MenuPanel (useCallback) — ✅ DONE
+Task 6.6 — Thêm React.memo cho SearchBar — ✅ DONE
+Task 6.7 — Verify re-render patterns — ✅ DONE (không cần sửa thêm)
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+- components/Toast.tsx — thêm React.memo
+- components/Table.tsx — thêm React.memo
+- components/DailySummaryView.tsx — memoize colors object
+- components/SearchBar.tsx — thêm React.memo
+- components/order/MenuPanel.tsx — stabilize onClear callback
+- App.tsx — lazy load screens, Suspense wrapper
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle size:
+- Main chunk: 199.94 kB (61.88 kB gzip)
+- HistoryView: 20.02 kB (lazy loaded)
+- MenuView: 6.42 kB (lazy loaded)
+- DailySummaryView: 5.47 kB (lazy loaded)
+### Kết quả TESTING_CHECKLIST.md
+Chưa chạy — Phase 6 hoàn thành, checklist chưa test
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Sửa lỗi TypeScript trong DailySummaryView sau khi thay đổi biến colors
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+1. Chạy npm run dev verify app không crash
+2. Chạy TESTING_CHECKLIST.md 89 items
+3. Xem xét Phase 7 (Code Quality: ESLint, Prettier) hoặc Phase 8 (Verification)
+### Commit cuối cùng của ca này
+Hash: d77c795
+Message: "phase-6: performance optimizations - memo, lazy load, useMemo"
