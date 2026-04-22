@@ -218,3 +218,55 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: 5fff6d6
 Message: "phase-1: fix 3 bugs - localStorage order, Tintin fallback, dailySummary screen"
+
+---
+
+## [2026-04-22 20:00] — Agent 1 — Kết thúc ca
+### Phase đang làm
+Phase 2 — TypeScript + Phase 3 — Utils
+### Trạng thái tổng thể
+[x] Phase hoàn thành — chờ agent tiếp theo chạy checklist
+### Tasks đã hoàn thành trong ca này
+Task 2.1 — Tạo src/types/index.ts — ✅ DONE
+Task 2.2 — Cập nhật imports toàn bộ codebase — ✅ DONE
+Task 2.3 — Xóa types.ts cũ — ✅ DONE
+Task 2.4 — Fix merge-orders.ts thiếu toppings — ✅ DONE
+Task 3.1 — Tạo src/lib/string-utils.ts — ✅ DONE
+Task 3.2 — Tạo src/lib/order-utils.ts — ✅ DONE
+Task 3.3 — Refactor OrderView.tsx dùng utils — ✅ DONE
+Task 3.4 — Refactor HistoryView.tsx dùng utils — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+- src/types/index.ts — tạo mới, single source of truth cho types
+- src/lib/merge-orders.ts — thêm mergeToppings function
+- components/*.tsx — cập nhật import path sang src/types
+- components/OrderView.tsx — dùng string-utils và order-utils
+- components/HistoryView.tsx — dùng order-utils
+- constants.ts — cập nhật import path
+### Files đã tạo mới trong ca này
+- src/types/index.ts
+- src/lib/string-utils.ts (normalizeVietnamese, includesNormalized)
+- src/lib/order-utils.ts (calcItemTotal, calcOrderTotal, countOrderItems, groupItemsByCategory)
+### Files đã xóa trong ca này
+- types.ts (root) — đã xóa, thay bằng src/types/index.ts
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Chưa chạy
+### Kết quả TESTING_CHECKLIST.md
+Chưa chạy — Phase 2+3 hoàn thành, checklist chưa test
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Thêm ViewType = TableLayout alias trong src/types/index.ts vì constants.ts dùng ViewType
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+1. Chạy npm run dev verify app không crash
+2. Chạy TESTING_CHECKLIST.md 89 items
+3. Tiếp tục Phase tiếp theo (Phase 4: Custom Hooks) hoặc báo cáo kết quả
+### Commit cuối cùng của ca này
+Hash: e6fed53
+Message: "phase-3: refactor HistoryView to use order-utils"
