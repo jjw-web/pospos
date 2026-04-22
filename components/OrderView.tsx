@@ -8,6 +8,8 @@ import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
 import { formatOccupiedDuration } from '../src/lib/table-utils';
+import { includesNormalized } from '../src/lib/string-utils';
+import { calcOrderTotal, countOrderItems, groupItemsByCategory } from '../src/lib/order-utils';
 
 // A simple note icon
 const NoteIcon = () => (
@@ -73,56 +75,16 @@ const OrderView: React.FC<OrderViewProps> = ({
   }, [table.status, table.occupiedSince]);
 
   const order = table?.order ?? [];
-  const total = order.reduce((sum, item) => {
-    const toppingsTotal = item.toppings?.reduce((tSum, topping) => tSum + topping.price * topping.quantity, 0) || 0;
-    return sum + item.menuItem.price * item.quantity + toppingsTotal;
-  }, 0);
-
-  const groupedOrder = useMemo(() => {
-    const grouped: { [category: string]: OrderItem[] } = {};
-    const itemToCategoryMap = new Map<number, string>();
-    menuCategories.forEach(category => {
-      category.items.forEach(item => {
-        itemToCategoryMap.set(item.id, category.name);
-      });
-    });
-
-    order.forEach(item => {
-      const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
-      if (!grouped[categoryName]) {
-        grouped[categoryName] = [];
-      }
-      grouped[categoryName].push(item);
-    });
-    return grouped;
-  }, [order, menuCategories]);
-
+  const total = useMemo(() => calcOrderTotal(order), [order]);
+  const groupedOrder = useMemo(
+    () => groupItemsByCategory(order, menuCategories),
+    [order, menuCategories]
+  );
   const totalQuantity = order.reduce((sum, item) => sum + item.quantity, 0);
-
-  let mainCount = 0;
-  let toppingCount = 0;
-  let snackCount = 0;
-
-  Object.entries(groupedOrder).forEach(([categoryName, items]) => {
-    const categoryLower = categoryName.toLowerCase();
-    const totalQuantityInCategory = items.reduce((sum, item) => sum + item.quantity, 0);
-    const extraToppings = items.reduce(
-      (sum, item) => sum + (item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0),
-      0
-    );
-
-    if (categoryLower.includes('topping') || categoryLower.includes('phụ gia') || categoryLower.includes('gia vị')) {
-      toppingCount += totalQuantityInCategory;
-    } else if (categoryLower.includes('snack') || categoryLower.includes('khai vị') || categoryLower.includes('đồ ăn nhẹ')) {
-      snackCount += totalQuantityInCategory;
-    } else {
-      // Tất cả category khác (bao gồm đồ uống, món chính, món lẻ, etc.) đều tính vào đồ uống
-      mainCount += totalQuantityInCategory;
-    }
-
-    toppingCount += extraToppings;
-  });
-
+  const { mainCount, toppingCount, snackCount } = useMemo(
+    () => countOrderItems(order, menuCategories),
+    [order, menuCategories]
+  );
   const orderSummaryTitle = mainCount === 0 && toppingCount === 0 && snackCount === 0
     ? 'Đơn hàng hiện tại (0 món)'
     : `Đơn hàng hiện tại — Đồ uống: ${mainCount}, Topping: ${toppingCount}, Snack: ${snackCount}`;
@@ -185,24 +147,12 @@ const OrderView: React.FC<OrderViewProps> = ({
     }
   };
 
-  // Hàm loại bỏ dấu tiếng Việt
-  const removeVietnameseTones = (str: string): string => {
-    return str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '') // xóa tất cả combining diacritics
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D');
-  };
-
   const filteredMenuItems = useMemo(() => {
     if (searchQuery) {
       const allItems = menuCategories.flatMap(cat => cat.items);
-      const normalizedQuery = removeVietnameseTones(searchQuery);
-      return allItems.filter((item) => {
-        const normalizedItemName = removeVietnameseTones(item.name);
-        return normalizedItemName.includes(normalizedQuery);
-      });
+      return allItems.filter((item) =>
+        includesNormalized(item.name, searchQuery)
+      );
     }
     const category = menuCategories.find((cat) => cat.name === selectedCategory);
     return category ? category.items : [];
