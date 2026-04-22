@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import type { Bill, MenuCategory, OrderItem } from '../src/types';
 import { useTheme } from '../src/context/ThemeContext';
 import { toPng } from 'html-to-image';
+import { calcItemTotal, calcOrderTotal, countOrderItems, groupItemsByCategory } from '../src/lib/order-utils';
 
 interface HistoryViewProps {
   history: Bill[];
@@ -36,16 +37,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
 
   const historySummary = useMemo(() => {
     const totalRevenue = history.reduce((sum, bill) => sum + bill.total, 0);
-    const totalItemsSold = history.reduce((sum, bill) => {
-      return sum + bill.items.reduce((itemSum, item) => {
-        const toppingCount = item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0;
-        return itemSum + item.quantity + toppingCount;
-      }, 0);
-    }, 0);
     return {
       totalRevenue,
       totalBills: history.length,
-      totalItemsSold,
     };
   }, [history]);
 
@@ -56,18 +50,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
     } else {
       setSelectedBills(history.map((bill) => bill.id));
     }
-  };
-
-  const getGroupedItems = (items: OrderItem[]) => {
-    const grouped: { [category: string]: OrderItem[] } = {};
-    items.forEach(item => {
-        const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
-        if (!grouped[categoryName]) {
-            grouped[categoryName] = [];
-        }
-        grouped[categoryName].push(item);
-    });
-    return grouped;
   };
 
   const handleSelectBill = (billId: number) => {
@@ -339,28 +321,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
       ) : (
         <div>
           {history.map(bill => {
-            let mainCount = 0;
-            let toppingCount = 0;
-            let snackCount = 0;
-
-            bill.items.forEach(item => {
-              const categoryName = itemToCategoryMap.get(item.menuItem.id) || 'Khác';
-              const categoryLower = categoryName.toLowerCase();
-              const itemQty = item.quantity;
-
-              if (categoryLower.includes('topping') || categoryLower.includes('phụ gia') || categoryLower.includes('gia vị')) {
-                toppingCount += itemQty;
-              } else if (categoryLower.includes('snack') || categoryLower.includes('khai vị') || categoryLower.includes('đồ ăn nhẹ')) {
-                snackCount += itemQty;
-              } else {
-                mainCount += itemQty;
-              }
-
-              const extraToppings = item.toppings?.reduce((tSum, t) => tSum + t.quantity, 0) || 0;
-              toppingCount += extraToppings;
-            });
-
-            const groupedItems = getGroupedItems(bill.items);
+            const { mainCount, toppingCount, snackCount } = countOrderItems(bill.items, menuCategories);
+            const groupedItems = groupItemsByCategory(bill.items, menuCategories);
 
             return (
                 <div
@@ -418,7 +380,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onClearHistory, onDe
                                       </div>
                                     )}
                                 </div>
-                                <span style={{fontWeight: 'bold'}}>{((item.menuItem.price * item.quantity) + (item.toppings?.reduce((tSum, t) => tSum + t.price * t.quantity, 0) || 0)).toLocaleString()}đ</span>
+                                <span style={{fontWeight: 'bold'}}>{calcItemTotal(item).toLocaleString()}đ</span>
                             </li>
                             ))}
                         </ul>
