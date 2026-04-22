@@ -1,0 +1,93 @@
+a2d4855 phase-8: verification complete - add final report
+28ca39e handoff: update for Phase 7 completion
+d6f1365 phase-7: fix ESLint errors, unused vars, add JSDoc, add TableTransferMode
+2f061a9 phase-7: add ESLint and Prettier configs, format codebase
+4daa14c handoff: agent 1 ca 2026-04-22 - phase 6 hoan thanh
+d77c795 phase-6: performance optimizations - memo, lazy load, useMemo
+e4d35b5 handoff: agent 1 ca 2026-04-22 - phase 4+5 hoan thanh
+43f1afc phase-5: create and use sub-components for OrderView and HistoryView
+e0848b1 phase-4: refactor App.tsx to use custom hooks
+0fd3e79 phase-4: create useTableManager, useHistoryManager, useMenuManager hooks
+97bd8d3 handoff: agent 1 ca 2026-04-22 - phase 2+3 hoan thanh
+e6fed53 phase-3: refactor HistoryView to use order-utils
+ef91683 phase-3: refactor OrderView to use string-utils and order-utils
+46717ca phase-3: create string-utils and order-utils
+5496b41 phase-2: update all imports to use src/types/index.ts
+0f46da0 phase-2: create src/types/index.ts as single source of truth
+92c2e16 handoff: agent 1 ca 2026-04-22 - phase 1 hoan thanh
+5fff6d6 phase-1: fix 3 bugs - localStorage order, Tintin fallback, dailySummary screen
+08e583d feat: Thêm Hoàn tác hóa đơn, Xuất ảnh và sửa stale closure bug
+5c2b918 fix: Khắc phục lỗi crash do thiếu import trong QRCodeModal
+d60c0fb fix: Khắc phục lỗi build sau khi loại bỏ dailySummary và sửa lỗi import QRCodeModal
+e624b33 feat: Nâng cấp phiên bản và dọn dẹp codebase\n\n- Nâng cấp phiên bản ứng dụng lên 2.2.34.\n- Cải thiện hàm  để xử lý tốt hơn các ký tự tiếng Việt.\n- Xóa các tệp không cần thiết và logic cũ liên quan đến "Quick Order".\n- Xóa các tệp  không còn liên quan.\n- Xóa các tệp .\n- Cập nhật  để sử dụng  từ .\n- Thay thế tất cả các chuỗi "Tintin" bằng "JJW" để đồng bộ hóa thương hiệu.\n- Loại bỏ tính năng "Tổng kết ngày" và giao diện liên quan.
+3a775be refactor: Điều chỉnh màu chữ của các nút trong index.css để có độ tương phản tốt hơn.
+e973a31 feat: Chuyển đổi hiệu ứng glassmorphism sang màu đen và cập nhật phiên bản ứng dụng.
+d32eb87 chore: Increment app version to 2.2.32
+c5af069 fix: synchronize app version source to package.json and improve grass contrast
+a35d471 chore: Increment app version to 2.2.31
+fd5e68e refactor: Điều chỉnh độ trong suốt của hiệu ứng glassmorphism để trong hơn.
+d9b037a feat: Chuyển đổi giao diện phương thức thanh toán sang hiệu ứng glassmorphism và cập nhật phiên bản ứng dụng.
+076ecc1 chore: Increment app version to 2.2.29
+8e986b2 feat: Remove QuickOrderView from backup directory
+338e8d4 chore: Increment app version to 2.2.28
+9c3091a feat: Refactor order and topping management
+1d6dd1a feat: remove quick order feature, fix toppings calculation in payments and receipts, improve HistoryView and DailySummaryView UI with summary cards and select all functionality
+1218c2b Fix: Ensure constants.ts is correctly formatted on remote
+14564f4 Refactor: PaymentMethodModal with binary + logic fixes; Feature: Detailed QR_ACCOUNTS; Chore: Increment app version
+4cabbd3 Fix: Crash on order item count; Enhance: Detailed order summary & SearchBar focus; Debug: Added OrderView debug info
+235e93a fix: Pass onClear prop to SearchBar in QuickOrderView, resolve build errors, and ensure version consistency.
+44f57de feat: Force commit by adding comment to SearchBar, re-syncing all changes
+d6cf3af Update receipt format to catalogue layout style with category grouping
+e356cde chore: update BIDV QR code in constants and bump version to 2.2.25
+ca5e7e1 chore: update BIDV QR code image and bump version to 2.2.24
+97462b4 fix: replace invalid --no-cache with --force in deploy workflow
+49fad70 chore: force clean rebuild with version 2.2.23
+b3eebde fix: update moduleResolution to bundler for TS modern standard
+d6d446c fix: set moduleResolution to node for TS compatibility
+08e241e fix: remove invalid tsconfig option ignoreDeprecations
+4f6d58a fix: update checkout action to v4
+b066449 chore: optimize vite build with emptyOutDir and hashed filenames
+e17739e fix: update deployment workflow to force build before deploy
+be84a3d chore: add cache-control headers and bump version to 2.2.21
+48ff6a2 chore: force page reload on version upgrade
+06a6392 chore: update app version to 2.2.20
+ab7f215 feat: thêm tính năng hiển thị mã QR thanh toán - tạo component QRCodeModal để chọn và hiển thị mã QR - thêm nút QR vào ViewSelectionView cạnh Tổng kết ngày - sửa lỗi đường dẫn ảnh mã QR - cập nhật tsconfig.json để sửa cảnh báo deprecation
+8ac14e5 Finalize QR features: Add Done (✅) button with JJW flow and bump version to 2.2.19
+b8e1a17 Rename Tintin to JJW in PaymentMethodModal and bump version to 2.2.16
+8e3f9a0 Update QR_ACCOUNTS with HKD Bong Tingee BIDV
+da2e5c5 Add QR HKD Bong Tingee BIDV to public folder
+e034360 Move QR code files to public folder
+941bb74 Update menu to final standard list and bump version to 2.2.15
+d5d3198 Restore payment methods and move QR selection to a new dedicated button
+80ac2d6 Update menu prices, fix cigarette name, and optimize build output configuration
+8efaf1b Rollback receipt.ts to original simple state
+f1ce4ec Fix receipt.ts encoding and TypeScript errors
+cf989f9 Fix receipt format to show topping section with '── Topping ──' separator
+2e04442 Update receipt.ts to handle TOPPING_CATEGORY and display toppings with main items
+d018124 Fix table display to show total amount instead of duration
+181a364 chore: Update version in config to 2.2.7
+a5a8a03 feat: v2.2.7 - Enhanced Quick Order with intelligent parsing
+4aa508e chore: Bump version to 0.1.1
+0364868 feat: Add Vietnamese accent-insensitive search
+d84db94 feat: Add payment method selection and menu price editing
+6397638 Fix deploy.yml workflow file - remove corrupted JS code and restore proper YAML configuration
+512d52f Add Sữa chua dẻo bơ mãng cầu drink item and update app version
+d2fdcfc feat: Improve menu data management and UI enhancements
+fde8f7f fix: rename Man trắng to Malboro trắng
+d1fb9da feat: Add category management features to MenuView
+28d32d4 remove: Remove icons from ViewSelectionView buttons
+c89268c fix: Update Vercel deployment configuration
+000bbc7 Update code
+6259905 feat: Add GitHub Actions workflow for Vercel deployment
+025e934 feat: Enhance QuickOrderView and order parsing
+3d4be73 feat: update button layout to honeycomb style
+6a3f8f6 chore: Nâng phiên bản lên 2.1.1 và cập nhật style
+4a76864 fix: Sửa lỗi crash và đổi tên món
+25ff90c feat: Thêm tính năng và cải tiến giao diện
+42a14b3 docs: Rewrite README.md for professionalism and clarity
+1329919 feat: Implement auto-update and data versioning system
+3a6bf44 refactor(UI): Redesign OrderView and HistoryView
+e5f34c1 feat: Remove login and add history feature
+fec7bf4 feat: Implement order persistence and update UI
+b06d563 chore: simplify UI, fix TS types/env, add vite-env and asset declarations, adjust responsive; build green
+1fec626 chore: clean history, remove sensitive files and push-protection violations
