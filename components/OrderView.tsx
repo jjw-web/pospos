@@ -1,36 +1,58 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import type { TableData, MenuCategory, MenuItem, OrderItem, PaymentMethod, ToppingItem } from '../src/types';
-import SearchBar from './SearchBar';
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,
+} from 'react';
+import type {
+  TableData,
+  MenuCategory,
+  MenuItem,
+  OrderItem,
+  PaymentMethod,
+  ToppingItem,
+} from '../src/types';
+import OrderHeader from './order/OrderHeader';
+import MenuPanel from './order/MenuPanel';
+import OrderPanel from './order/OrderPanel';
 import NoteModal from './NoteModal';
 import PaymentMethodModal from './PaymentMethodModal';
-import TableTransferModal, { TableTransferMode } from './TableTransferModal';
+import TableTransferModal, {
+  TableTransferMode,
+} from './TableTransferModal';
 import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
-import { formatOccupiedDuration } from '../src/lib/table-utils';
-import { includesNormalized } from '../src/lib/string-utils';
-import { calcOrderTotal, countOrderItems, groupItemsByCategory } from '../src/lib/order-utils';
-
-// A simple note icon
-const NoteIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
+import { calcOrderTotal, countOrderItems } from '../src/lib/order-utils';
 
 interface OrderViewProps {
   table: TableData;
   menuCategories: MenuCategory[];
   allTables: TableData[];
   onBack: () => void;
-  onAddItem: (tableId: number, menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => void;
-  onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
+  onAddItem: (
+    tableId: number,
+    menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]
+  ) => void;
+  onUpdateQuantity: (
+    tableId: number,
+    menuItemId: number,
+    change: number
+  ) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
-  onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
+  onUpdateNote: (
+    tableId: number,
+    menuItemId: number,
+    note: string
+  ) => void;
   onMoveTable: (fromId: number, toId: number) => void;
   onMergeFromTable: (currentId: number, sourceId: number) => void;
-  onAddTopping?: (tableId: number, mainItemId: number, toppings: { id: number; name: string; price: number }[]) => void;
+  onAddTopping?: (
+    tableId: number,
+    mainItemId: number,
+    toppings: { id: number; name: string; price: number }[]
+  ) => void;
 }
 
 const OrderView: React.FC<OrderViewProps> = ({
@@ -49,119 +71,63 @@ const OrderView: React.FC<OrderViewProps> = ({
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    menuCategories[0]?.name ?? ''
+  );
   const [searchQuery, setSearchQuery] = useState('');
-  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
+  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(
+    null
+  );
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [transferMode, setTransferMode] = useState<TableTransferMode | null>(null);
+  const [transferMode, setTransferMode] =
+    useState<TableTransferMode | null>(null);
   const [showToppingsModal, setShowToppingsModal] = useState(false);
-  const [selectedOrderItemForToppings, setSelectedOrderItemForToppings] = useState<OrderItem | null>(null);
+  const [selectedOrderItemForToppings, setSelectedOrderItemForToppings] =
+    useState<OrderItem | null>(null);
   const [, headerTick] = useState(0);
+
   const currentOrderRef = useRef<HTMLDivElement>(null);
-
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  const scrollToCurrentOrder = useCallback(() => {
-    currentOrderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
 
   useEffect(() => {
     if (table.status !== 'occupied' || !table.occupiedSince) return;
-    const id = window.setInterval(() => headerTick((n) => n + 1), 30000);
+    const id = window.setInterval(
+      () => headerTick((n) => n + 1),
+      30000
+    );
     return () => window.clearInterval(id);
   }, [table.status, table.occupiedSince]);
 
-  const order = table?.order ?? [];
+  const order = table.order ?? [];
+
   const total = useMemo(() => calcOrderTotal(order), [order]);
-  const groupedOrder = useMemo(
-    () => groupItemsByCategory(order, menuCategories),
-    [order, menuCategories]
-  );
-  const totalQuantity = order.reduce((sum, item) => sum + item.quantity, 0);
+
   const { mainCount, toppingCount, snackCount } = useMemo(
     () => countOrderItems(order, menuCategories),
     [order, menuCategories]
   );
-  const orderSummaryTitle = mainCount === 0 && toppingCount === 0 && snackCount === 0
-    ? 'Đơn hàng hiện tại (0 món)'
-    : `Đơn hàng hiện tại — Đồ uống: ${mainCount}, Topping: ${toppingCount}, Snack: ${snackCount}`;
 
-  const getAvailableToppings = useMemo(() => {
-    return menuCategories
-      .filter(category =>
-        category.name.toLowerCase().includes('topping') ||
-        category.name.toLowerCase().includes('phụ gia') ||
-        category.name.toLowerCase().includes('gia vị')
-      )
-      .flatMap(category => category.items)
-      .map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: 1, // default
-      }));
-  }, [menuCategories]);
+  const orderSummaryTitle =
+    mainCount === 0 && toppingCount === 0 && snackCount === 0
+      ? 'Đơn hàng hiện tại (0 món)'
+      : `Đơn hàng hiện tại — Đồ uống: ${mainCount}, Topping: ${toppingCount}, Snack: ${snackCount}`;
 
-  const openToppingsModal = (orderItem: OrderItem) => {
-    setSelectedOrderItemForToppings(orderItem);
-    setShowToppingsModal(true);
-  };
-
-  const handleConfirmToppings = (selectedToppings: ToppingItem[]) => {
-    if (!selectedOrderItemForToppings) return;
-
-    const newToppings = selectedToppings.map(t => ({
-      id: t.id,
-      name: t.name,
-      price: t.price,
-    }));
-    onAddTopping?.(table.id, selectedOrderItemForToppings.menuItem.id, newToppings);
-
-    setToastMessage(`Đã thêm ${selectedToppings.length} topping cho «${selectedOrderItemForToppings.menuItem.name}»`);
-  };
-
-  const handleAddMenuItem = (menuItem: MenuItem) => {
-    onAddItem(table.id, [{ menuItem }]);
-    setToastMessage(`Đã thêm «${menuItem.name}»`);
-  };
-
-  const handleUpdateQuantity = (menuItemId: number, change: number) => {
-    onUpdateQuantity(table.id, menuItemId, change);
-  };
-
-  const handlePayment = () => {
-    setShowPaymentModal(true);
-  };
-
-  const handleSelectPaymentMethod = (method: PaymentMethod) => {
-    onPayment(table.id, method);
-    setShowPaymentModal(false);
-  };
-
-  const handleSaveNote = (note: string) => {
-    if (editingNoteItem) {
-      onUpdateNote(table.id, editingNoteItem.menuItem.id, note);
-    }
-  };
-
-  const filteredMenuItems = useMemo(() => {
-    if (searchQuery) {
-      const allItems = menuCategories.flatMap(cat => cat.items);
-      return allItems.filter((item) =>
-        includesNormalized(item.name, searchQuery)
-      );
-    }
-    const category = menuCategories.find((cat) => cat.name === selectedCategory);
-    return category ? category.items : [];
-  }, [selectedCategory, searchQuery, menuCategories]);
+  const availableToppings = useMemo(
+    () =>
+      menuCategories
+        .filter((cat) => cat.name.toLowerCase().includes('topping'))
+        .flatMap((cat) => cat.items)
+        .map((item) => ({ id: item.id, name: item.name, price: item.price, quantity: 1 })),
+    [menuCategories]
+  );
 
   const moveCandidates = useMemo(
     () =>
       allTables.filter(
-        (t) => t.id !== table.id && t.status === 'available' && t.order.length === 0
+        (t) =>
+          t.id !== table.id &&
+          t.status === 'available' &&
+          t.order.length === 0
       ),
     [allTables, table.id]
   );
@@ -169,9 +135,39 @@ const OrderView: React.FC<OrderViewProps> = ({
   const mergeCandidates = useMemo(
     () =>
       allTables.filter(
-        (t) => t.id !== table.id && t.status === 'occupied' && t.order.length > 0
+        (t) =>
+          t.id !== table.id &&
+          t.status === 'occupied' &&
+          t.order.length > 0
       ),
     [allTables, table.id]
+  );
+
+  const handleAddMenuItem = useCallback(
+    (menuItem: MenuItem) => {
+      onAddItem(table.id, [{ menuItem }]);
+      setToastMessage(`Đã thêm «${menuItem.name}»`);
+    },
+    [onAddItem, table.id]
+  );
+
+  const handleConfirmToppings = useCallback(
+    (selectedToppings: ToppingItem[]) => {
+      if (!selectedOrderItemForToppings) return;
+      onAddTopping?.(
+        table.id,
+        selectedOrderItemForToppings.menuItem.id,
+        selectedToppings.map((t) => ({
+          id: t.id,
+          name: t.name,
+          price: t.price,
+        }))
+      );
+      setToastMessage(
+        `Đã thêm ${selectedToppings.length} topping cho «${selectedOrderItemForToppings.menuItem.name}»`
+      );
+    },
+    [onAddTopping, table.id, selectedOrderItemForToppings]
   );
 
   const surface = isDark ? '#1e293b' : '#ffffff';
@@ -181,292 +177,79 @@ const OrderView: React.FC<OrderViewProps> = ({
   const borderColor = isDark ? '#334155' : '#eaeaea';
   const cardBorder = isDark ? '#475569' : '#eee';
 
-  const containerStyle: React.CSSProperties = {
-    maxWidth: '480px',
-    margin: '0 auto',
-    padding: '0 15px',
-    paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
-    paddingBottom: '100px',
-    backgroundColor: pageBg,
-    minHeight: '100vh',
-    boxSizing: 'border-box',
-  };
-
-  const headerBarStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    maxWidth: '480px',
-    margin: '0 auto',
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '6px',
-    paddingLeft: '15px',
-    paddingRight: '15px',
-    paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))',
-    paddingBottom: '10px',
-    borderBottom: `1px solid ${borderColor}`,
-    backgroundColor: surface,
-    boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
-    zIndex: 101,
-  };
-
-  const backBtnStyle: React.CSSProperties = {
-    fontSize: '24px',
-    marginRight: '15px',
-    textDecoration: 'none',
-    color: textMain,
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-  };
-
-  const headerTitleStyle: React.CSSProperties = {
-    fontSize: '17px',
-    fontWeight: 600,
-    color: textMain,
-    margin: 0,
-    flex: '1 1 120px',
-    minWidth: 0,
-  };
-
-  const subHeaderStyle: React.CSSProperties = {
-    fontSize: '13px',
-    color: textMuted,
-    margin: '4px 0 0 0',
-    width: '100%',
-  };
-
-  const searchContainerStyle: React.CSSProperties = {
-    margin: '15px 0',
-  };
-
-  const categoriesGridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '12px',
-    marginBottom: '20px',
-  };
-
-  const categoryItemStyle: React.CSSProperties = {
-    backgroundColor: surface,
-    borderRadius: '10px',
-    padding: '15px 10px',
-    textAlign: 'center',
-    boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    cursor: 'pointer',
-    border: `1px solid ${cardBorder}`,
-  };
-  
-  const categoryItemActiveStyle: React.CSSProperties = {
-      ...categoryItemStyle,
-      borderColor: '#3498db',
-      boxShadow: '0 4px 8px rgba(52, 152, 219, 0.2)',
-      transform: 'translateY(-3px)',
-  }
-
-  const categoryNameStyle: React.CSSProperties = {
-    fontSize: '14px',
-    fontWeight: 500,
-    color: textMain,
-  };
-
-  const menuListStyle: React.CSSProperties = {
-    marginBottom: '20px',
-  };
-
-  const menuItemStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px',
-    backgroundColor: surface,
-    borderRadius: '8px',
-    marginBottom: '10px',
-    boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.05)',
-    cursor: 'pointer',
-    border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
-  };
-
-  const menuItemNameStyle: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: 600,
-    color: textMain,
-  };
-
-  const menuItemPriceStyle: React.CSSProperties = {
-    fontSize: '15px',
-    color: '#3498db',
-    fontWeight: 'bold',
-  };
-
-  const orderPanelStyle: React.CSSProperties = {
-    backgroundColor: surface,
-    borderRadius: '12px',
-    padding: '20px',
-    marginBottom: '20px',
-    boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.08)',
-    scrollMarginTop: 'calc(52px + env(safe-area-inset-top, 0px))',
-    border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
-  };
-
-  const orderTitleStyle: React.CSSProperties = {
-    fontSize: '18px',
-    fontWeight: 600,
-    marginBottom: '15px',
-    color: textMain,
-  };
-
-  const emptyOrderStyle: React.CSSProperties = {
-    textAlign: 'center',
-    padding: '30px 0',
-    color: textMuted,
-  };
-
-  const orderItemStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 0',
-    borderBottom: `1px solid ${isDark ? '#334155' : '#f0f0f0'}`,
-  };
-
-  const orderItemNameStyle: React.CSSProperties = {
-    fontSize: '16px',
-    color: textMain,
-  };
-
-  const quantityControlStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  };
-
-  const quantityButtonStyle: React.CSSProperties = {
-    width: '28px',
-    height: '28px',
-    border: `1px solid ${isDark ? '#475569' : '#ddd'}`,
-    borderRadius: '50%',
-    backgroundColor: isDark ? '#334155' : '#f8f9fa',
-    color: textMain,
-    cursor: 'pointer',
-    fontSize: '18px',
-    lineHeight: '24px',
-  };
-
-  const checkoutBarStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    maxWidth: '480px',
-    margin: '0 auto',
-    backgroundColor: surface,
-    padding: '15px 20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    boxShadow: isDark ? '0 -2px 10px rgba(0,0,0,0.35)' : '0 -2px 10px rgba(0,0,0,0.1)',
-    zIndex: 100,
-    borderTop: `1px solid ${borderColor}`,
-  };
-
-  const totalAmountStyle: React.CSSProperties = {
-    fontSize: '18px',
-    fontWeight: 600,
-    color: textMain,
-  };
-
-  const checkoutBtnStyle: React.CSSProperties = {
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    padding: '12px 25px',
-    fontSize: '16px',
-    fontWeight: 600,
-    cursor: 'pointer',
-  };
-
-  const categoryHeaderStyle: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: textMain,
-    marginTop: '20px',
-    marginBottom: '10px',
-    borderBottom: `1px solid ${borderColor}`,
-    paddingBottom: '5px',
-  };
-
-  const noteTextStyle: React.CSSProperties = {
-    fontSize: '13px',
-    color: '#e74c3c',
-    marginTop: '4px',
-  };
-
-  const noteButtonStyle: React.CSSProperties = {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    marginLeft: '10px',
-    color: '#3498db',
-  };
-
-  const actionRowBtn: React.CSSProperties = {
-    flex: 1,
-    padding: '8px 10px',
-    fontSize: '13px',
-    fontWeight: 600,
-    borderRadius: '8px',
-    border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
-    background: isDark ? '#334155' : '#f1f5f9',
-    color: textMain,
-    cursor: 'pointer',
-  };
-
   if (!table || table.order === undefined) {
     return <div style={{ padding: 24, color: textMain }}>Đang tải...</div>;
   }
 
-  const durationLabel =
-    table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
-
   return (
-    <div style={containerStyle}>
-      <div style={headerBarStyle}>
-        <button type="button" style={backBtnStyle} onClick={onBack} aria-label="Quay lại chọn bàn">
-          ←
-        </button>
-        <div 
-          style={{ flex: '1 1 160px', minWidth: 0, cursor: 'pointer' }}
-          onClick={scrollToTop}
-          title="Click để cuộn lên đầu trang"
-        >
-          <h1 style={headerTitleStyle}>
-            {table.name} — {table.status === 'available' ? 'Trống' : 'Có khách'}
-            {durationLabel ? ` · ${durationLabel}` : ''}
-          </h1>
-        </div>
-      </div>
+    <div
+      style={{
+        maxWidth: '480px',
+        margin: '0 auto',
+        padding: '0 15px',
+        paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
+        paddingBottom: '100px',
+        backgroundColor: pageBg,
+        minHeight: '100vh',
+        boxSizing: 'border-box',
+      }}
+    >
+      <OrderHeader
+        table={table}
+        onBack={onBack}
+        onClickTitle={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        surface={surface}
+        borderColor={borderColor}
+        textMain={textMain}
+        isDark={isDark}
+      />
 
-      <p style={subHeaderStyle}>
+      <p
+        style={{
+          fontSize: '13px',
+          color: textMuted,
+          margin: '4px 0 0 0',
+        }}
+      >
         Chuyển / gộp bàn khi khách đổi chỗ. Thêm món sẽ có thông báo nhỏ phía dưới.
       </p>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+
+      <div
+        style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}
+      >
         <button
           type="button"
-          style={actionRowBtn}
+          style={{
+            flex: 1,
+            padding: '8px 10px',
+            fontSize: '13px',
+            fontWeight: 600,
+            borderRadius: '8px',
+            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
+            background: isDark ? '#334155' : '#f1f5f9',
+            color: textMain,
+            cursor: 'pointer',
+          }}
           onClick={() => setTransferMode('move')}
-          disabled={table.order.length === 0 || moveCandidates.length === 0}
+          disabled={
+            table.order.length === 0 || moveCandidates.length === 0
+          }
         >
           Chuyển bàn
         </button>
         <button
           type="button"
-          style={actionRowBtn}
+          style={{
+            flex: 1,
+            padding: '8px 10px',
+            fontSize: '13px',
+            fontWeight: 600,
+            borderRadius: '8px',
+            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
+            background: isDark ? '#334155' : '#f1f5f9',
+            color: textMain,
+            cursor: 'pointer',
+          }}
           onClick={() => setTransferMode('merge')}
           disabled={mergeCandidates.length === 0}
         >
@@ -474,123 +257,102 @@ const OrderView: React.FC<OrderViewProps> = ({
         </button>
       </div>
 
-      <div style={searchContainerStyle}>
-        <SearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          placeholder="Tìm kiếm món ăn..."
-          darkMode={isDark}
-          onClear={() => setSearchQuery('')}
-        />
-      </div>
+      <MenuPanel
+        menuCategories={menuCategories}
+        selectedCategory={selectedCategory}
+        searchQuery={searchQuery}
+        onCategoryChange={setSelectedCategory}
+        onSearchChange={setSearchQuery}
+        onAddItem={handleAddMenuItem}
+        isDark={isDark}
+        surface={surface}
+        textMain={textMain}
+        cardBorder={cardBorder}
+      />
 
-      <div style={categoriesGridStyle}>
-        {menuCategories.map((category) => (
-          <div
-            key={category.name}
-            style={selectedCategory === category.name && !searchQuery ? categoryItemActiveStyle : categoryItemStyle}
-            onClick={() => {
-              setSelectedCategory(category.name);
-              setSearchQuery('');
-            }}
-          >
-            <div style={categoryNameStyle}>{category.name}</div>
-          </div>
-        ))}
-      </div>
+      <OrderPanel
+        order={order}
+        menuCategories={menuCategories}
+        orderSummaryTitle={orderSummaryTitle}
+        onUpdateQuantity={(menuItemId, change) =>
+          onUpdateQuantity(table.id, menuItemId, change)
+        }
+        onEditNote={setEditingNoteItem}
+        onOpenToppings={(item) => {
+          setSelectedOrderItemForToppings(item);
+          setShowToppingsModal(true);
+        }}
+        panelRef={currentOrderRef}
+        isDark={isDark}
+        surface={surface}
+        textMain={textMain}
+        textMuted={textMuted}
+        borderColor={borderColor}
+      />
 
-      <div style={menuListStyle}>
-        {filteredMenuItems.map((item) => (
-          <div key={item.id} style={menuItemStyle} onClick={() => handleAddMenuItem(item)}>
-            <div>
-              <div style={menuItemNameStyle}>{item.name}</div>
-              <div style={menuItemPriceStyle}>{item.price.toLocaleString()}đ</div>
-            </div>
-            <span style={{fontSize: '24px', color: '#3498db'}}>+</span>
-          </div>
-        ))}
-      </div>
-
-      <div ref={currentOrderRef} style={orderPanelStyle}>
-        <h2 style={orderTitleStyle}>{orderSummaryTitle}</h2>
-        {table.order.length === 0 ? (
-          <div style={emptyOrderStyle}>Chưa có món nào trong đơn hàng</div>
-        ) : (
-          Object.entries(groupedOrder).map(([category, items]) => (
-            <div key={category}>
-              <h3 style={categoryHeaderStyle}>{category}</h3>
-              {items.map((item) => (
-                <div key={item.menuItem.id} style={orderItemStyle}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'}}>
-                        <div style={orderItemNameStyle}>{item.menuItem.name}</div>
-                        <button style={noteButtonStyle} onClick={() => setEditingNoteItem(item)}>
-                            <NoteIcon />
-                        </button>
-                        <button
-                          style={{
-                            ...noteButtonStyle,
-                            fontSize: '12px',
-                            padding: '4px 8px',
-                            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
-                            borderRadius: '8px',
-                            color: isDark ? '#f8fafc' : '#1f2937',
-                            background: isDark ? '#334155' : '#f8fafc',
-                          }}
-                          onClick={() => openToppingsModal(item)}
-                        >
-                          Topping
-                        </button>
-                    </div>
-                    {item.note && <div style={noteTextStyle}>{item.note}</div>}
-                    {item.toppings && item.toppings.length > 0 && (
-                      <div style={{ marginTop: '8px', color: textMuted, fontSize: '13px' }}>
-                        {item.toppings.map((topping, index) => (
-                          <div key={`${item.menuItem.id}-topping-${index}`}>
-                            + {topping.quantity} x {topping.name} — {(topping.price * topping.quantity).toLocaleString()}đ
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div style={{ color: textMuted, marginTop: '6px' }}>
-                      {(item.menuItem.price * item.quantity).toLocaleString()}đ
-                    </div>
-                  </div>
-                  <div style={quantityControlStyle}>
-                    <button type="button" style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, -1)}>-</button>
-                    <span style={{ color: textMain, minWidth: '22px', textAlign: 'center' }}>{item.quantity}</span>
-                    <button type="button" style={quantityButtonStyle} onClick={() => handleUpdateQuantity(item.menuItem.id, 1)}>+</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))
-        )}
-      </div>
-
-      <div style={{ textAlign: 'center', padding: '15px 0', color: textMuted, fontSize: '12px' }}>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '15px 0',
+          color: textMuted,
+          fontSize: '12px',
+        }}
+      >
         pospos.vercel.app
       </div>
 
-      <div style={checkoutBarStyle}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          maxWidth: '480px',
+          margin: '0 auto',
+          backgroundColor: surface,
+          padding: '15px 20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: isDark
+            ? '0 -2px 10px rgba(0,0,0,0.35)'
+            : '0 -2px 10px rgba(0,0,0,0.1)',
+          zIndex: 100,
+          borderTop: `1px solid ${borderColor}`,
+        }}
+      >
         <button
           type="button"
-          onClick={scrollToCurrentOrder}
+          onClick={() =>
+            currentOrderRef.current?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            })
+          }
           style={{
             background: 'none',
             border: 'none',
             padding: 0,
             cursor: 'pointer',
-            textAlign: 'left',
-            ...totalAmountStyle,
+            fontSize: '18px',
+            fontWeight: 600,
+            color: textMain,
           }}
-          aria-label="Cuộn tới đơn hàng hiện tại"
         >
           Tổng cộng: {total.toLocaleString()}đ
         </button>
-        <button 
-          style={checkoutBtnStyle} 
-          onClick={handlePayment}
+        <button
+          style={{
+            backgroundColor: '#3498db',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '12px 25px',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+          onClick={() => setShowPaymentModal(true)}
           disabled={table.order.length === 0}
         >
           Thanh toán
@@ -601,14 +363,16 @@ const OrderView: React.FC<OrderViewProps> = ({
         <NoteModal
           item={editingNoteItem}
           onClose={() => setEditingNoteItem(null)}
-          onSave={handleSaveNote}
+          onSave={(note) => {
+            onUpdateNote(table.id, editingNoteItem.menuItem.id, note);
+          }}
         />
       )}
 
       {showToppingsModal && selectedOrderItemForToppings && (
         <ToppingsModal
           menuItem={selectedOrderItemForToppings.menuItem}
-          availableToppings={getAvailableToppings}
+          availableToppings={availableToppings}
           onConfirm={handleConfirmToppings}
           onClose={() => {
             setShowToppingsModal(false);
@@ -621,7 +385,10 @@ const OrderView: React.FC<OrderViewProps> = ({
       {showPaymentModal && (
         <PaymentMethodModal
           total={total}
-          onSelect={handleSelectPaymentMethod}
+          onSelect={(method) => {
+            onPayment(table.id, method);
+            setShowPaymentModal(false);
+          }}
           onClose={() => setShowPaymentModal(false)}
           receipt={
             table.order.length > 0
@@ -634,7 +401,9 @@ const OrderView: React.FC<OrderViewProps> = ({
       {transferMode && (
         <TableTransferModal
           mode={transferMode}
-          tables={transferMode === 'move' ? moveCandidates : mergeCandidates}
+          tables={
+            transferMode === 'move' ? moveCandidates : mergeCandidates
+          }
           onClose={() => setTransferMode(null)}
           onPick={(targetId) => {
             if (transferMode === 'move') {
@@ -648,7 +417,10 @@ const OrderView: React.FC<OrderViewProps> = ({
       )}
 
       {toastMessage && (
-        <Toast message={toastMessage} onDone={() => setToastMessage(null)} />
+        <Toast
+          message={toastMessage}
+          onDone={() => setToastMessage(null)}
+        />
       )}
     </div>
   );
