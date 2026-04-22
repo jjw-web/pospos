@@ -10,7 +10,12 @@ interface TableTransferModalProps {
   onClose: () => void;
 }
 
-const TableTransferModal: React.FC<TableTransferModalProps> = ({ mode, tables, onPick, onClose }) => {
+const TableTransferModal: React.FC<TableTransferModalProps> = ({
+  mode,
+  tables,
+  onPick,
+  onClose,
+}) => {
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -33,10 +38,7 @@ const TableTransferModal: React.FC<TableTransferModalProps> = ({ mode, tables, o
     boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
   };
 
-  const title =
-    mode === 'move'
-      ? 'Chuyển sang bàn trống'
-      : 'Gộp đơn từ bàn (chọn bàn có khách)';
+  const title = mode === 'move' ? 'Chuyển sang bàn trống' : 'Gộp đơn từ bàn (chọn bàn có khách)';
 
   const hint =
     mode === 'move'

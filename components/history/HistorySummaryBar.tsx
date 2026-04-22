@@ -38,18 +38,12 @@ const HistorySummaryBar: React.FC<HistorySummaryBarProps> = ({
       }}
     >
       <div style={cardStyle}>
-        <span style={{ color: textMuted, fontSize: '13px' }}>
-          Số hóa đơn
-        </span>
+        <span style={{ color: textMuted, fontSize: '13px' }}>Số hóa đơn</span>
         <strong style={{ fontSize: '22px' }}>{totalBills}</strong>
       </div>
       <div style={cardStyle}>
-        <span style={{ color: textMuted, fontSize: '13px' }}>
-          Doanh thu
-        </span>
-        <strong style={{ fontSize: '22px' }}>
-          {totalRevenue.toLocaleString()}đ
-        </strong>
+        <span style={{ color: textMuted, fontSize: '13px' }}>Doanh thu</span>
+        <strong style={{ fontSize: '22px' }}>{totalRevenue.toLocaleString()}đ</strong>
       </div>
     </div>
   );

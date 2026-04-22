@@ -21,7 +21,9 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
       .slice(0, 12);
   }, [summary.itemSales]);
 
-  const avgBill = summary.bills.length ? Math.round(summary.totalRevenue / summary.bills.length) : 0;
+  const avgBill = summary.bills.length
+    ? Math.round(summary.totalRevenue / summary.bills.length)
+    : 0;
 
   const colors = useMemo(
     () => ({
@@ -71,10 +73,18 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
         </div>
 
         <p style={{ margin: '0 0 16px', color: colors.muted, fontSize: '14px' }}>
-          Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn · {summary.totalItemsSold} món bán
+          Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn · {summary.totalItemsSold}{' '}
+          món bán
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '14px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '12px',
+            marginBottom: '14px',
+          }}
+        >
           <div
             style={{
               backgroundColor: colors.card,
@@ -84,8 +94,12 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Tổng hóa đơn</div>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.bills.length}</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+              Tổng hóa đơn
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
+              {summary.bills.length}
+            </div>
           </div>
           <div
             style={{
@@ -96,8 +110,12 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Số món bán</div>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{summary.totalItemsSold}</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+              Số món bán
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
+              {summary.totalItemsSold}
+            </div>
           </div>
           <div
             style={{
@@ -108,8 +126,12 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Trung bình mỗi hóa đơn</div>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>{avgBill.toLocaleString('vi-VN')}đ</div>
+            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+              Trung bình mỗi hóa đơn
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
+              {avgBill.toLocaleString('vi-VN')}đ
+            </div>
           </div>
         </div>
 
@@ -122,7 +144,9 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
             border: `1px solid ${colors.border}`,
           }}
         >
-          <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>Tổng doanh thu</div>
+          <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+            Tổng doanh thu
+          </div>
           <div style={{ fontSize: '26px', fontWeight: 800, color: '#38bdf8' }}>
             {summary.totalRevenue.toLocaleString('vi-VN')}đ
           </div>
@@ -137,7 +161,9 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
             border: `1px solid ${colors.border}`,
           }}
         >
-          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Theo hình thức thanh toán</div>
+          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
+            Theo hình thức thanh toán
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '15px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: colors.muted }}>💵 Tiền mặt</span>
@@ -164,11 +190,21 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
             border: `1px solid ${colors.border}`,
           }}
         >
-          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>Món bán chạy (số lượng)</div>
+          <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
+            Món bán chạy (số lượng)
+          </div>
           {topList.length === 0 ? (
             <p style={{ color: colors.muted, margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
           ) : (
-            <ol style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <ol
+              style={{
+                margin: 0,
+                paddingLeft: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
               {topList.map(([name, qty]) => (
                 <li key={name} style={{ fontSize: '14px' }}>
                   <strong>{name}</strong>

@@ -22,10 +22,10 @@ export function mergeMenuWithDefaults(saved: MenuCategory[]): MenuCategory[] {
       continue;
     }
 
-    const savedById = new Map(savedCat.items.map((i) => [i.id, i] as const));
-    const defaultIds = new Set(defaultItems.map((i) => i.id));
+    const savedById = new Map(savedCat.items.map((i: MenuItem) => [i.id, i] as const));
+    const defaultIds = new Set(defaultItems.map((i: MenuItem) => i.id));
 
-    const nextItems: MenuItem[] = defaultItems.map((d) => {
+    const nextItems: MenuItem[] = defaultItems.map((d: MenuItem) => {
       const existing = savedById.get(d.id);
       if (existing) return { ...existing, price: d.price, name: d.name };
       return { ...d };

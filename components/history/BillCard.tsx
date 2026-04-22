@@ -28,10 +28,7 @@ const BillCard: React.FC<BillCardProps> = ({
   borderColor,
   isDark,
 }) => {
-  const { mainCount, toppingCount, snackCount } = countOrderItems(
-    bill.items,
-    menuCategories
-  );
+  const { mainCount, toppingCount, snackCount } = countOrderItems(bill.items, menuCategories);
   const groupedItems = groupItemsByCategory(bill.items, menuCategories);
 
   return (
@@ -55,9 +52,7 @@ const BillCard: React.FC<BillCardProps> = ({
           marginBottom: '15px',
         }}
       >
-        <label
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <input
             type="checkbox"
             checked={isSelected}
@@ -67,19 +62,13 @@ const BillCard: React.FC<BillCardProps> = ({
             }}
             onClick={(e) => e.stopPropagation()}
           />
-          <span style={{ fontWeight: 'bold', color: textMain }}>
-            Bàn {bill.table}
-          </span>
+          <span style={{ fontWeight: 'bold', color: textMain }}>Bàn {bill.table}</span>
         </label>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontWeight: 600, color: textMain }}>
-            {bill.total.toLocaleString()}đ
-          </div>
+          <div style={{ fontWeight: 600, color: textMain }}>{bill.total.toLocaleString()}đ</div>
           <div style={{ fontSize: '12px', color: textMuted }}>
             {mainCount > 0 ? `Đồ uống: ${mainCount}` : ''}
-            {snackCount > 0
-              ? `${mainCount > 0 ? ', ' : ''}Snack: ${snackCount}`
-              : ''}
+            {snackCount > 0 ? `${mainCount > 0 ? ', ' : ''}Snack: ${snackCount}` : ''}
             {toppingCount > 0
               ? `${mainCount > 0 || snackCount > 0 ? ', ' : ''}Topping: ${toppingCount}`
               : ''}
@@ -101,8 +90,8 @@ const BillCard: React.FC<BillCardProps> = ({
             {bill.paymentMethod === 'Cash'
               ? '💵 Tiền mặt'
               : bill.paymentMethod === 'BIDV'
-              ? '🏦 BIDV'
-              : '💳 JJW'}
+                ? '🏦 BIDV'
+                : '💳 JJW'}
           </span>
         )}
       </div>
@@ -144,8 +133,7 @@ const BillCard: React.FC<BillCardProps> = ({
                 <div style={{ flex: 1 }}>
                   <span>{item.menuItem.name}</span>
                   <div style={{ fontSize: '12px', color: textMuted }}>
-                    {item.quantity} x{' '}
-                    {item.menuItem.price.toLocaleString()}đ
+                    {item.quantity} x {item.menuItem.price.toLocaleString()}đ
                   </div>
                   {item.note && (
                     <div
@@ -168,22 +156,15 @@ const BillCard: React.FC<BillCardProps> = ({
                       }}
                     >
                       {item.toppings.map((topping, tIndex) => (
-                        <div
-                          key={`${item.menuItem.id}-topping-${tIndex}`}
-                        >
+                        <div key={`${item.menuItem.id}-topping-${tIndex}`}>
                           + {topping.quantity} x {topping.name} —{' '}
-                          {(
-                            topping.price * topping.quantity
-                          ).toLocaleString()}
-                          đ
+                          {(topping.price * topping.quantity).toLocaleString()}đ
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
-                <span style={{ fontWeight: 'bold' }}>
-                  {calcItemTotal(item).toLocaleString()}đ
-                </span>
+                <span style={{ fontWeight: 'bold' }}>{calcItemTotal(item).toLocaleString()}đ</span>
               </li>
             ))}
           </ul>

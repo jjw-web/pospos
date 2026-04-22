@@ -10,17 +10,19 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   // Calculate total bill amount including toppings
-  const totalAmount = table.order?.reduce((sum, item) => {
-    const toppingsTotal = item.toppings?.reduce((tSum, topping) => tSum + topping.price * topping.quantity, 0) || 0;
-    return sum + (item.menuItem.price * item.quantity) + toppingsTotal;
-  }, 0) || 0;
+  const totalAmount =
+    table.order?.reduce((sum, item) => {
+      const toppingsTotal =
+        item.toppings?.reduce((tSum, topping) => tSum + topping.price * topping.quantity, 0) || 0;
+      return sum + item.menuItem.price * item.quantity + toppingsTotal;
+    }, 0) || 0;
 
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -33,9 +35,7 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
     cursor: 'pointer',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-    boxShadow: isHovered 
-      ? '0 8px 25px rgba(0, 0, 0, 0.3)' 
-      : '0 4px 12px rgba(0, 0, 0, 0.2)',
+    boxShadow: isHovered ? '0 8px 25px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
   };
 
   // Purple banner at top
@@ -105,7 +105,7 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
           {table.status === 'available' ? 'BÀN TRỐNG' : 'BÀN CÓ KHÁCH'}
         </span>
       </div>
-      
+
       {/* Teal/Amber Body */}
       <div style={bodyStyle}>
         <h3 style={mainTextStyle}>{table.name}</h3>

@@ -58,9 +58,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ fontSize: '16px', color: textMain }}>
-            {item.menuItem.name}
-          </span>
+          <span style={{ fontSize: '16px', color: textMain }}>{item.menuItem.name}</span>
           <button
             style={{
               background: 'none',
@@ -90,9 +88,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
         </div>
 
         {item.note && (
-          <div style={{ fontSize: '13px', color: '#e74c3c', marginTop: '4px' }}>
-            {item.note}
-          </div>
+          <div style={{ fontSize: '13px', color: '#e74c3c', marginTop: '4px' }}>{item.note}</div>
         )}
 
         {item.toppings && item.toppings.length > 0 && (

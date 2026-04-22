@@ -21,7 +21,7 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
   };
 
   const addPredefinedNote = (predefinedNote: string) => {
-    setNote(prev => prev ? `${prev}, ${predefinedNote}` : predefinedNote);
+    setNote((prev) => (prev ? `${prev}, ${predefinedNote}` : predefinedNote));
   };
 
   const modalOverlayStyle: React.CSSProperties = {
@@ -110,8 +110,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
       <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
         <h3 style={modalHeaderStyle}>Ghi chú cho: {item.menuItem.name}</h3>
         <div style={tagsContainerStyle}>
-          {PREDEFINED_NOTES.map(predefinedNote => (
-            <button key={predefinedNote} style={tagStyle} onClick={() => addPredefinedNote(predefinedNote)}>
+          {PREDEFINED_NOTES.map((predefinedNote) => (
+            <button
+              key={predefinedNote}
+              style={tagStyle}
+              onClick={() => addPredefinedNote(predefinedNote)}
+            >
               {predefinedNote}
             </button>
           ))}
@@ -123,8 +127,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
           placeholder="Hoặc nhập ghi chú riêng..."
         />
         <div style={buttonsContainerStyle}>
-          <button style={cancelButtonStyle} onClick={onClose}>Hủy</button>
-          <button style={saveButtonStyle} onClick={handleSave}>Lưu</button>
+          <button style={cancelButtonStyle} onClick={onClose}>
+            Hủy
+          </button>
+          <button style={saveButtonStyle} onClick={handleSave}>
+            Lưu
+          </button>
         </div>
       </div>
     </div>

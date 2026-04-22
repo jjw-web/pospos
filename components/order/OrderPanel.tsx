@@ -45,9 +45,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
         borderRadius: '12px',
         padding: '20px',
         marginBottom: '20px',
-        boxShadow: isDark
-          ? '0 2px 10px rgba(0,0,0,0.25)'
-          : '0 2px 10px rgba(0,0,0,0.08)',
+        boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.08)',
         scrollMarginTop: 'calc(52px + env(safe-area-inset-top, 0px))',
         border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
       }}
@@ -93,9 +91,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
               <OrderItemRow
                 key={item.menuItem.id}
                 item={item}
-                onUpdateQuantity={(change) =>
-                  onUpdateQuantity(item.menuItem.id, change)
-                }
+                onUpdateQuantity={(change) => onUpdateQuantity(item.menuItem.id, change)}
                 onEditNote={() => onEditNote(item)}
                 onOpenToppings={() => onOpenToppings(item)}
                 isDark={isDark}

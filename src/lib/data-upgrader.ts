@@ -11,7 +11,7 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
   // Nâng cấp từ v1 (hoặc chưa có) lên v2
   if ((oldVersion === null || oldVersion < 2) && newVersion >= 2) {
     console.log('Thực hiện nâng cấp dữ liệu lên v2...');
-    
+
     const tablesJSON = localStorage.getItem('tables');
     let tablesMap: Map<number, TableData>;
 
@@ -20,7 +20,10 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
       const tableEntries: [number, TableData][] = tablesJSON ? JSON.parse(tablesJSON) : [];
       tablesMap = new Map(tableEntries);
     } catch (error) {
-      console.error('Lỗi khi đọc dữ liệu bàn ăn cũ, có thể dữ liệu không đúng định dạng Map.entries().', error);
+      console.error(
+        'Lỗi khi đọc dữ liệu bàn ăn cũ, có thể dữ liệu không đúng định dạng Map.entries().',
+        error
+      );
       // Khởi tạo rỗng để tránh lỗi
       tablesMap = new Map();
     }

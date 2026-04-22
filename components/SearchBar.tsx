@@ -9,9 +9,9 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  searchQuery, 
-  setSearchQuery, 
-  placeholder = "Search...",
+  searchQuery,
+  setSearchQuery,
+  placeholder = 'Search...',
   darkMode = false,
   onClear,
 }) => {
@@ -34,10 +34,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div style={{
-      position: 'relative',
-      width: '100%'
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+      }}
+    >
       <input
         ref={inputRef}
         type="text"
@@ -61,7 +63,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             cursor: 'pointer',
             fontSize: '18px',
             lineHeight: '1',
-            padding: '5px'
+            padding: '5px',
           }}
         >
           ×

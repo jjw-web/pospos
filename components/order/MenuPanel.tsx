@@ -38,9 +38,7 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
         .flatMap((cat) => cat.items)
         .filter((item) => includesNormalized(item.name, searchQuery));
     }
-    const category = menuCategories.find(
-      (cat) => cat.name === selectedCategory
-    );
+    const category = menuCategories.find((cat) => cat.name === selectedCategory);
     return category ? category.items : [];
   }, [menuCategories, selectedCategory, searchQuery]);
 
@@ -74,20 +72,16 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
               textAlign: 'center',
               cursor: 'pointer',
               border: `1px solid ${
-                selectedCategory === category.name && !searchQuery
-                  ? '#3498db'
-                  : cardBorder
+                selectedCategory === category.name && !searchQuery ? '#3498db' : cardBorder
               }`,
               boxShadow:
                 selectedCategory === category.name && !searchQuery
                   ? '0 4px 8px rgba(52,152,219,0.2)'
                   : isDark
-                  ? '0 2px 5px rgba(0,0,0,0.2)'
-                  : '0 2px 5px rgba(0,0,0,0.05)',
+                    ? '0 2px 5px rgba(0,0,0,0.2)'
+                    : '0 2px 5px rgba(0,0,0,0.05)',
               transform:
-                selectedCategory === category.name && !searchQuery
-                  ? 'translateY(-3px)'
-                  : 'none',
+                selectedCategory === category.name && !searchQuery ? 'translateY(-3px)' : 'none',
               transition: 'all 0.2s',
             }}
             onClick={() => {
@@ -95,9 +89,7 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
               onSearchChange('');
             }}
           >
-            <div
-              style={{ fontSize: '14px', fontWeight: 500, color: textMain }}
-            >
+            <div style={{ fontSize: '14px', fontWeight: 500, color: textMain }}>
               {category.name}
             </div>
           </div>
@@ -122,11 +114,7 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
             onClick={() => onAddItem(item)}
           >
             <div>
-              <div
-                style={{ fontSize: '16px', fontWeight: 600, color: textMain }}
-              >
-                {item.name}
-              </div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: textMain }}>{item.name}</div>
               <div
                 style={{
                   fontSize: '15px',

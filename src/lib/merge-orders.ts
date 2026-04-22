@@ -5,10 +5,7 @@ import type { OrderItem, ToppingItem } from '../types';
  * Cùng topping id → cộng số lượng.
  * Khác id → thêm mới.
  */
-function mergeToppings(
-  toppingsA: ToppingItem[],
-  toppingsB: ToppingItem[]
-): ToppingItem[] {
+function mergeToppings(toppingsA: ToppingItem[], toppingsB: ToppingItem[]): ToppingItem[] {
   const map = new Map<number, ToppingItem>();
   for (const t of toppingsA) {
     map.set(t.id, { ...t });
@@ -29,10 +26,7 @@ function mergeToppings(
  * Cùng món (id) → cộng số lượng, nối ghi chú, merge toppings.
  * Khác món → thêm mới.
  */
-export function mergeOrderItems(
-  primary: OrderItem[],
-  secondary: OrderItem[]
-): OrderItem[] {
+export function mergeOrderItems(primary: OrderItem[], secondary: OrderItem[]): OrderItem[] {
   const map = new Map<number, OrderItem>();
 
   for (const o of primary) {
@@ -56,10 +50,7 @@ export function mergeOrderItems(
         menuItem: { ...existing.menuItem },
         quantity: existing.quantity + o.quantity,
         note,
-        toppings: mergeToppings(
-          existing.toppings ?? [],
-          o.toppings ?? []
-        ),
+        toppings: mergeToppings(existing.toppings ?? [], o.toppings ?? []),
       });
     } else {
       map.set(o.menuItem.id, {

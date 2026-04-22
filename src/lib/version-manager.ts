@@ -42,7 +42,7 @@ export function checkVersion() {
   if (versionChanged || dataChanged) {
     console.log('Hoàn tất kiểm tra phiên bản. Phiên bản hiện tại:', {
       app: APP_CONFIG.version,
-      data: APP_CONFIG.dataVersion
+      data: APP_CONFIG.dataVersion,
     });
   }
 }

@@ -82,7 +82,11 @@ export function computeDailySummary(history: Bill[], dateKey: string): DailySumm
 }
 
 /** Top món theo số lượng (đã sort). */
-export function getTopSellingItems(history: Bill[], dateKey: string, limit = 10): { name: string; qty: number }[] {
+export function getTopSellingItems(
+  history: Bill[],
+  dateKey: string,
+  limit = 10
+): { name: string; qty: number }[] {
   const { itemSales } = computeDailySummary(history, dateKey);
   return Array.from(itemSales.entries())
     .sort((a, b) => b[1] - a[1])

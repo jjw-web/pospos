@@ -5,7 +5,7 @@ import type { PaymentMethod } from '../src/types';
 
 // Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
 // Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
-type QRAccount = typeof QR_ACCOUNTS[number] & { method?: PaymentMethod };
+type QRAccount = (typeof QR_ACCOUNTS)[number] & { method?: PaymentMethod };
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -57,7 +57,14 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {selectedQR && (
               <button
@@ -76,7 +83,14 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                 ←
               </button>
             )}
-            <h2 style={{ margin: 0, color: isDark ? '#f8fafc' : '#0f172a', fontSize: '20px', fontWeight: 700 }}>
+            <h2
+              style={{
+                margin: 0,
+                color: isDark ? '#f8fafc' : '#0f172a',
+                fontSize: '20px',
+                fontWeight: 700,
+              }}
+            >
               {selectedQR ? 'Chi tiết mã QR' : 'Chọn mã QR'}
             </h2>
           </div>

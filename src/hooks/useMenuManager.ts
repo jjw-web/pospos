@@ -18,16 +18,12 @@ function persistMenuCategories(categories: MenuCategory[]): void {
 }
 
 export function useMenuManager() {
-  const [menuCategories, setMenuCategories] =
-    useState<MenuCategory[]>(loadMenuCategories);
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(loadMenuCategories);
 
-  const updateMenuCategories = useCallback(
-    (categories: MenuCategory[]) => {
-      setMenuCategories(categories);
-      persistMenuCategories(categories);
-    },
-    []
-  );
+  const updateMenuCategories = useCallback((categories: MenuCategory[]) => {
+    setMenuCategories(categories);
+    persistMenuCategories(categories);
+  }, []);
 
   return { menuCategories, updateMenuCategories };
 }

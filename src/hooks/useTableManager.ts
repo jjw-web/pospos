@@ -17,34 +17,25 @@ function loadTables(): Map<number, TableData> {
 }
 
 function persistTables(tables: Map<number, TableData>): void {
-  localStorage.setItem(
-    'tables',
-    JSON.stringify(Array.from(tables.entries()))
-  );
+  localStorage.setItem('tables', JSON.stringify(Array.from(tables.entries())));
 }
 
 export function useTableManager() {
   const [tables, setTables] = useState<Map<number, TableData>>(loadTables);
 
-  const updateTable = useCallback(
-    (tableId: number, patch: Partial<TableData>) => {
-      setTables((prev) => {
-        const next = new Map(prev);
-        const current = next.get(tableId);
-        if (!current) return prev;
-        next.set(tableId, { ...current, ...patch });
-        persistTables(next);
-        return next;
-      });
-    },
-    []
-  );
+  const updateTable = useCallback((tableId: number, patch: Partial<TableData>) => {
+    setTables((prev) => {
+      const next = new Map(prev);
+      const current = next.get(tableId);
+      if (!current) return prev;
+      next.set(tableId, { ...current, ...patch });
+      persistTables(next);
+      return next;
+    });
+  }, []);
 
   const addItemsToTable = useCallback(
-    (
-      tableId: number,
-      itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]
-    ) => {
+    (tableId: number, itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => {
       setTables((prev) => {
         const next = new Map(prev);
         const table = next.get(tableId);
@@ -55,22 +46,14 @@ export function useTableManager() {
           const hasTopping = toppings && toppings.length > 0;
           const existingIdx = hasTopping
             ? -1
-            : newOrder.findIndex(
-                (i) =>
-                  i.menuItem.id === menuItem.id && !i.toppings?.length
-              );
+            : newOrder.findIndex((i) => i.menuItem.id === menuItem.id && !i.toppings?.length);
 
           if (existingIdx >= 0) {
             newOrder = newOrder.map((item, idx) =>
-              idx === existingIdx
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
+              idx === existingIdx ? { ...item, quantity: item.quantity + 1 } : item
             );
           } else {
-            newOrder = [
-              ...newOrder,
-              { menuItem, quantity: 1, toppings: toppings ?? [] },
-            ];
+            newOrder = [...newOrder, { menuItem, quantity: 1, toppings: toppings ?? [] }];
           }
         });
 
@@ -88,51 +71,43 @@ export function useTableManager() {
     []
   );
 
-  const updateItemQuantity = useCallback(
-    (tableId: number, menuItemId: number, change: number) => {
-      setTables((prev) => {
-        const next = new Map(prev);
-        const table = next.get(tableId);
-        if (!table) return prev;
+  const updateItemQuantity = useCallback((tableId: number, menuItemId: number, change: number) => {
+    setTables((prev) => {
+      const next = new Map(prev);
+      const table = next.get(tableId);
+      if (!table) return prev;
 
-        const newOrder = table.order
-          .map((item) =>
-            item.menuItem.id === menuItemId
-              ? { ...item, quantity: item.quantity + change }
-              : item
-          )
-          .filter((item) => item.quantity > 0);
+      const newOrder = table.order
+        .map((item) =>
+          item.menuItem.id === menuItemId ? { ...item, quantity: item.quantity + change } : item
+        )
+        .filter((item) => item.quantity > 0);
 
-        const updated: TableData = {
-          ...table,
-          order: newOrder,
-          status: newOrder.length > 0 ? 'occupied' : 'available',
-          occupiedSince: newOrder.length > 0 ? table.occupiedSince : undefined,
-        };
-        next.set(tableId, updated);
-        persistTables(next);
-        return next;
-      });
-    },
-    []
-  );
+      const updated: TableData = {
+        ...table,
+        order: newOrder,
+        status: newOrder.length > 0 ? 'occupied' : 'available',
+        occupiedSince: newOrder.length > 0 ? table.occupiedSince : undefined,
+      };
+      next.set(tableId, updated);
+      persistTables(next);
+      return next;
+    });
+  }, []);
 
-  const updateItemNote = useCallback(
-    (tableId: number, menuItemId: number, note: string) => {
-      setTables((prev) => {
-        const next = new Map(prev);
-        const table = next.get(tableId);
-        if (!table) return prev;
-        const newOrder = table.order.map((item) =>
-          item.menuItem.id === menuItemId ? { ...item, note } : item
-        );
-        next.set(tableId, { ...table, order: newOrder });
-        persistTables(next);
-        return next;
-      });
-    },
-    []
-  );
+  const updateItemNote = useCallback((tableId: number, menuItemId: number, note: string) => {
+    setTables((prev) => {
+      const next = new Map(prev);
+      const table = next.get(tableId);
+      if (!table) return prev;
+      const newOrder = table.order.map((item) =>
+        item.menuItem.id === menuItemId ? { ...item, note } : item
+      );
+      next.set(tableId, { ...table, order: newOrder });
+      persistTables(next);
+      return next;
+    });
+  }, []);
 
   const addToppingToItem = useCallback(
     (
@@ -205,9 +180,8 @@ export function useTableManager() {
 
       const merged = mergeOrderItems(current.order, source.order);
       const since =
-        [current.occupiedSince, source.occupiedSince]
-          .filter((s): s is string => !!s)
-          .sort()[0] ?? new Date().toISOString();
+        [current.occupiedSince, source.occupiedSince].filter((s): s is string => !!s).sort()[0] ??
+        new Date().toISOString();
 
       next.set(currentId, {
         ...current,
@@ -262,9 +236,7 @@ export function useTableManager() {
   const revertBill = useCallback((bill: Bill) => {
     setTables((prev) => {
       const next = new Map(prev);
-      const target = Array.from(next.values()).find(
-        (t) => t.name === bill.table
-      );
+      const target = Array.from(next.values()).find((t) => t.name === bill.table);
 
       if (target) {
         if (target.status === 'available' && target.order.length === 0) {

@@ -35,8 +35,14 @@ function loadScreen(): AppScreen {
   try {
     const saved = localStorage.getItem('currentScreen');
     const valid: AppScreen[] = [
-      'start', 'viewSelection', 'inside', 'outside',
-      'order', 'history', 'menu', 'dailySummary',
+      'start',
+      'viewSelection',
+      'inside',
+      'outside',
+      'order',
+      'history',
+      'menu',
+      'dailySummary',
     ];
     if (saved && valid.includes(saved as AppScreen)) {
       return saved as AppScreen;
@@ -64,9 +70,7 @@ const App: React.FC = () => {
   }, []);
 
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(loadScreen);
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(
-    loadSelectedTableId
-  );
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(loadSelectedTableId);
 
   const tableManager = useTableManager();
   const historyManager = useHistoryManager();
@@ -85,18 +89,13 @@ const App: React.FC = () => {
   }, [selectedTableId]);
 
   const selectedTable = useMemo(
-    () =>
-      selectedTableId !== null
-        ? tableManager.tables.get(selectedTableId) ?? null
-        : null,
+    () => (selectedTableId !== null ? (tableManager.tables.get(selectedTableId) ?? null) : null),
     [selectedTableId, tableManager.tables]
   );
 
   const insideStats = useMemo(
     () => ({
-      occupied: tableManager.insideTables.filter(
-        (t) => t.status === 'occupied'
-      ).length,
+      occupied: tableManager.insideTables.filter((t) => t.status === 'occupied').length,
       total: tableManager.insideTables.length,
     }),
     [tableManager.insideTables]
@@ -104,9 +103,7 @@ const App: React.FC = () => {
 
   const outsideStats = useMemo(
     () => ({
-      occupied: tableManager.outsideTables.filter(
-        (t) => t.status === 'occupied'
-      ).length,
+      occupied: tableManager.outsideTables.filter((t) => t.status === 'occupied').length,
       total: tableManager.outsideTables.length,
     }),
     [tableManager.outsideTables]
@@ -123,9 +120,7 @@ const App: React.FC = () => {
       if (!bill) return;
       historyManager.addBill(bill);
       const table = tableManager.tables.get(tableId);
-      setCurrentScreen(
-        table?.layout === 'Inside' ? 'inside' : 'outside'
-      );
+      setCurrentScreen(table?.layout === 'Inside' ? 'inside' : 'outside');
       setSelectedTableId(null);
     },
     [tableManager, historyManager]
@@ -133,11 +128,7 @@ const App: React.FC = () => {
 
   const handleRevertBill = useCallback(
     (bill: Bill) => {
-      if (
-        !window.confirm(
-          `Bạn có chắc muốn hoàn tác hóa đơn bàn ${bill.table}?`
-        )
-      ) {
+      if (!window.confirm(`Bạn có chắc muốn hoàn tác hóa đơn bàn ${bill.table}?`)) {
         return;
       }
       tableManager.revertBill(bill);
@@ -147,10 +138,7 @@ const App: React.FC = () => {
     [tableManager, historyManager]
   );
 
-  const allTables = useMemo(
-    () => Array.from(tableManager.tables.values()),
-    [tableManager.tables]
-  );
+  const allTables = useMemo(() => Array.from(tableManager.tables.values()), [tableManager.tables]);
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -204,9 +192,7 @@ const App: React.FC = () => {
             menuCategories={menuManager.menuCategories}
             allTables={allTables}
             onBack={() =>
-              setCurrentScreen(
-                selectedTable.layout === 'Inside' ? 'inside' : 'outside'
-              )
+              setCurrentScreen(selectedTable.layout === 'Inside' ? 'inside' : 'outside')
             }
             onAddItem={tableManager.addItemsToTable}
             onUpdateQuantity={tableManager.updateItemQuantity}
@@ -255,11 +241,7 @@ const App: React.FC = () => {
     }
   };
 
-  return (
-    <Suspense fallback={<LoadingScreen />}>
-      {renderScreen()}
-    </Suspense>
-  );
+  return <Suspense fallback={<LoadingScreen />}>{renderScreen()}</Suspense>;
 };
 
 export default App;

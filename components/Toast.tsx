@@ -30,7 +30,11 @@ const Toast: React.FC<ToastProps> = ({ message, onDone, durationMs = 2200 }) => 
     pointerEvents: 'none',
   };
 
-  return <div style={style} role="status">{message}</div>;
+  return (
+    <div style={style} role="status">
+      {message}
+    </div>
+  );
 };
 
 export default React.memo(Toast);

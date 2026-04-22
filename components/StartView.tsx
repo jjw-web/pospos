@@ -59,9 +59,12 @@ const StartView: React.FC<StartViewProps> = ({ onStart }) => {
   return (
     <div style={mainContainerStyle}>
       <h1 style={titleStyle}>Bống Cà Phê</h1>
-      
+
       <div style={imageContainerStyle}>
-        <button onClick={onStart} style={{border: 'none', background: 'none', padding: 0, cursor: 'pointer'}}>
+        <button
+          onClick={onStart}
+          style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+        >
           <img src={startAnimation} alt="Bắt đầu" style={imageStyle} />
         </button>
       </div>

@@ -9,7 +9,6 @@ interface InsideViewProps {
 }
 
 const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }) => {
-
   const containerStyle: React.CSSProperties = {
     width: '100%',
     minHeight: '100vh',
@@ -44,7 +43,7 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease'
+    transition: 'background-color 0.2s ease',
   };
 
   // Grid layout: 2 columns, 4 rows
@@ -60,16 +59,16 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
       <div style={wrapperStyle}>
         <div style={headerStyle}>
           <h2 style={titleStyle}>Trong nhà</h2>
-          <button 
+          <button
             onClick={onBack}
             style={backButtonStyle}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
           >
             Quay lại
           </button>
         </div>
-        
+
         {/* 2x4 Grid Layout */}
         <div style={gridStyle}>
           {tables.map((table) => (

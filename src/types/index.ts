@@ -2,6 +2,8 @@ export type PaymentMethod = 'Cash' | 'BIDV' | 'JJW';
 
 export type TableLayout = 'Inside' | 'Outside';
 
+export type ViewType = TableLayout;
+
 export type TableStatus = 'available' | 'occupied';
 
 export interface ToppingItem {

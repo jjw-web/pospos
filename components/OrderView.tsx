@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import type {
   TableData,
   MenuCategory,
@@ -18,9 +12,7 @@ import MenuPanel from './order/MenuPanel';
 import OrderPanel from './order/OrderPanel';
 import NoteModal from './NoteModal';
 import PaymentMethodModal from './PaymentMethodModal';
-import TableTransferModal, {
-  TableTransferMode,
-} from './TableTransferModal';
+import TableTransferModal, { TableTransferMode } from './TableTransferModal';
 import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
 import { useTheme } from '../src/context/ThemeContext';
@@ -35,17 +27,9 @@ interface OrderViewProps {
     tableId: number,
     menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]
   ) => void;
-  onUpdateQuantity: (
-    tableId: number,
-    menuItemId: number,
-    change: number
-  ) => void;
+  onUpdateQuantity: (tableId: number, menuItemId: number, change: number) => void;
   onPayment: (tableId: number, paymentMethod: PaymentMethod) => void;
-  onUpdateNote: (
-    tableId: number,
-    menuItemId: number,
-    note: string
-  ) => void;
+  onUpdateNote: (tableId: number, menuItemId: number, note: string) => void;
   onMoveTable: (fromId: number, toId: number) => void;
   onMergeFromTable: (currentId: number, sourceId: number) => void;
   onAddTopping?: (
@@ -71,17 +55,12 @@ const OrderView: React.FC<OrderViewProps> = ({
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    menuCategories[0]?.name ?? ''
-  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name ?? '');
   const [searchQuery, setSearchQuery] = useState('');
-  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(
-    null
-  );
+  const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [transferMode, setTransferMode] =
-    useState<TableTransferMode | null>(null);
+  const [transferMode, setTransferMode] = useState<TableTransferMode | null>(null);
   const [showToppingsModal, setShowToppingsModal] = useState(false);
   const [selectedOrderItemForToppings, setSelectedOrderItemForToppings] =
     useState<OrderItem | null>(null);
@@ -91,10 +70,7 @@ const OrderView: React.FC<OrderViewProps> = ({
 
   useEffect(() => {
     if (table.status !== 'occupied' || !table.occupiedSince) return;
-    const id = window.setInterval(
-      () => headerTick((n) => n + 1),
-      30000
-    );
+    const id = window.setInterval(() => headerTick((n) => n + 1), 30000);
     return () => window.clearInterval(id);
   }, [table.status, table.occupiedSince]);
 
@@ -124,22 +100,14 @@ const OrderView: React.FC<OrderViewProps> = ({
   const moveCandidates = useMemo(
     () =>
       allTables.filter(
-        (t) =>
-          t.id !== table.id &&
-          t.status === 'available' &&
-          t.order.length === 0
+        (t) => t.id !== table.id && t.status === 'available' && t.order.length === 0
       ),
     [allTables, table.id]
   );
 
   const mergeCandidates = useMemo(
     () =>
-      allTables.filter(
-        (t) =>
-          t.id !== table.id &&
-          t.status === 'occupied' &&
-          t.order.length > 0
-      ),
+      allTables.filter((t) => t.id !== table.id && t.status === 'occupied' && t.order.length > 0),
     [allTables, table.id]
   );
 
@@ -214,9 +182,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         Chuyển / gộp bàn khi khách đổi chỗ. Thêm món sẽ có thông báo nhỏ phía dưới.
       </p>
 
-      <div
-        style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}
-      >
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
         <button
           type="button"
           style={{
@@ -231,9 +197,7 @@ const OrderView: React.FC<OrderViewProps> = ({
             cursor: 'pointer',
           }}
           onClick={() => setTransferMode('move')}
-          disabled={
-            table.order.length === 0 || moveCandidates.length === 0
-          }
+          disabled={table.order.length === 0 || moveCandidates.length === 0}
         >
           Chuyển bàn
         </button>
@@ -274,9 +238,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         order={order}
         menuCategories={menuCategories}
         orderSummaryTitle={orderSummaryTitle}
-        onUpdateQuantity={(menuItemId, change) =>
-          onUpdateQuantity(table.id, menuItemId, change)
-        }
+        onUpdateQuantity={(menuItemId, change) => onUpdateQuantity(table.id, menuItemId, change)}
         onEditNote={setEditingNoteItem}
         onOpenToppings={(item) => {
           setSelectedOrderItemForToppings(item);
@@ -314,9 +276,7 @@ const OrderView: React.FC<OrderViewProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: isDark
-            ? '0 -2px 10px rgba(0,0,0,0.35)'
-            : '0 -2px 10px rgba(0,0,0,0.1)',
+          boxShadow: isDark ? '0 -2px 10px rgba(0,0,0,0.35)' : '0 -2px 10px rgba(0,0,0,0.1)',
           zIndex: 100,
           borderTop: `1px solid ${borderColor}`,
         }}
@@ -391,9 +351,7 @@ const OrderView: React.FC<OrderViewProps> = ({
           }}
           onClose={() => setShowPaymentModal(false)}
           receipt={
-            table.order.length > 0
-              ? { tableLabel: table.name, items: table.order }
-              : undefined
+            table.order.length > 0 ? { tableLabel: table.name, items: table.order } : undefined
           }
         />
       )}
@@ -401,9 +359,7 @@ const OrderView: React.FC<OrderViewProps> = ({
       {transferMode && (
         <TableTransferModal
           mode={transferMode}
-          tables={
-            transferMode === 'move' ? moveCandidates : mergeCandidates
-          }
+          tables={transferMode === 'move' ? moveCandidates : mergeCandidates}
           onClose={() => setTransferMode(null)}
           onPick={(targetId) => {
             if (transferMode === 'move') {
@@ -416,12 +372,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         />
       )}
 
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          onDone={() => setToastMessage(null)}
-        />
-      )}
+      {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage(null)} />}
     </div>
   );
 };

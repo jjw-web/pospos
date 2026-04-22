@@ -1,0 +1,5 @@
+Baseline ESLint errors (2026-04-22 Phase 7):
+Source files only (ignores dist, node_modules):
+- 61 errors
+- 6 warnings
+- 1 fixable with --fix

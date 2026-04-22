@@ -9,21 +9,21 @@ export function formatReceiptText(params: {
   total: number;
 }): string {
   const { shopName = 'Bống Cà Phê', tableLabel, items, total } = params;
-  const lines: string[] = [
-    `🧾 ${shopName}`,
-    LINE,
-    `Bàn: ${tableLabel}`,
-    '',
-  ];
+  const lines: string[] = [`🧾 ${shopName}`, LINE, `Bàn: ${tableLabel}`, ''];
 
   items.forEach((row) => {
     const mainTotal = row.menuItem.price * row.quantity;
-    const toppingsTotal = row.toppings?.reduce((sum, topping) => sum + topping.price * topping.quantity, 0) || 0;
+    const toppingsTotal =
+      row.toppings?.reduce((sum, topping) => sum + topping.price * topping.quantity, 0) || 0;
     const note = row.note ? `  (Ghi chú: ${row.note})` : '';
-    lines.push(`• ${row.menuItem.name} × ${row.quantity} — ${mainTotal.toLocaleString('vi-VN')}đ${note}`);
+    lines.push(
+      `• ${row.menuItem.name} × ${row.quantity} — ${mainTotal.toLocaleString('vi-VN')}đ${note}`
+    );
     if (row.toppings && row.toppings.length > 0) {
       row.toppings.forEach((topping) => {
-        lines.push(`   + ${topping.name} × ${topping.quantity} — ${(topping.price * topping.quantity).toLocaleString('vi-VN')}đ`);
+        lines.push(
+          `   + ${topping.name} × ${topping.quantity} — ${(topping.price * topping.quantity).toLocaleString('vi-VN')}đ`
+        );
       });
     }
   });

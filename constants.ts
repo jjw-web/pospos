@@ -1,12 +1,36 @@
-import { MenuCategory, TableData, ViewType } from './types';
+import type { MenuCategory, TableData, ViewType } from './src/types';
 
 export const QR_ACCOUNTS = [
-  { name: 'QR Cao Bich Lan Tech', path: '/QR code/QR Cao Bich Lan Tech.png', method: 'JJW' as const },
-  { name: 'QR Nguyen Quynh Anh Tech', path: '/QR code/QR Nguyen Quynh Anh Tech.png', method: 'JJW' as const },
-  { name: 'QR Nguyen Viet Trinh Tech', path: '/QR code/QR Nguyen Viet Trinh Tech.png', method: 'JJW' as const },
-  { name: 'QR Nguyen Viet Trinh VCB', path: '/QR code/QR Nguyen Viet Trinh VCB.png', method: 'JJW' as const },
-  { name: 'QR Truong Duc Huy VCB', path: '/QR code/QR Truong Duc Huy VCB.png', method: 'JJW' as const },
-  { name: 'QR HKD Bong Tingee BIDV', path: '/QR code/QR HKD Bong Tingee BIDV2.png', method: 'BIDV' as const },
+  {
+    name: 'QR Cao Bich Lan Tech',
+    path: '/QR code/QR Cao Bich Lan Tech.png',
+    method: 'JJW' as const,
+  },
+  {
+    name: 'QR Nguyen Quynh Anh Tech',
+    path: '/QR code/QR Nguyen Quynh Anh Tech.png',
+    method: 'JJW' as const,
+  },
+  {
+    name: 'QR Nguyen Viet Trinh Tech',
+    path: '/QR code/QR Nguyen Viet Trinh Tech.png',
+    method: 'JJW' as const,
+  },
+  {
+    name: 'QR Nguyen Viet Trinh VCB',
+    path: '/QR code/QR Nguyen Viet Trinh VCB.png',
+    method: 'JJW' as const,
+  },
+  {
+    name: 'QR Truong Duc Huy VCB',
+    path: '/QR code/QR Truong Duc Huy VCB.png',
+    method: 'JJW' as const,
+  },
+  {
+    name: 'QR HKD Bong Tingee BIDV',
+    path: '/QR code/QR HKD Bong Tingee BIDV2.png',
+    method: 'BIDV' as const,
+  },
 ];
 
 export const MENU_CATEGORIES: MenuCategory[] = [

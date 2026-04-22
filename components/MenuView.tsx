@@ -10,7 +10,9 @@ interface MenuViewProps {
 
 const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMenuCategories }) => {
   const [localMenuCategories, setLocalMenuCategories] = useState<MenuCategory[]>(menuCategories);
-  const [selectedCategory, setSelectedCategory] = useState<string>(localMenuCategories[0]?.name || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    localMenuCategories[0]?.name || ''
+  );
   const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: '',
     price: 0,
@@ -18,7 +20,10 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
-  const [editingPriceItem, setEditingPriceItem] = useState<{ categoryName: string; itemId: number } | null>(null);
+  const [editingPriceItem, setEditingPriceItem] = useState<{
+    categoryName: string;
+    itemId: number;
+  } | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
 
   useEffect(() => {
@@ -30,7 +35,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     minHeight: '100vh',
     backgroundColor: '#111827',
     padding: '16px',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
   };
 
   const wrapperStyle: React.CSSProperties = {
@@ -48,7 +53,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const titleStyle: React.CSSProperties = {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: 'white'
+    color: 'white',
   };
 
   const backButtonStyle: React.CSSProperties = {
@@ -60,7 +65,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease'
+    transition: 'background-color 0.2s ease',
   };
 
   const formStyle: React.CSSProperties = {
@@ -85,7 +90,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',
-    transition: 'background-color 0.2s'
+    transition: 'background-color 0.2s',
   };
 
   const tableStyle: React.CSSProperties = {
@@ -153,17 +158,17 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const handleAddItem = () => {
     if (newItem.name && newItem.price) {
       const maxId = localMenuCategories.reduce((max, category) => {
-        const categoryMaxId = Math.max(...category.items.map(item => item.id), 0);
+        const categoryMaxId = Math.max(...category.items.map((item) => item.id), 0);
         return Math.max(max, categoryMaxId);
       }, 0);
 
       const item: MenuItem = {
         id: maxId + 1,
         name: newItem.name,
-        price: Number(newItem.price)
+        price: Number(newItem.price),
       };
 
-      const updatedCategories = localMenuCategories.map(category => 
+      const updatedCategories = localMenuCategories.map((category) =>
         category.name === selectedCategory
           ? { ...category, items: [...category.items, item] }
           : category
@@ -171,21 +176,21 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
       setLocalMenuCategories(updatedCategories);
       setNewItem({ name: '', price: 0 });
-      
+
       // Gọi callback để cập nhật menu ở cấp ứng dụng
       onUpdateMenuCategories(updatedCategories);
     }
   };
 
   const handleDeleteItem = (categoryName: string, itemId: number) => {
-    const updatedCategories = localMenuCategories.map(category => 
+    const updatedCategories = localMenuCategories.map((category) =>
       category.name === categoryName
-        ? { ...category, items: category.items.filter(item => item.id !== itemId) }
+        ? { ...category, items: category.items.filter((item) => item.id !== itemId) }
         : category
     );
 
     setLocalMenuCategories(updatedCategories);
-    
+
     // Gọi callback để cập nhật menu ở cấp ứng dụng
     onUpdateMenuCategories(updatedCategories);
   };
@@ -197,15 +202,13 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const handleSavePrice = () => {
     if (editingPriceItem && editingPrice > 0) {
-      const updatedCategories = localMenuCategories.map(category => 
+      const updatedCategories = localMenuCategories.map((category) =>
         category.name === editingPriceItem.categoryName
-          ? { 
-              ...category, 
-              items: category.items.map(item => 
-                item.id === editingPriceItem.itemId
-                  ? { ...item, price: editingPrice }
-                  : item
-              )
+          ? {
+              ...category,
+              items: category.items.map((item) =>
+                item.id === editingPriceItem.itemId ? { ...item, price: editingPrice } : item
+              ),
             }
           : category
       );
@@ -213,7 +216,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
       setLocalMenuCategories(updatedCategories);
       setEditingPriceItem(null);
       setEditingPrice(0);
-      
+
       // Gọi callback để cập nhật menu ở cấp ứng dụng
       onUpdateMenuCategories(updatedCategories);
     }
@@ -225,10 +228,10 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   };
 
   const handleAddCategory = () => {
-    if (newCategory && !localMenuCategories.some(cat => cat.name === newCategory)) {
+    if (newCategory && !localMenuCategories.some((cat) => cat.name === newCategory)) {
       const newCategoryObj: MenuCategory = {
         name: newCategory,
-        items: []
+        items: [],
       };
       const updatedCategories = [...localMenuCategories, newCategoryObj];
       setLocalMenuCategories(updatedCategories);
@@ -242,11 +245,9 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   };
 
   const handleEditCategory = (oldName: string) => {
-    if (newCategory && !localMenuCategories.some(cat => cat.name === newCategory)) {
-      const updatedCategories = localMenuCategories.map(category => 
-        category.name === oldName
-          ? { ...category, name: newCategory }
-          : category
+    if (newCategory && !localMenuCategories.some((cat) => cat.name === newCategory)) {
+      const updatedCategories = localMenuCategories.map((category) =>
+        category.name === oldName ? { ...category, name: newCategory } : category
       );
       setLocalMenuCategories(updatedCategories);
       setSelectedCategory(newCategory);
@@ -260,7 +261,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const handleDeleteCategory = (categoryName: string) => {
     if (localMenuCategories.length > 1) {
-      const updatedCategories = localMenuCategories.filter(cat => cat.name !== categoryName);
+      const updatedCategories = localMenuCategories.filter((cat) => cat.name !== categoryName);
       setLocalMenuCategories(updatedCategories);
       setSelectedCategory(updatedCategories[0].name);
 
@@ -283,19 +284,19 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     borderRadius: '6px',
     cursor: 'pointer',
     marginRight: '8px',
-    marginBottom: '8px'
+    marginBottom: '8px',
   };
 
   const activeCategoryStyle: React.CSSProperties = {
     ...categoryStyle,
-    backgroundColor: '#10b981'
+    backgroundColor: '#10b981',
   };
 
   const categoriesWrapperStyle: React.CSSProperties = {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '8px',
-    marginBottom: '20px'
+    marginBottom: '20px',
   };
 
   return (
@@ -306,8 +307,8 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           <button
             onClick={onBack}
             style={backButtonStyle}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1f2937'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
           >
             Quay lại
           </button>
@@ -323,10 +324,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
               />
-              <button
-                style={addButtonStyle}
-                onClick={handleAddCategory}
-              >
+              <button style={addButtonStyle} onClick={handleAddCategory}>
                 Thêm nhóm
               </button>
               <button
@@ -340,15 +338,12 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
               </button>
             </div>
           ) : (
-            <button
-              style={addButtonStyle}
-              onClick={() => setShowCategoryForm(true)}
-            >
+            <button style={addButtonStyle} onClick={() => setShowCategoryForm(true)}>
               + Thêm nhóm mới
             </button>
           )}
-          
-          {localMenuCategories.map(category => (
+
+          {localMenuCategories.map((category) => (
             <div key={category.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {editingCategory === category.name ? (
                 <div style={categoryFormStyle}>
@@ -359,10 +354,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                   />
-                  <button
-                    style={addButtonStyle}
-                    onClick={() => handleEditCategory(category.name)}
-                  >
+                  <button style={addButtonStyle} onClick={() => handleEditCategory(category.name)}>
                     Lưu
                   </button>
                   <button
@@ -420,8 +412,8 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           <button
             style={addButtonStyle}
             onClick={handleAddItem}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
           >
             Thêm vào {selectedCategory}
           </button>
@@ -437,9 +429,11 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           </thead>
           <tbody>
             {localMenuCategories
-              .find(category => category.name === selectedCategory)
+              .find((category) => category.name === selectedCategory)
               ?.items.map((item) => {
-                const isEditing = editingPriceItem?.categoryName === selectedCategory && editingPriceItem?.itemId === item.id;
+                const isEditing =
+                  editingPriceItem?.categoryName === selectedCategory &&
+                  editingPriceItem?.itemId === item.id;
                 return (
                   <tr key={item.id}>
                     <td style={cellStyle}>{item.name}</td>
@@ -463,16 +457,16 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
                           <button
                             style={saveButtonStyle}
                             onClick={handleSavePrice}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
                           >
                             Lưu
                           </button>
                           <button
                             style={cancelButtonStyle}
                             onClick={handleCancelEditPrice}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6b7280'}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4b5563')}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
                           >
                             Hủy
                           </button>
@@ -481,17 +475,19 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
                         <>
                           <button
                             style={editButtonStyle}
-                            onClick={() => handleStartEditPrice(selectedCategory, item.id, item.price)}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+                            onClick={() =>
+                              handleStartEditPrice(selectedCategory, item.id, item.price)
+                            }
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
                           >
                             Sửa giá
                           </button>
                           <button
                             style={deleteButtonStyle}
                             onClick={() => handleDeleteItem(selectedCategory, item.id)}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
                           >
                             Xóa
                           </button>

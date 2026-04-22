@@ -40,29 +40,22 @@ const HistoryView: React.FC<HistoryViewProps> = ({
     return { totalRevenue, totalBills: history.length };
   }, [history]);
 
-  const isAllSelected =
-    selectedBills.length === history.length && history.length > 0;
+  const isAllSelected = selectedBills.length === history.length && history.length > 0;
 
   const handleToggleSelect = (billId: number) => {
     setSelectedBills((prev) =>
-      prev.includes(billId)
-        ? prev.filter((id) => id !== billId)
-        : [...prev, billId]
+      prev.includes(billId) ? prev.filter((id) => id !== billId) : [...prev, billId]
     );
   };
 
   const handleToggleSelectAll = () => {
-    setSelectedBills(
-      isAllSelected ? [] : history.map((b) => b.id)
-    );
+    setSelectedBills(isAllSelected ? [] : history.map((b) => b.id));
   };
 
   const handleDeleteSelected = () => {
     if (selectedBills.length === 0) return;
     if (
-      window.confirm(
-        `Bạn có chắc chắn muốn xóa ${selectedBills.length} hóa đơn đã chọn không?`
-      )
+      window.confirm(`Bạn có chắc chắn muốn xóa ${selectedBills.length} hóa đơn đã chọn không?`)
     ) {
       onDeleteSelected(selectedBills);
       setSelectedBills([]);
@@ -70,9 +63,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
   };
 
   const handleClearAll = () => {
-    if (
-      window.confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?')
-    ) {
+    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?')) {
       onClearHistory();
       setSelectedBills([]);
     }

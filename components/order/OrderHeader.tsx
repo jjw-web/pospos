@@ -22,9 +22,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
   isDark,
 }) => {
   const durationLabel =
-    table.status === 'occupied'
-      ? formatOccupiedDuration(table.occupiedSince)
-      : null;
+    table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
 
   const headerBarStyle: React.CSSProperties = {
     position: 'fixed',
@@ -43,9 +41,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
     paddingBottom: '10px',
     borderBottom: `1px solid ${borderColor}`,
     backgroundColor: surface,
-    boxShadow: isDark
-      ? '0 2px 8px rgba(0,0,0,0.3)'
-      : '0 2px 8px rgba(0,0,0,0.06)',
+    boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
     zIndex: 101,
   };
 
@@ -79,8 +75,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
             margin: 0,
           }}
         >
-          {table.name} —{' '}
-          {table.status === 'available' ? 'Trống' : 'Có khách'}
+          {table.name} — {table.status === 'available' ? 'Trống' : 'Có khách'}
           {durationLabel ? ` · ${durationLabel}` : ''}
         </h1>
       </div>

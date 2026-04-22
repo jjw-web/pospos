@@ -56,34 +56,16 @@ const HistoryActionBar: React.FC<HistoryActionBarProps> = ({
         padding: '15px 0',
       }}
     >
-      <button
-        style={btnBase}
-        onClick={onToggleSelectAll}
-        disabled={totalBills === 0}
-      >
-        {isAllSelected
-          ? 'Bỏ chọn tất cả'
-          : `Chọn tất cả (${totalBills})`}
+      <button style={btnBase} onClick={onToggleSelectAll} disabled={totalBills === 0}>
+        {isAllSelected ? 'Bỏ chọn tất cả' : `Chọn tất cả (${totalBills})`}
       </button>
-      <button
-        style={btnBase}
-        onClick={onDeleteSelected}
-        disabled={selectedCount === 0}
-      >
+      <button style={btnBase} onClick={onDeleteSelected} disabled={selectedCount === 0}>
         Xóa mục đã chọn ({selectedCount})
       </button>
-      <button
-        style={dangerBtn}
-        onClick={onClearAll}
-        disabled={totalBills === 0}
-      >
+      <button style={dangerBtn} onClick={onClearAll} disabled={totalBills === 0}>
         Xóa tất cả
       </button>
-      <button
-        style={btnBase}
-        onClick={onExportSelected}
-        disabled={selectedCount === 0}
-      >
+      <button style={btnBase} onClick={onExportSelected} disabled={selectedCount === 0}>
         Xuất ảnh ({selectedCount})
       </button>
       <button

@@ -14,25 +14,23 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
   availableToppings,
   onConfirm,
   onClose,
-  isDark
+  isDark,
 }) => {
   const [selectedToppings, setSelectedToppings] = useState<ToppingItem[]>([]);
 
   const toggleTopping = (topping: ToppingItem) => {
-    setSelectedToppings(prev =>
-      prev.find(t => t.id === topping.id)
-        ? prev.filter(t => t.id !== topping.id)
+    setSelectedToppings((prev) =>
+      prev.find((t) => t.id === topping.id)
+        ? prev.filter((t) => t.id !== topping.id)
         : [...prev, { ...topping, quantity: 1 }]
     );
   };
 
   const updateQuantity = (toppingId: number, quantity: number) => {
     if (quantity <= 0) {
-      setSelectedToppings(prev => prev.filter(t => t.id !== toppingId));
+      setSelectedToppings((prev) => prev.filter((t) => t.id !== toppingId));
     } else {
-      setSelectedToppings(prev =>
-        prev.map(t => t.id === toppingId ? { ...t, quantity } : t)
-      );
+      setSelectedToppings((prev) => prev.map((t) => (t.id === toppingId ? { ...t, quantity } : t)));
     }
   };
 
@@ -169,13 +167,11 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <h2 style={titleStyle}>Chọn toppings cho {menuItem.name}</h2>
 
-        <div style={totalStyle}>
-          Tổng: {totalPrice.toLocaleString('vi-VN')}đ
-        </div>
+        <div style={totalStyle}>Tổng: {totalPrice.toLocaleString('vi-VN')}đ</div>
 
         <div style={{ marginBottom: '16px' }}>
           {availableToppings.map((topping) => {
-            const selected = selectedToppings.find(t => t.id === topping.id);
+            const selected = selectedToppings.find((t) => t.id === topping.id);
             return (
               <div key={topping.id} style={toppingItemStyle}>
                 <div>
@@ -199,10 +195,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <button
-                    style={quantityBtnStyle}
-                    onClick={() => toggleTopping(topping)}
-                  >
+                  <button style={quantityBtnStyle} onClick={() => toggleTopping(topping)}>
                     +
                   </button>
                 )}

@@ -12,11 +12,7 @@ export interface OrderCounts {
  * @returns Tổng tiền tính bằng VND
  */
 export function calcItemTotal(item: OrderItem): number {
-  const toppingsTotal =
-    item.toppings?.reduce(
-      (sum, t) => sum + t.price * t.quantity,
-      0
-    ) ?? 0;
+  const toppingsTotal = item.toppings?.reduce((sum, t) => sum + t.price * t.quantity, 0) ?? 0;
   return item.menuItem.price * item.quantity + toppingsTotal;
 }
 
@@ -36,10 +32,7 @@ export function calcOrderTotal(items: OrderItem[]): number {
  * @param menuCategories - Danh sách category để xác định loại
  * @returns OrderCounts
  */
-export function countOrderItems(
-  items: OrderItem[],
-  menuCategories: MenuCategory[]
-): OrderCounts {
+export function countOrderItems(items: OrderItem[], menuCategories: MenuCategory[]): OrderCounts {
   const itemToCategoryMap = new Map<number, string>();
   menuCategories.forEach((cat) => {
     cat.items.forEach((item) => itemToCategoryMap.set(item.id, cat.name));
@@ -50,19 +43,14 @@ export function countOrderItems(
   let snackCount = 0;
 
   items.forEach((item) => {
-    const categoryName =
-      itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
+    const categoryName = itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
     const lower = categoryName.toLowerCase();
     const qty = item.quantity;
-    const extraToppings =
-      item.toppings?.reduce((s, t) => s + t.quantity, 0) ?? 0;
+    const extraToppings = item.toppings?.reduce((s, t) => s + t.quantity, 0) ?? 0;
 
     if (lower.includes('topping')) {
       toppingCount += qty;
-    } else if (
-      lower.includes('snack') ||
-      lower.includes('khai vị')
-    ) {
+    } else if (lower.includes('snack') || lower.includes('khai vị')) {
       snackCount += qty;
     } else {
       mainCount += qty;
@@ -90,8 +78,7 @@ export function groupItemsByCategory(
   });
 
   return items.reduce<Record<string, OrderItem[]>>((acc, item) => {
-    const cat =
-      itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
+    const cat = itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(item);
     return acc;
