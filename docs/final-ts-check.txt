@@ -1,0 +1,5 @@
+TypeScript check result (2026-04-22):
+Command: npx tsc --noEmit
+Result: 0 errors
+
+No TypeScript errors found.
