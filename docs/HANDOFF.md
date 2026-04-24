@@ -543,6 +543,8 @@ components/ToppingsModal.tsx — dùng CSS variables
 components/QRCodeModal.tsx — dùng CSS variables
 components/OrderView.tsx — refactor dùng CSS variables
 components/HistoryView.tsx — refactor dùng CSS variables
+components/StartView.tsx — refactor dùng CSS variables
+components/DailySummaryView.tsx — refactor dùng CSS variables
 src/lib/data-upgrader.ts — xóa dead code
 ### Files đã tạo mới trong ca này
 Không có
@@ -562,9 +564,9 @@ Giữ useTheme() hook để không phải sửa import ở 10+ component
 ### Packages đã thêm/xóa
 Không có
 ### Hướng dẫn cho agent ca tiếp theo
-Không có — ca hoàn thành
+Không có — ca hoàn thành 100%
 ### Commit cuối cùng của ca này
-Hash: f3b6382
-Message: "dark-mode: fix to dark-only, CSS variables, remove toggle"
+Hash: f47d27c
+Message: "dark-mode: refactor StartView, DailySummaryView to use CSS variables"
 
 (End of file)
