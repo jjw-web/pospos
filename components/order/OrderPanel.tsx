@@ -11,11 +11,6 @@ interface OrderPanelProps {
   onEditNote: (item: OrderItem) => void;
   onOpenToppings: (item: OrderItem) => void;
   panelRef: React.RefObject<HTMLDivElement>;
-  isDark: boolean;
-  surface: string;
-  textMain: string;
-  textMuted: string;
-  borderColor: string;
 }
 
 const OrderPanel: React.FC<OrderPanelProps> = ({
@@ -26,11 +21,6 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
   onEditNote,
   onOpenToppings,
   panelRef,
-  isDark,
-  surface,
-  textMain,
-  textMuted,
-  borderColor,
 }) => {
   const groupedOrder = React.useMemo(
     () => groupItemsByCategory(order, menuCategories),
@@ -41,13 +31,13 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
     <div
       ref={panelRef}
       style={{
-        backgroundColor: surface,
+        backgroundColor: 'var(--bg-surface)',
         borderRadius: '12px',
         padding: '20px',
         marginBottom: '20px',
-        boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.08)',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.25)',
         scrollMarginTop: 'calc(52px + env(safe-area-inset-top, 0px))',
-        border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
+        border: '1px solid var(--border)',
       }}
     >
       <h2
@@ -55,7 +45,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
           fontSize: '18px',
           fontWeight: 600,
           marginBottom: '15px',
-          color: textMain,
+          color: 'var(--text-main)',
         }}
       >
         {orderSummaryTitle}
@@ -66,7 +56,7 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
           style={{
             textAlign: 'center',
             padding: '30px 0',
-            color: textMuted,
+            color: 'var(--text-muted)',
           }}
         >
           Chưa có món nào trong đơn hàng
@@ -78,10 +68,10 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
               style={{
                 fontSize: '16px',
                 fontWeight: 'bold',
-                color: textMain,
+                color: 'var(--text-main)',
                 marginTop: '20px',
                 marginBottom: '10px',
-                borderBottom: `1px solid ${borderColor}`,
+                borderBottom: '1px solid var(--border)',
                 paddingBottom: '5px',
               }}
             >
@@ -94,10 +84,6 @@ const OrderPanel: React.FC<OrderPanelProps> = ({
                 onUpdateQuantity={(change) => onUpdateQuantity(item.menuItem.id, change)}
                 onEditNote={() => onEditNote(item)}
                 onOpenToppings={() => onOpenToppings(item)}
-                isDark={isDark}
-                textMain={textMain}
-                textMuted={textMuted}
-                borderColor={borderColor}
               />
             ))}
           </div>

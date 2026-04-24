@@ -9,11 +9,6 @@ interface BillCardProps {
   menuCategories: MenuCategory[];
   onToggleSelect: (id: number) => void;
   cardRef?: (el: HTMLDivElement | null) => void;
-  surface: string;
-  textMain: string;
-  textMuted: string;
-  borderColor: string;
-  isDark: boolean;
 }
 
 const BillCard: React.FC<BillCardProps> = ({
@@ -22,11 +17,6 @@ const BillCard: React.FC<BillCardProps> = ({
   menuCategories,
   onToggleSelect,
   cardRef,
-  surface,
-  textMain,
-  textMuted,
-  borderColor,
-  isDark,
 }) => {
   const { mainCount, toppingCount, snackCount } = countOrderItems(bill.items, menuCategories);
   const groupedItems = groupItemsByCategory(bill.items, menuCategories);
@@ -35,7 +25,7 @@ const BillCard: React.FC<BillCardProps> = ({
     <div
       ref={cardRef}
       style={{
-        backgroundColor: surface,
+        backgroundColor: 'var(--bg-surface)',
         borderRadius: '12px',
         padding: '20px',
         marginBottom: '15px',
@@ -62,11 +52,11 @@ const BillCard: React.FC<BillCardProps> = ({
             }}
             onClick={(e) => e.stopPropagation()}
           />
-          <span style={{ fontWeight: 'bold', color: textMain }}>Bàn {bill.table}</span>
+          <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Bàn {bill.table}</span>
         </label>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontWeight: 600, color: textMain }}>{bill.total.toLocaleString()}đ</div>
-          <div style={{ fontSize: '12px', color: textMuted }}>
+          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{bill.total.toLocaleString()}đ</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {mainCount > 0 ? `Đồ uống: ${mainCount}` : ''}
             {snackCount > 0 ? `${mainCount > 0 ? ', ' : ''}Snack: ${snackCount}` : ''}
             {toppingCount > 0
@@ -76,7 +66,7 @@ const BillCard: React.FC<BillCardProps> = ({
         </div>
       </div>
 
-      <div style={{ fontSize: '13px', color: textMuted }}>
+      <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
         {new Date(bill.date).toLocaleString('vi-VN')}
         {bill.paymentMethod && (
           <span
@@ -99,7 +89,7 @@ const BillCard: React.FC<BillCardProps> = ({
       <hr
         style={{
           border: 'none',
-          borderTop: `1px solid ${borderColor}`,
+          borderTop: '1px solid var(--border)',
           margin: '15px 0',
         }}
       />
@@ -110,7 +100,7 @@ const BillCard: React.FC<BillCardProps> = ({
             style={{
               fontSize: '14px',
               fontWeight: 'bold',
-              color: isDark ? '#cbd5e1' : '#555',
+              color: '#cbd5e1',
               marginTop: '15px',
               marginBottom: '8px',
             }}
@@ -126,13 +116,13 @@ const BillCard: React.FC<BillCardProps> = ({
                   justifyContent: 'space-between',
                   alignItems: 'flex-start',
                   padding: '8px 0',
-                  borderBottom: `1px solid ${isDark ? '#334155' : '#f9f9f9'}`,
-                  color: textMain,
+                  borderBottom: '1px solid var(--border)',
+                  color: 'var(--text-main)',
                 }}
               >
                 <div style={{ flex: 1 }}>
                   <span>{item.menuItem.name}</span>
-                  <div style={{ fontSize: '12px', color: textMuted }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                     {item.quantity} x {item.menuItem.price.toLocaleString()}đ
                   </div>
                   {item.note && (
@@ -151,7 +141,7 @@ const BillCard: React.FC<BillCardProps> = ({
                       style={{
                         marginTop: '6px',
                         fontSize: '12px',
-                        color: textMuted,
+                        color: 'var(--text-muted)',
                         paddingLeft: '10px',
                       }}
                     >

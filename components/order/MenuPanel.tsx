@@ -10,10 +10,6 @@ interface MenuPanelProps {
   onCategoryChange: (name: string) => void;
   onSearchChange: (q: string) => void;
   onAddItem: (item: MenuItem) => void;
-  isDark: boolean;
-  surface: string;
-  textMain: string;
-  cardBorder: string;
 }
 
 const MenuPanel: React.FC<MenuPanelProps> = ({
@@ -23,10 +19,6 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
   onCategoryChange,
   onSearchChange,
   onAddItem,
-  isDark,
-  surface,
-  textMain,
-  cardBorder,
 }) => {
   const handleClear = useCallback(() => {
     onSearchChange('');
@@ -49,7 +41,6 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
           searchQuery={searchQuery}
           setSearchQuery={onSearchChange}
           placeholder="Tìm kiếm món ăn..."
-          darkMode={isDark}
           onClear={handleClear}
         />
       </div>
@@ -66,20 +57,18 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
           <div
             key={category.name}
             style={{
-              backgroundColor: surface,
+              backgroundColor: 'var(--bg-surface)',
               borderRadius: '10px',
               padding: '15px 10px',
               textAlign: 'center',
               cursor: 'pointer',
               border: `1px solid ${
-                selectedCategory === category.name && !searchQuery ? '#3498db' : cardBorder
+                selectedCategory === category.name && !searchQuery ? '#3498db' : 'var(--border)'
               }`,
               boxShadow:
                 selectedCategory === category.name && !searchQuery
                   ? '0 4px 8px rgba(52,152,219,0.2)'
-                  : isDark
-                    ? '0 2px 5px rgba(0,0,0,0.2)'
-                    : '0 2px 5px rgba(0,0,0,0.05)',
+                  : '0 2px 5px rgba(0,0,0,0.2)',
               transform:
                 selectedCategory === category.name && !searchQuery ? 'translateY(-3px)' : 'none',
               transition: 'all 0.2s',
@@ -89,7 +78,7 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
               onSearchChange('');
             }}
           >
-            <div style={{ fontSize: '14px', fontWeight: 500, color: textMain }}>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-main)' }}>
               {category.name}
             </div>
           </div>
@@ -105,16 +94,16 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '15px',
-              backgroundColor: surface,
+              backgroundColor: 'var(--bg-surface)',
               borderRadius: '8px',
               marginBottom: '10px',
               cursor: 'pointer',
-              border: `1px solid ${isDark ? '#334155' : 'transparent'}`,
+              border: '1px solid var(--border)',
             }}
             onClick={() => onAddItem(item)}
           >
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: textMain }}>{item.name}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-main)' }}>{item.name}</div>
               <div
                 style={{
                   fontSize: '15px',

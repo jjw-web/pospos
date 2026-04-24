@@ -1,16 +1,11 @@
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useLayoutEffect,
   useMemo,
-  useState,
 } from 'react';
 
-export type AppTheme = 'light' | 'dark';
-
-const STORAGE_KEY = 'pos_app_theme';
+export type AppTheme = 'dark';
 
 type ThemeContextValue = {
   theme: AppTheme;
@@ -21,31 +16,14 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<AppTheme>(() => {
-    try {
-      const s = localStorage.getItem(STORAGE_KEY) as AppTheme | null;
-      if (s === 'dark' || s === 'light') return s;
-    } catch {
-      /* ignore */
-    }
-    return 'light';
-  });
+  const theme: AppTheme = 'dark';
 
-  useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+  const setTheme = useCallback((_t: AppTheme) => {
+    // Theme is fixed to dark, no-op
+  }, []);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme]);
-
-  const setTheme = useCallback((t: AppTheme) => setThemeState(t), []);
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    // Theme is fixed to dark, no-op
   }, []);
 
   const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);

@@ -10,8 +10,6 @@ interface HistoryActionBarProps {
   onExportSelected: () => void;
   onRevertSelected: () => void;
   canRevert: boolean;
-  isDark: boolean;
-  textMain: string;
 }
 
 const HistoryActionBar: React.FC<HistoryActionBarProps> = ({
@@ -24,13 +22,11 @@ const HistoryActionBar: React.FC<HistoryActionBarProps> = ({
   onExportSelected,
   onRevertSelected,
   canRevert,
-  isDark,
-  textMain,
 }) => {
   const btnBase: React.CSSProperties = {
-    backgroundColor: isDark ? '#334155' : '#ecf0f1',
-    color: textMain,
-    border: `1px solid ${isDark ? '#475569' : '#bdc3c7'}`,
+    backgroundColor: 'var(--bg-surface)',
+    color: 'var(--text-main)',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     padding: '10px 12px',
     fontSize: '13px',

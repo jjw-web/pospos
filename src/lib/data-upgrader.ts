@@ -6,11 +6,6 @@ import type { TableData } from '../types';
  * @param newVersion Phiên bản dữ liệu mới (từ config).
  */
 export function upgradeDataStructure(oldVersion: number | null, newVersion: number) {
-  // Nâng cấp từ v1 (hoặc chưa có) lên v2
-  if ((oldVersion === null || oldVersion < 2) && newVersion >= 2) {
-    localStorage.getItem('tables');
-  }
-
   if ((oldVersion === null || oldVersion < 3) && newVersion >= 3) {
     const tablesJSON = localStorage.getItem('tables');
     if (!tablesJSON) return;

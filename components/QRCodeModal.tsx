@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTheme } from '../src/context/ThemeContext';
 import { QR_ACCOUNTS } from '../constants';
 import type { PaymentMethod } from '../src/types';
 
@@ -13,8 +12,6 @@ interface QRCodeModalProps {
 }
 
 const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [selectedQR, setSelectedQR] = useState<QRAccount | null>(null);
 
   if (!isOpen) return null;
@@ -44,7 +41,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
     >
       <div
         style={{
-          backgroundColor: isDark ? '#1e293b' : 'white',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: '24px',
           width: '100%',
           maxWidth: '500px',
@@ -73,7 +70,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  color: isDark ? '#f8fafc' : '#0f172a',
+                  color: 'var(--text-main)',
                   fontSize: '20px',
                   padding: '4px',
                   display: 'flex',
@@ -86,7 +83,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
             <h2
               style={{
                 margin: 0,
-                color: isDark ? '#f8fafc' : '#0f172a',
+                color: 'var(--text-main)',
                 fontSize: '20px',
                 fontWeight: 700,
               }}
@@ -97,7 +94,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
           <button
             onClick={handleClose}
             style={{
-              background: isDark ? '#334155' : '#f1f5f9',
+              backgroundColor: 'var(--bg-surface)',
               border: 'none',
               borderRadius: '50%',
               width: '36px',
@@ -106,7 +103,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              color: isDark ? '#cbd5e1' : '#64748b',
+              color: 'var(--text-muted)',
               fontSize: '18px',
             }}
           >
@@ -121,12 +118,12 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                 key={index}
                 onClick={() => setSelectedQR(qr)}
                 style={{
-                  backgroundColor: isDark ? '#334155' : '#f8fafc',
+                  backgroundColor: 'var(--bg-surface)',
                   borderRadius: '16px',
                   padding: '16px 20px',
                   textAlign: 'left',
-                  border: `1px solid ${isDark ? '#475569' : '#e2e8f0'}`,
-                  color: isDark ? '#e2e8f0' : '#334155',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-main)',
                   fontSize: '16px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -136,11 +133,11 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                   transition: 'all 0.2s ease',
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? '#475569' : '#f1f5f9';
+                  e.currentTarget.style.backgroundColor = 'var(--border)';
                   e.currentTarget.style.transform = 'translateX(4px)';
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? '#334155' : '#f8fafc';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
                   e.currentTarget.style.transform = 'translateX(0)';
                 }}
               >
@@ -179,7 +176,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                 margin: 0,
                 fontSize: '18px',
                 fontWeight: 700,
-                color: isDark ? '#f8fafc' : '#0f172a',
+                color: 'var(--text-main)',
               }}
             >
               {selectedQR.name}

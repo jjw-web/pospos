@@ -3,26 +3,18 @@ import React from 'react';
 interface HistorySummaryBarProps {
   totalBills: number;
   totalRevenue: number;
-  surface: string;
-  textMain: string;
-  textMuted: string;
-  borderColor: string;
 }
 
 const HistorySummaryBar: React.FC<HistorySummaryBarProps> = ({
   totalBills,
   totalRevenue,
-  surface,
-  textMain,
-  textMuted,
-  borderColor,
 }) => {
   const cardStyle: React.CSSProperties = {
-    backgroundColor: surface,
+    backgroundColor: 'var(--bg-surface)',
     borderRadius: '16px',
     padding: '14px 18px',
-    border: `1px solid ${borderColor}`,
-    color: textMain,
+    border: '1px solid var(--border)',
+    color: 'var(--text-main)',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
@@ -38,11 +30,11 @@ const HistorySummaryBar: React.FC<HistorySummaryBarProps> = ({
       }}
     >
       <div style={cardStyle}>
-        <span style={{ color: textMuted, fontSize: '13px' }}>Số hóa đơn</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Số hóa đơn</span>
         <strong style={{ fontSize: '22px' }}>{totalBills}</strong>
       </div>
       <div style={cardStyle}>
-        <span style={{ color: textMuted, fontSize: '13px' }}>Doanh thu</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Doanh thu</span>
         <strong style={{ fontSize: '22px' }}>{totalRevenue.toLocaleString()}đ</strong>
       </div>
     </div>

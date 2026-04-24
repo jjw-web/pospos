@@ -6,20 +6,12 @@ interface OrderHeaderProps {
   table: TableData;
   onBack: () => void;
   onClickTitle: () => void;
-  surface: string;
-  borderColor: string;
-  textMain: string;
-  isDark: boolean;
 }
 
 const OrderHeader: React.FC<OrderHeaderProps> = ({
   table,
   onBack,
   onClickTitle,
-  surface,
-  borderColor,
-  textMain,
-  isDark,
 }) => {
   const durationLabel =
     table.status === 'occupied' ? formatOccupiedDuration(table.occupiedSince) : null;
@@ -39,9 +31,9 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
     paddingRight: '15px',
     paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))',
     paddingBottom: '10px',
-    borderBottom: `1px solid ${borderColor}`,
-    backgroundColor: surface,
-    boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
+    borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-surface)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
     zIndex: 101,
   };
 
@@ -52,7 +44,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
         style={{
           fontSize: '24px',
           marginRight: '15px',
-          color: textMain,
+          color: 'var(--text-main)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -71,7 +63,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
           style={{
             fontSize: '17px',
             fontWeight: 600,
-            color: textMain,
+            color: 'var(--text-main)',
             margin: 0,
           }}
         >

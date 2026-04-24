@@ -16,7 +16,6 @@ import PaymentMethodModal from './PaymentMethodModal';
 import TableTransferModal from './TableTransferModal';
 import ToppingsModal from './ToppingsModal';
 import Toast from './Toast';
-import { useTheme } from '../src/context/ThemeContext';
 import { calcOrderTotal, countOrderItems } from '../src/lib/order-utils';
 
 interface OrderViewProps {
@@ -53,9 +52,6 @@ const OrderView: React.FC<OrderViewProps> = ({
   onMergeFromTable,
   onAddTopping,
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-
   const [selectedCategory, setSelectedCategory] = useState<string>(menuCategories[0]?.name ?? '');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingNoteItem, setEditingNoteItem] = useState<OrderItem | null>(null);
@@ -139,15 +135,10 @@ const OrderView: React.FC<OrderViewProps> = ({
     [onAddTopping, table.id, selectedOrderItemForToppings]
   );
 
-  const surface = isDark ? '#1e293b' : '#ffffff';
-  const pageBg = isDark ? '#0f172a' : '#f5f5f5';
-  const textMain = isDark ? '#f1f5f9' : '#2c3e50';
-  const textMuted = isDark ? '#94a3b8' : '#7f8c8d';
-  const borderColor = isDark ? '#334155' : '#eaeaea';
-  const cardBorder = isDark ? '#475569' : '#eee';
+  const pageBg = 'var(--bg-page)';
 
   if (!table || table.order === undefined) {
-    return <div style={{ padding: 24, color: textMain }}>Đang tải...</div>;
+    return <div style={{ padding: 24, color: 'var(--text-main)' }}>Đang tải...</div>;
   }
 
   return (
@@ -167,16 +158,12 @@ const OrderView: React.FC<OrderViewProps> = ({
         table={table}
         onBack={onBack}
         onClickTitle={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        surface={surface}
-        borderColor={borderColor}
-        textMain={textMain}
-        isDark={isDark}
       />
 
       <p
         style={{
           fontSize: '13px',
-          color: textMuted,
+          color: 'var(--text-muted)',
           margin: '4px 0 0 0',
         }}
       >
@@ -192,9 +179,9 @@ const OrderView: React.FC<OrderViewProps> = ({
             fontSize: '13px',
             fontWeight: 600,
             borderRadius: '8px',
-            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
-            background: isDark ? '#334155' : '#f1f5f9',
-            color: textMain,
+            border: '1px solid var(--border)',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
             cursor: 'pointer',
           }}
           onClick={() => setTransferMode('move')}
@@ -210,9 +197,9 @@ const OrderView: React.FC<OrderViewProps> = ({
             fontSize: '13px',
             fontWeight: 600,
             borderRadius: '8px',
-            border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
-            background: isDark ? '#334155' : '#f1f5f9',
-            color: textMain,
+            border: '1px solid var(--border)',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
             cursor: 'pointer',
           }}
           onClick={() => setTransferMode('merge')}
@@ -229,10 +216,6 @@ const OrderView: React.FC<OrderViewProps> = ({
         onCategoryChange={setSelectedCategory}
         onSearchChange={setSearchQuery}
         onAddItem={handleAddMenuItem}
-        isDark={isDark}
-        surface={surface}
-        textMain={textMain}
-        cardBorder={cardBorder}
       />
 
       <OrderPanel
@@ -246,18 +229,13 @@ const OrderView: React.FC<OrderViewProps> = ({
           setShowToppingsModal(true);
         }}
         panelRef={currentOrderRef}
-        isDark={isDark}
-        surface={surface}
-        textMain={textMain}
-        textMuted={textMuted}
-        borderColor={borderColor}
       />
 
       <div
         style={{
           textAlign: 'center',
           padding: '15px 0',
-          color: textMuted,
+          color: 'var(--text-muted)',
           fontSize: '12px',
         }}
       >
@@ -272,14 +250,14 @@ const OrderView: React.FC<OrderViewProps> = ({
           right: 0,
           maxWidth: '480px',
           margin: '0 auto',
-          backgroundColor: surface,
+          backgroundColor: 'var(--bg-surface)',
           padding: '15px 20px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: isDark ? '0 -2px 10px rgba(0,0,0,0.35)' : '0 -2px 10px rgba(0,0,0,0.1)',
+          boxShadow: '0 -2px 10px rgba(0,0,0,0.35)',
           zIndex: 100,
-          borderTop: `1px solid ${borderColor}`,
+          borderTop: '1px solid var(--border)',
         }}
       >
         <button
@@ -297,7 +275,7 @@ const OrderView: React.FC<OrderViewProps> = ({
             cursor: 'pointer',
             fontSize: '18px',
             fontWeight: 600,
-            color: textMain,
+            color: 'var(--text-main)',
           }}
         >
           Tổng cộng: {total.toLocaleString()}đ
@@ -339,7 +317,6 @@ const OrderView: React.FC<OrderViewProps> = ({
             setShowToppingsModal(false);
             setSelectedOrderItemForToppings(null);
           }}
-          isDark={isDark}
         />
       )}
 

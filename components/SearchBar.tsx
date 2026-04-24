@@ -4,7 +4,6 @@ interface SearchBarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   placeholder?: string;
-  darkMode?: boolean;
   onClear: () => void;
 }
 
@@ -12,7 +11,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
   searchQuery,
   setSearchQuery,
   placeholder = 'Search...',
-  darkMode = false,
   onClear,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,11 +18,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const searchInputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px 15px',
-    border: darkMode ? '1px solid #475569' : '1px solid #ddd',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     fontSize: '16px',
-    backgroundColor: darkMode ? '#0f172a' : '#fff',
-    color: darkMode ? '#f1f5f9' : '#1e293b',
+    backgroundColor: 'var(--bg-page)',
+    color: 'var(--text-main)',
     boxSizing: 'border-box',
   };
 
@@ -59,7 +57,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             transform: 'translateY(-50%)',
             background: 'none',
             border: 'none',
-            color: darkMode ? '#94a3b8' : '#7f8c8d',
+            color: 'var(--text-muted)',
             cursor: 'pointer',
             fontSize: '18px',
             lineHeight: '1',

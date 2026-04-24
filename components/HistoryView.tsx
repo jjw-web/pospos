@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
 import type { Bill, MenuCategory } from '../src/types';
-import { useTheme } from '../src/context/ThemeContext';
 import { toPng } from 'html-to-image';
 import HistorySummaryBar from './history/HistorySummaryBar';
 import HistoryActionBar from './history/HistoryActionBar';
@@ -23,15 +22,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
   menuCategories,
   onRevertBill,
 }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-
-  const surface = isDark ? '#1e293b' : '#ffffff';
-  const pageBg = isDark ? '#0f172a' : '#f5f5f5';
-  const textMain = isDark ? '#f1f5f9' : '#2c3e50';
-  const textMuted = isDark ? '#94a3b8' : '#7f8c8d';
-  const borderColor = isDark ? '#334155' : '#eaeaea';
 
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
 
@@ -84,7 +75,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
     try {
       const dataUrl = await toPng(element, {
         pixelRatio: 2,
-        backgroundColor: surface,
+        backgroundColor: '#1e293b',
       });
       const link = document.createElement('a');
       link.download = `Hoa-don-Ban-${bill.table}.png`;
@@ -116,7 +107,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         padding: '0 15px',
         paddingBottom: '100px',
         minHeight: '100vh',
-        backgroundColor: pageBg,
+        backgroundColor: 'var(--bg-page)',
         boxSizing: 'border-box',
       }}
     >
@@ -125,8 +116,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           display: 'flex',
           alignItems: 'center',
           padding: '15px 0',
-          borderBottom: `1px solid ${borderColor}`,
-          backgroundColor: surface,
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: 'var(--bg-surface)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
@@ -136,7 +127,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           style={{
             fontSize: '24px',
             marginRight: '15px',
-            color: textMain,
+            color: 'var(--text-main)',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -149,7 +140,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           style={{
             fontSize: '18px',
             fontWeight: 600,
-            color: textMain,
+            color: 'var(--text-main)',
           }}
         >
           Lịch sử thanh toán
@@ -159,10 +150,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({
       <HistorySummaryBar
         totalBills={historySummary.totalBills}
         totalRevenue={historySummary.totalRevenue}
-        surface={surface}
-        textMain={textMain}
-        textMuted={textMuted}
-        borderColor={borderColor}
       />
 
       <HistoryActionBar
@@ -175,8 +162,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         onExportSelected={handleExportSelected}
         onRevertSelected={handleRevertSelected}
         canRevert={!!onRevertBill}
-        isDark={isDark}
-        textMain={textMain}
       />
 
       {history.length === 0 ? (
@@ -184,7 +169,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           style={{
             textAlign: 'center',
             padding: '50px 0',
-            color: textMuted,
+            color: 'var(--text-muted)',
           }}
         >
           Không có lịch sử thanh toán.
@@ -200,11 +185,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({
             cardRef={(el) => {
               if (el) cardRefs.current.set(bill.id, el);
             }}
-            surface={surface}
-            textMain={textMain}
-            textMuted={textMuted}
-            borderColor={borderColor}
-            isDark={isDark}
           />
         ))
       )}

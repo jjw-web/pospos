@@ -6,7 +6,6 @@ interface ToppingsModalProps {
   availableToppings: ToppingItem[];
   onConfirm: (selectedToppings: ToppingItem[]) => void;
   onClose: () => void;
-  isDark: boolean;
 }
 
 const ToppingsModal: React.FC<ToppingsModalProps> = ({
@@ -14,7 +13,6 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
   availableToppings,
   onConfirm,
   onClose,
-  isDark,
 }) => {
   const [selectedToppings, setSelectedToppings] = useState<ToppingItem[]>([]);
 
@@ -53,7 +51,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
   };
 
   const modalStyle: React.CSSProperties = {
-    backgroundColor: isDark ? '#1f2937' : '#ffffff',
+    backgroundColor: 'var(--bg-surface)',
     borderRadius: '12px',
     padding: '24px',
     maxWidth: '400px',
@@ -67,7 +65,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     fontSize: '20px',
     fontWeight: 'bold',
     marginBottom: '16px',
-    color: isDark ? '#f9fafb' : '#111827',
+    color: 'var(--text-main)',
     textAlign: 'center',
   };
 
@@ -76,20 +74,20 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px',
-    border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     marginBottom: '8px',
-    backgroundColor: isDark ? '#374151' : '#f9fafb',
+    backgroundColor: 'var(--bg-surface)',
   };
 
   const toppingNameStyle: React.CSSProperties = {
     fontSize: '16px',
-    color: isDark ? '#f9fafb' : '#111827',
+    color: 'var(--text-main)',
   };
 
   const toppingPriceStyle: React.CSSProperties = {
     fontSize: '14px',
-    color: isDark ? '#9ca3af' : '#6b7280',
+    color: 'var(--text-muted)',
   };
 
   const quantityControlsStyle: React.CSSProperties = {
@@ -118,7 +116,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     textAlign: 'center',
     fontSize: '16px',
     fontWeight: 'bold',
-    color: isDark ? '#f9fafb' : '#111827',
+    color: 'var(--text-main)',
   };
 
   const buttonRowStyle: React.CSSProperties = {
@@ -131,9 +129,9 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     flex: 1,
     padding: '12px',
     borderRadius: '8px',
-    border: `1px solid ${isDark ? '#374151' : '#d1d5db'}`,
+    border: '1px solid var(--border)',
     backgroundColor: 'transparent',
-    color: isDark ? '#f9fafb' : '#111827',
+    color: 'var(--text-main)',
     fontSize: '16px',
     fontWeight: '500',
     cursor: 'pointer',
@@ -154,7 +152,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
   const totalStyle: React.CSSProperties = {
     fontSize: '18px',
     fontWeight: 'bold',
-    color: isDark ? '#f9fafb' : '#111827',
+    color: 'var(--text-main)',
     textAlign: 'center',
     marginBottom: '16px',
   };

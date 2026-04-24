@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { TableAreaStats } from '../src/types';
-import { useTheme } from '../src/context/ThemeContext';
 import QRCodeModal from './QRCodeModal';
 
 interface ViewSelectionViewProps {
@@ -18,7 +17,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
   insideStats,
   outsideStats,
 }) => {
-  const { theme, toggleTheme } = useTheme();
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const areaHintStyle: React.CSSProperties = {
@@ -40,7 +38,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
   const containerStyle: React.CSSProperties = {
     width: '100%',
     minHeight: '100vh',
-    backgroundColor: theme === 'dark' ? '#111827' : '#f1f5f9',
+    backgroundColor: 'var(--bg-page)',
     padding: '16px',
     boxSizing: 'border-box',
     transition: 'background-color 0.2s ease',
@@ -138,17 +136,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     gridColumn: '1 / -1', // Span full width
   };
 
-  const themeBtnStyle: React.CSSProperties = {
-    fontSize: '0.95rem',
-    fontWeight: 600,
-    padding: '8px 14px',
-    backgroundColor: theme === 'dark' ? '#374151' : '#e2e8f0',
-    color: theme === 'dark' ? '#f9fafb' : '#1e293b',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-  };
-
   return (
     <div style={containerStyle}>
       <div style={wrapperStyle}>
@@ -161,9 +148,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
           >
             Quay lại
-          </button>
-          <button type="button" style={themeBtnStyle} onClick={toggleTheme}>
-            {theme === 'dark' ? '☀️ Sáng' : '🌙 Tối'}
           </button>
         </div>
 

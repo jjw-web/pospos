@@ -23,10 +23,6 @@ interface OrderItemRowProps {
   onUpdateQuantity: (change: number) => void;
   onEditNote: () => void;
   onOpenToppings: () => void;
-  isDark: boolean;
-  textMain: string;
-  textMuted: string;
-  borderColor: string;
 }
 
 const OrderItemRow: React.FC<OrderItemRowProps> = ({
@@ -34,10 +30,6 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
   onUpdateQuantity,
   onEditNote,
   onOpenToppings,
-  isDark,
-  textMain,
-  textMuted,
-  borderColor,
 }) => {
   return (
     <div
@@ -46,7 +38,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '12px 0',
-        borderBottom: `1px solid ${borderColor}`,
+        borderBottom: '1px solid var(--border)',
       }}
     >
       <div style={{ flex: 1 }}>
@@ -58,7 +50,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ fontSize: '16px', color: textMain }}>{item.menuItem.name}</span>
+          <span style={{ fontSize: '16px', color: 'var(--text-main)' }}>{item.menuItem.name}</span>
           <button
             style={{
               background: 'none',
@@ -75,10 +67,10 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
             style={{
               fontSize: '12px',
               padding: '4px 8px',
-              border: `1px solid ${isDark ? '#475569' : '#cbd5e1'}`,
+              border: '1px solid var(--border)',
               borderRadius: '8px',
-              color: isDark ? '#f8fafc' : '#1f2937',
-              background: isDark ? '#334155' : '#f8fafc',
+              color: '#f8fafc',
+              background: 'var(--bg-surface)',
               cursor: 'pointer',
             }}
             onClick={onOpenToppings}
@@ -92,7 +84,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
         )}
 
         {item.toppings && item.toppings.length > 0 && (
-          <div style={{ marginTop: '8px', color: textMuted, fontSize: '13px' }}>
+          <div style={{ marginTop: '8px', color: 'var(--text-muted)', fontSize: '13px' }}>
             {item.toppings.map((topping, index) => (
               <div key={`${item.menuItem.id}-topping-${index}`}>
                 + {topping.quantity} x {topping.name} —{' '}
@@ -102,7 +94,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
           </div>
         )}
 
-        <div style={{ color: textMuted, marginTop: '6px' }}>
+        <div style={{ color: 'var(--text-muted)', marginTop: '6px' }}>
           {(item.menuItem.price * item.quantity).toLocaleString()}đ
         </div>
       </div>
@@ -113,10 +105,10 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
           style={{
             width: '28px',
             height: '28px',
-            border: `1px solid ${isDark ? '#475569' : '#ddd'}`,
+            border: '1px solid var(--border)',
             borderRadius: '50%',
-            backgroundColor: isDark ? '#334155' : '#f8f9fa',
-            color: textMain,
+            backgroundColor: 'var(--bg-surface)',
+            color: 'var(--text-main)',
             cursor: 'pointer',
             fontSize: '18px',
             lineHeight: '24px',
@@ -127,7 +119,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
         </button>
         <span
           style={{
-            color: textMain,
+            color: 'var(--text-main)',
             minWidth: '22px',
             textAlign: 'center',
           }}
@@ -139,10 +131,10 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
           style={{
             width: '28px',
             height: '28px',
-            border: `1px solid ${isDark ? '#475569' : '#ddd'}`,
+            border: '1px solid var(--border)',
             borderRadius: '50%',
-            backgroundColor: isDark ? '#334155' : '#f8f9fa',
-            color: textMain,
+            backgroundColor: 'var(--bg-surface)',
+            color: 'var(--text-main)',
             cursor: 'pointer',
             fontSize: '18px',
             lineHeight: '24px',
