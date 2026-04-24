@@ -517,4 +517,54 @@ Chờ quyết định của người quản lý:
 - Cần điều chỉnh gì thêm?
 ===============================================================
 
+---
+
+## [2026-04-25 00:00] — Agent 2 — Kết thúc ca
+### Phase đang làm
+Dark Mode Fix — Ép Dark Mode cố định
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+Bước 1 — Ép Dark Mode trong ThemeContext — ✅ DONE
+Bước 2 — Thêm CSS Variables vào index.css — ✅ DONE
+Bước 3 — Xóa nút toggle Theme trong ViewSelectionView — ✅ DONE
+Bước 4 — Đồng bộ Props → CSS Variables — ✅ DONE
+Bước 5 — Fix ESLint config & Dead code — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+src/context/ThemeContext.tsx — ép dark cố định, bỏ toggle
+index.css — thêm CSS Variables
+components/ViewSelectionView.tsx — xóa nút toggle
+components/order/*.tsx — dùng CSS variables
+components/history/*.tsx — dùng CSS variables
+components/SearchBar.tsx — dùng CSS variables
+components/ToppingsModal.tsx — dùng CSS variables
+components/QRCodeModal.tsx — dùng CSS variables
+components/OrderView.tsx — refactor dùng CSS variables
+components/HistoryView.tsx — refactor dùng CSS variables
+src/lib/data-upgrader.ts — xóa dead code
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle: 198.46 kB (giảm ~1KB)
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Giữ useTheme() hook để không phải sửa import ở 10+ component
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Không có — ca hoàn thành
+### Commit cuối cùng của ca này
+Hash: f3b6382
+Message: "dark-mode: fix to dark-only, CSS variables, remove toggle"
+
 (End of file)
