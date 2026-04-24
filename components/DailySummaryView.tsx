@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Bill } from '../src/types';
 import { computeDailySummary, todayDateKey } from '../src/lib/daily-summary';
-import { useTheme } from '../src/context/ThemeContext';
 
 interface DailySummaryViewProps {
   history: Bill[];
@@ -9,8 +8,6 @@ interface DailySummaryViewProps {
 }
 
 const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const dateKey = todayDateKey();
 
   const summary = useMemo(() => computeDailySummary(history, dateKey), [history, dateKey]);
@@ -25,17 +22,6 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
     ? Math.round(summary.totalRevenue / summary.bills.length)
     : 0;
 
-  const colors = useMemo(
-    () => ({
-      bg: isDark ? '#0f172a' : '#f8fafc',
-      card: isDark ? '#1e293b' : '#ffffff',
-      text: isDark ? '#f1f5f9' : '#0f172a',
-      muted: isDark ? '#94a3b8' : '#64748b',
-      border: isDark ? '#334155' : '#e2e8f0',
-    }),
-    [isDark]
-  );
-
   const formatDayVi = (key: string) => {
     const [y, m, d] = key.split('-').map(Number);
     return `${d}/${m}/${y}`;
@@ -45,11 +31,11 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: colors.bg,
+        backgroundColor: 'var(--bg-page)',
         padding: '16px',
         paddingBottom: '32px',
         boxSizing: 'border-box',
-        color: colors.text,
+        color: 'var(--text-main)',
       }}
     >
       <div style={{ maxWidth: '480px', margin: '0 auto' }}>
@@ -61,8 +47,8 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               padding: '8px 14px',
               borderRadius: '8px',
               border: 'none',
-              background: isDark ? '#334155' : '#e2e8f0',
-              color: colors.text,
+              background: 'var(--bg-surface)',
+              color: 'var(--text-main)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -72,7 +58,7 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
           <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>Tổng kết ngày</h1>
         </div>
 
-        <p style={{ margin: '0 0 16px', color: colors.muted, fontSize: '14px' }}>
+        <p style={{ margin: '0 0 16px', color: 'var(--text-muted)', fontSize: '14px' }}>
           Ngày {formatDayVi(dateKey)} · {summary.bills.length} hóa đơn · {summary.totalItemsSold}{' '}
           món bán
         </p>
@@ -87,14 +73,14 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
         >
           <div
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: 'var(--bg-surface)',
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${colors.border}`,
-              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+              border: '1px solid var(--border)',
+              boxShadow: 'none',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '6px' }}>
               Tổng hóa đơn
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
@@ -103,14 +89,14 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
           </div>
           <div
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: 'var(--bg-surface)',
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${colors.border}`,
-              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+              border: '1px solid var(--border)',
+              boxShadow: 'none',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '6px' }}>
               Số món bán
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
@@ -119,14 +105,14 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
           </div>
           <div
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: 'var(--bg-surface)',
               borderRadius: '14px',
               padding: '18px',
-              border: `1px solid ${colors.border}`,
-              boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+              border: '1px solid var(--border)',
+              boxShadow: 'none',
             }}
           >
-            <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '6px' }}>
               Trung bình mỗi hóa đơn
             </div>
             <div style={{ fontSize: '24px', fontWeight: 700, color: '#38bdf8' }}>
@@ -137,14 +123,14 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
         <div
           style={{
-            backgroundColor: colors.card,
+            backgroundColor: 'var(--bg-surface)',
             borderRadius: '14px',
             padding: '18px',
             marginBottom: '14px',
-            border: `1px solid ${colors.border}`,
+            border: '1px solid var(--border)',
           }}
         >
-          <div style={{ fontSize: '14px', color: colors.muted, marginBottom: '6px' }}>
+          <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '6px' }}>
             Tổng doanh thu
           </div>
           <div style={{ fontSize: '26px', fontWeight: 800, color: '#38bdf8' }}>
@@ -154,11 +140,11 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
         <div
           style={{
-            backgroundColor: colors.card,
+            backgroundColor: 'var(--bg-surface)',
             borderRadius: '14px',
             padding: '18px',
             marginBottom: '14px',
-            border: `1px solid ${colors.border}`,
+            border: '1px solid var(--border)',
           }}
         >
           <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
@@ -166,16 +152,16 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '15px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: colors.muted }}>💵 Tiền mặt</span>
+              <span style={{ color: 'var(--text-muted)' }}>💵 Tiền mặt</span>
               <strong>{summary.cashTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: colors.muted }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
+              <span style={{ color: 'var(--text-muted)' }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
               <strong>{summary.transferTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             {summary.otherTotal > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: colors.muted }}>Khác / chưa ghi</span>
+                <span style={{ color: 'var(--text-muted)' }}>Khác / chưa ghi</span>
                 <strong>{summary.otherTotal.toLocaleString('vi-VN')}đ</strong>
               </div>
             )}
@@ -184,17 +170,17 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
 
         <div
           style={{
-            backgroundColor: colors.card,
+            backgroundColor: 'var(--bg-surface)',
             borderRadius: '14px',
             padding: '18px',
-            border: `1px solid ${colors.border}`,
+            border: '1px solid var(--border)',
           }}
         >
           <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '12px' }}>
             Món bán chạy (số lượng)
           </div>
           {topList.length === 0 ? (
-            <p style={{ color: colors.muted, margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>Chưa có dữ liệu trong ngày.</p>
           ) : (
             <ol
               style={{
@@ -208,7 +194,7 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               {topList.map(([name, qty]) => (
                 <li key={name} style={{ fontSize: '14px' }}>
                   <strong>{name}</strong>
-                  <span style={{ color: colors.muted }}> — {qty} ly/phần</span>
+                  <span style={{ color: 'var(--text-muted)' }}> — {qty} ly/phần</span>
                 </li>
               ))}
             </ol>
