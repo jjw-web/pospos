@@ -208,6 +208,12 @@ export const INITIAL_TABLES: TableData[] = [
   { id: 7, name: 'T7', layout: 'Inside', status: 'available', order: [] },
   { id: 8, name: 'T8', layout: 'Inside', status: 'available', order: [] },
 
+  // Inside Tables (T9 - T12)
+  { id: 21, name: 'T9', layout: 'Inside', status: 'available', order: [] },
+  { id: 22, name: 'T10', layout: 'Inside', status: 'available', order: [] },
+  { id: 23, name: 'T11', layout: 'Inside', status: 'available', order: [] },
+  { id: 24, name: 'T12', layout: 'Inside', status: 'available', order: [] },
+
   // Outside Tables
   { id: 9, name: 'N1', layout: 'Outside', status: 'available', order: [] },
   { id: 10, name: 'N2', layout: 'Outside', status: 'available', order: [] },

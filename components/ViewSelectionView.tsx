@@ -29,10 +29,10 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
   };
 
   const formatAreaHint = (stats: TableAreaStats) => {
-    if (stats.total === 0) return 'Chưa có bàn';
-    if (stats.occupied === 0) return `Cả ${stats.total} bàn đang trống`;
-    if (stats.occupied === stats.total) return `Cả ${stats.total} bàn đang có khách`;
-    return `${stats.occupied}/${stats.total} bàn đang có khách`;
+    if (stats.occupied === 0) {
+      return '';
+    }
+    return `${stats.occupied}/${stats.total}`;
   };
 
   const containerStyle: React.CSSProperties = {
@@ -217,8 +217,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
                 '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
             }}
           >
-            <div>Mã QR</div>
-            <div style={{ ...areaHintStyle, opacity: 0.95 }}>Thanh toán nhanh</div>
+            <div>QR Code</div>
           </button>
 
           <button

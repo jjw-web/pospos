@@ -5,14 +5,24 @@ import { mergeOrderItems } from '../lib/merge-orders';
 import { calcOrderTotal } from '../lib/order-utils';
 
 function loadTables(): Map<number, TableData> {
+  const map = new Map<number, TableData>();
+
   try {
     const saved = localStorage.getItem('tables');
-    if (saved) return new Map(JSON.parse(saved) as [number, TableData][]);
+    if (saved) {
+      const savedEntries = JSON.parse(saved) as [number, TableData][];
+      savedEntries.forEach(([id, data]) => map.set(id, data));
+    }
   } catch {
     // ignore parse errors
   }
-  const map = new Map<number, TableData>();
-  INITIAL_TABLES.forEach((t) => map.set(t.id, t));
+
+  INITIAL_TABLES.forEach((t) => {
+    if (!map.has(t.id)) {
+      map.set(t.id, t);
+    }
+  });
+
   return map;
 }
 
