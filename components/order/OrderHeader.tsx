@@ -1,16 +1,19 @@
 import React from 'react';
 import { formatOccupiedDuration } from '../../src/lib/table-utils';
 import type { TableData } from '../../src/types';
+import { HomeIcon } from '../icons';
 
 interface OrderHeaderProps {
   table: TableData;
   onBack: () => void;
+  onHome: () => void;
   onClickTitle: () => void;
 }
 
 const OrderHeader: React.FC<OrderHeaderProps> = ({
   table,
   onBack,
+  onHome,
   onClickTitle,
 }) => {
   const durationLabel =
@@ -43,16 +46,33 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
         type="button"
         style={{
           fontSize: '24px',
-          marginRight: '15px',
           color: 'var(--text-main)',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
+          padding: '0 5px',
         }}
         onClick={onBack}
-        aria-label="Quay lại chọn bàn"
+        aria-label="Quay lại"
       >
         ←
+      </button>
+      <button
+        type="button"
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: 'var(--text-main)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '5px',
+        }}
+        onClick={onHome}
+        aria-label="Về trang chủ"
+      >
+        <HomeIcon />
       </button>
       <div
         style={{ flex: '1 1 160px', minWidth: 0, cursor: 'pointer' }}

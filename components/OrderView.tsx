@@ -23,6 +23,7 @@ interface OrderViewProps {
   menuCategories: MenuCategory[];
   allTables: TableData[];
   onBack: () => void;
+  onHome: () => void;
   onAddItem: (
     tableId: number,
     menuItems: { menuItem: MenuItem; toppings?: ToppingItem[] }[]
@@ -44,6 +45,7 @@ const OrderView: React.FC<OrderViewProps> = ({
   menuCategories,
   allTables,
   onBack,
+  onHome,
   onAddItem,
   onUpdateQuantity,
   onPayment,
@@ -157,6 +159,7 @@ const OrderView: React.FC<OrderViewProps> = ({
       <OrderHeader
         table={table}
         onBack={onBack}
+        onHome={onHome}
         onClickTitle={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       />
 

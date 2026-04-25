@@ -62,12 +62,12 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     fontSize: '1.125rem',
     fontWeight: 'bold',
     padding: '8px 16px',
-    backgroundColor: '#6b7280',
-    color: 'white',
+    opacity: 0,
+    backgroundColor: 'transparent',
+    color: 'transparent',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
   };
 
   const buttonsWrapperStyle: React.CSSProperties = {
@@ -144,8 +144,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
             type="button"
             onClick={onBack}
             style={backButtonStyle}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
           >
             Quay lại
           </button>

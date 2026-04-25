@@ -194,6 +194,7 @@ const App: React.FC = () => {
             onBack={() =>
               setCurrentScreen(selectedTable.layout === 'Inside' ? 'inside' : 'outside')
             }
+            onHome={() => setCurrentScreen('viewSelection')}
             onAddItem={tableManager.addItemsToTable}
             onUpdateQuantity={tableManager.updateItemQuantity}
             onPayment={handlePayment}
