@@ -3,6 +3,7 @@ import type { PaymentMethod, Bill, AppScreen } from './src/types';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
 import { useMenuManager } from './src/hooks/useMenuManager';
+import { db, DB_KEYS } from './src/lib/db';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
 import OrderView from './components/OrderView';
@@ -33,7 +34,7 @@ const LoadingScreen: React.FC = () => (
 
 function loadScreen(): AppScreen {
   try {
-    const saved = localStorage.getItem('currentScreen');
+    const saved = localStorage.getItem(DB_KEYS.CURRENT_SCREEN);
     const valid: AppScreen[] = [
       'start',
       'viewSelection',
@@ -53,9 +54,42 @@ function loadScreen(): AppScreen {
   return 'start';
 }
 
+async function loadScreenFromDB(): Promise<AppScreen | null> {
+  try {
+    const saved = await db.getItem<string>(DB_KEYS.CURRENT_SCREEN);
+    const valid: AppScreen[] = [
+      'start',
+      'viewSelection',
+      'inside',
+      'outside',
+      'order',
+      'history',
+      'menu',
+      'dailySummary',
+    ];
+    if (saved && valid.includes(saved as AppScreen)) {
+      return saved as AppScreen;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 function loadSelectedTableId(): number | null {
   try {
-    const saved = localStorage.getItem('selectedTableId');
+    const saved = localStorage.getItem(DB_KEYS.SELECTED_TABLE_ID);
+    if (!saved) return null;
+    const parsed = parseInt(saved, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function loadSelectedTableIdFromDB(): Promise<number | null> {
+  try {
+    const saved = await db.getItem<string>(DB_KEYS.SELECTED_TABLE_ID);
     if (!saved) return null;
     const parsed = parseInt(saved, 10);
     return Number.isNaN(parsed) ? null : parsed;
@@ -65,28 +99,41 @@ function loadSelectedTableId(): number | null {
 }
 
 const App: React.FC = () => {
+  const [initialScreenLoaded, setInitialScreenLoaded] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('start');
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+
   useEffect(() => {
     checkVersion();
+    loadScreenFromDB().then((screen) => {
+      if (screen) setCurrentScreen(screen);
+    });
+    loadSelectedTableIdFromDB().then((id) => {
+      if (id !== null) setSelectedTableId(id);
+    });
+    setInitialScreenLoaded(true);
   }, []);
-
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>(loadScreen);
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(loadSelectedTableId);
 
   const tableManager = useTableManager();
   const historyManager = useHistoryManager();
   const menuManager = useMenuManager();
 
   useEffect(() => {
-    localStorage.setItem('currentScreen', currentScreen);
-  }, [currentScreen]);
+    if (!initialScreenLoaded) return;
+    localStorage.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
+    db.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
+  }, [currentScreen, initialScreenLoaded]);
 
   useEffect(() => {
+    if (!initialScreenLoaded) return;
     if (selectedTableId !== null) {
-      localStorage.setItem('selectedTableId', String(selectedTableId));
+      localStorage.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
+      db.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
     } else {
-      localStorage.removeItem('selectedTableId');
+      localStorage.removeItem(DB_KEYS.SELECTED_TABLE_ID);
+      db.removeItem(DB_KEYS.SELECTED_TABLE_ID);
     }
-  }, [selectedTableId]);
+  }, [selectedTableId, initialScreenLoaded]);
 
   const selectedTable = useMemo(
     () => (selectedTableId !== null ? (tableManager.tables.get(selectedTableId) ?? null) : null),

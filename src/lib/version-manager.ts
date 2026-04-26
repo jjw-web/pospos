@@ -1,5 +1,6 @@
 import { APP_CONFIG } from './config';
 import { upgradeDataStructure } from './data-upgrader';
+import { db, DB_KEYS } from './db';
 
 /**
  * Xử lý khi có phiên bản ứng dụng mới.
@@ -7,8 +8,8 @@ import { upgradeDataStructure } from './data-upgrader';
  * @param newVersion Phiên bản mới.
  */
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string) {
-  // Set localStorage TRƯỚC khi reload — nếu set sau thì không bao giờ chạy được
-  localStorage.setItem('app_version', newVersion);
+  localStorage.setItem(DB_KEYS.APP_VERSION, newVersion);
+  db.setItem(DB_KEYS.APP_VERSION, newVersion);
   alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
   window.location.reload();
 }
@@ -16,9 +17,9 @@ function handleVersionUpgrade(oldVersion: string | null, newVersion: string) {
 /**
  * Kiểm tra phiên bản ứng dụng và dữ liệu, thực hiện nâng cấp nếu cần.
  */
-export function checkVersion() {
-  const currentAppVersion = localStorage.getItem('app_version');
-  const currentDataVersion = localStorage.getItem('data_version');
+export async function checkVersion() {
+  const currentAppVersion = localStorage.getItem(DB_KEYS.APP_VERSION);
+  const currentDataVersion = localStorage.getItem(DB_KEYS.DATA_VERSION);
   const parsedDataVersion = currentDataVersion ? parseInt(currentDataVersion, 10) : null;
 
   let versionChanged = false;
@@ -27,14 +28,14 @@ export function checkVersion() {
   // 1. Kiểm tra phiên bản ứng dụng (App Version)
   if (currentAppVersion !== APP_CONFIG.version) {
     handleVersionUpgrade(currentAppVersion, APP_CONFIG.version);
-    // localStorage.setItem đã được xử lý trong handleVersionUpgrade
     versionChanged = true;
   }
 
   // 2. Kiểm tra phiên bản dữ liệu (Data Version)
   if (parsedDataVersion === null || parsedDataVersion < APP_CONFIG.dataVersion) {
     upgradeDataStructure(parsedDataVersion, APP_CONFIG.dataVersion);
-    localStorage.setItem('data_version', APP_CONFIG.dataVersion.toString());
+    localStorage.setItem(DB_KEYS.DATA_VERSION, APP_CONFIG.dataVersion.toString());
+    await db.setItem(DB_KEYS.DATA_VERSION, APP_CONFIG.dataVersion.toString());
     dataChanged = true;
   }
 

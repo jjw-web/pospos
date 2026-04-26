@@ -1,14 +1,15 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { TableData, MenuItem, ToppingItem, PaymentMethod, Bill } from '../types';
 import { INITIAL_TABLES } from '../../constants';
 import { mergeOrderItems } from '../lib/merge-orders';
 import { calcOrderTotal } from '../lib/order-utils';
+import { db, DB_KEYS } from '../lib/db';
 
 function loadTables(): Map<number, TableData> {
   const map = new Map<number, TableData>();
 
   try {
-    const saved = localStorage.getItem('tables');
+    const saved = localStorage.getItem(DB_KEYS.TABLES);
     if (saved) {
       const savedEntries = JSON.parse(saved) as [number, TableData][];
       savedEntries.forEach(([id, data]) => map.set(id, data));
@@ -26,12 +27,45 @@ function loadTables(): Map<number, TableData> {
   return map;
 }
 
-function persistTables(tables: Map<number, TableData>): void {
-  localStorage.setItem('tables', JSON.stringify(Array.from(tables.entries())));
+async function persistTablesAsync(tables: Map<number, TableData>): Promise<void> {
+  const value = JSON.stringify(Array.from(tables.entries()));
+  localStorage.setItem(DB_KEYS.TABLES, value);
+  await db.setItem(DB_KEYS.TABLES, value);
+}
+
+async function loadTablesFromDB(): Promise<Map<number, TableData> | null> {
+  try {
+    const saved = await db.getItem<string>(DB_KEYS.TABLES);
+    if (saved) {
+      const map = new Map<number, TableData>();
+      const savedEntries = JSON.parse(saved) as [number, TableData][];
+      savedEntries.forEach(([id, data]) => map.set(id, data));
+
+      INITIAL_TABLES.forEach((t) => {
+        if (!map.has(t.id)) {
+          map.set(t.id, t);
+        }
+      });
+      return map;
+    }
+  } catch {
+    // ignore errors, will use localStorage fallback
+  }
+  return null;
 }
 
 export function useTableManager() {
   const [tables, setTables] = useState<Map<number, TableData>>(loadTables);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    loadTablesFromDB().then((dbTables) => {
+      if (dbTables) {
+        setTables(dbTables);
+      }
+      setIsLoaded(true);
+    });
+  }, []);
 
   const addItemsToTable = useCallback(
     (tableId: number, itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => {
@@ -63,7 +97,7 @@ export function useTableManager() {
           occupiedSince: table.occupiedSince ?? new Date().toISOString(),
         };
         next.set(tableId, updated);
-        persistTables(next);
+        persistTablesAsync(next);
         return next;
       });
     },
@@ -89,7 +123,7 @@ export function useTableManager() {
         occupiedSince: newOrder.length > 0 ? table.occupiedSince : undefined,
       };
       next.set(tableId, updated);
-      persistTables(next);
+      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -103,7 +137,7 @@ export function useTableManager() {
         item.menuItem.id === menuItemId ? { ...item, note } : item
       );
       next.set(tableId, { ...table, order: newOrder });
-      persistTables(next);
+      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -136,7 +170,7 @@ export function useTableManager() {
         });
 
         next.set(tableId, { ...table, order: newOrder });
-        persistTables(next);
+        persistTablesAsync(next);
         return next;
       });
     },
@@ -164,7 +198,7 @@ export function useTableManager() {
         status: 'available',
         occupiedSince: undefined,
       });
-      persistTables(next);
+      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -194,7 +228,7 @@ export function useTableManager() {
         status: 'available',
         occupiedSince: undefined,
       });
-      persistTables(next);
+      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -223,7 +257,7 @@ export function useTableManager() {
           status: 'available',
           occupiedSince: undefined,
         });
-        persistTables(next);
+        persistTablesAsync(next);
         return next;
       });
 
@@ -268,7 +302,7 @@ export function useTableManager() {
         });
       }
 
-      persistTables(next);
+      persistTablesAsync(next);
       return next;
     });
   }, []);
