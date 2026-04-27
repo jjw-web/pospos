@@ -32,28 +32,6 @@ const LoadingScreen: React.FC = () => (
   </div>
 );
 
-function loadScreen(): AppScreen {
-  try {
-    const saved = localStorage.getItem(DB_KEYS.CURRENT_SCREEN);
-    const valid: AppScreen[] = [
-      'start',
-      'viewSelection',
-      'inside',
-      'outside',
-      'order',
-      'history',
-      'menu',
-      'dailySummary',
-    ];
-    if (saved && valid.includes(saved as AppScreen)) {
-      return saved as AppScreen;
-    }
-  } catch {
-    // ignore
-  }
-  return 'start';
-}
-
 async function loadScreenFromDB(): Promise<AppScreen | null> {
   try {
     const saved = await db.getItem<string>(DB_KEYS.CURRENT_SCREEN);
@@ -74,17 +52,6 @@ async function loadScreenFromDB(): Promise<AppScreen | null> {
     // ignore
   }
   return null;
-}
-
-function loadSelectedTableId(): number | null {
-  try {
-    const saved = localStorage.getItem(DB_KEYS.SELECTED_TABLE_ID);
-    if (!saved) return null;
-    const parsed = parseInt(saved, 10);
-    return Number.isNaN(parsed) ? null : parsed;
-  } catch {
-    return null;
-  }
 }
 
 async function loadSelectedTableIdFromDB(): Promise<number | null> {
