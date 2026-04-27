@@ -104,14 +104,16 @@ const App: React.FC = () => {
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
 
   useEffect(() => {
-    checkVersion();
-    loadScreenFromDB().then((screen) => {
-      if (screen) setCurrentScreen(screen);
+    checkVersion().then(() => {
+      Promise.all([
+        loadScreenFromDB(),
+        loadSelectedTableIdFromDB(),
+      ]).then(([screen, id]) => {
+        if (screen) setCurrentScreen(screen);
+        if (id !== null) setSelectedTableId(id);
+        setInitialScreenLoaded(true);
+      });
     });
-    loadSelectedTableIdFromDB().then((id) => {
-      if (id !== null) setSelectedTableId(id);
-    });
-    setInitialScreenLoaded(true);
   }, []);
 
   const tableManager = useTableManager();

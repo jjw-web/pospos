@@ -321,6 +321,7 @@ export function useTableManager() {
     tables,
     insideTables,
     outsideTables,
+    isLoaded,
     addItemsToTable,
     updateItemQuantity,
     updateItemNote,

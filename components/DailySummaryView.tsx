@@ -156,7 +156,7 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               <strong>{summary.cashTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>🏦 Chuyển khoản (BIDV + Tintin)</span>
+              <span style={{ color: 'var(--text-muted)' }}>🏦 Chuyển khoản (BIDV + JJW)</span>
               <strong>{summary.transferTotal.toLocaleString('vi-VN')}đ</strong>
             </div>
             {summary.otherTotal > 0 && (

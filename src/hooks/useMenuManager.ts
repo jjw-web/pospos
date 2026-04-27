@@ -50,5 +50,5 @@ export function useMenuManager() {
     persistMenuCategoriesAsync(categories);
   }, []);
 
-  return { menuCategories, updateMenuCategories };
+  return { menuCategories, isLoaded, updateMenuCategories };
 }

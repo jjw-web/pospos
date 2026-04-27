@@ -71,5 +71,5 @@ export function useHistoryManager() {
     });
   }, []);
 
-  return { history, addBill, deleteBills, clearHistory, removeBill };
+  return { history, isLoaded, addBill, deleteBills, clearHistory, removeBill };
 }
