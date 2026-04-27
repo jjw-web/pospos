@@ -122,10 +122,6 @@ const App: React.FC = () => {
 
   const allLoaded = tableManager.isLoaded && historyManager.isLoaded && menuManager.isLoaded;
 
-  if (!initialScreenLoaded || !allLoaded) {
-    return <LoadingScreen />;
-  }
-
   useEffect(() => {
     if (!initialScreenLoaded) return;
     localStorage.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
@@ -194,6 +190,10 @@ const App: React.FC = () => {
   );
 
   const allTables = useMemo(() => Array.from(tableManager.tables.values()), [tableManager.tables]);
+
+  if (!initialScreenLoaded || !allLoaded) {
+    return <LoadingScreen />;
+  }
 
   const renderScreen = () => {
     switch (currentScreen) {
