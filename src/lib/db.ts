@@ -6,10 +6,6 @@
 const DB_NAME = 'bong-ca-phe-pos';
 const DB_VERSION = 1;
 
-interface DBSchema {
-  keyval: { key: string; value: unknown };
-}
-
 let dbInstance: IDBDatabase | null = null;
 
 async function openDB(): Promise<IDBDatabase> {
