@@ -120,6 +120,12 @@ const App: React.FC = () => {
   const historyManager = useHistoryManager();
   const menuManager = useMenuManager();
 
+  const allLoaded = tableManager.isLoaded && historyManager.isLoaded && menuManager.isLoaded;
+
+  if (!initialScreenLoaded || !allLoaded) {
+    return <LoadingScreen />;
+  }
+
   useEffect(() => {
     if (!initialScreenLoaded) return;
     localStorage.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
