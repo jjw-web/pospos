@@ -32,9 +32,9 @@ const LoadingScreen: React.FC = () => (
   </div>
 );
 
-async function loadScreenFromDB(): Promise<AppScreen | null> {
+function loadScreenSync(): AppScreen {
   try {
-    const saved = await db.getItem<string>(DB_KEYS.CURRENT_SCREEN);
+    const saved = localStorage.getItem(DB_KEYS.CURRENT_SCREEN);
     const valid: AppScreen[] = [
       'start',
       'viewSelection',
@@ -51,12 +51,12 @@ async function loadScreenFromDB(): Promise<AppScreen | null> {
   } catch {
     // ignore
   }
-  return null;
+  return 'start';
 }
 
-async function loadSelectedTableIdFromDB(): Promise<number | null> {
+function loadSelectedTableIdSync(): number | null {
   try {
-    const saved = await db.getItem<string>(DB_KEYS.SELECTED_TABLE_ID);
+    const saved = localStorage.getItem(DB_KEYS.SELECTED_TABLE_ID);
     if (!saved) return null;
     const parsed = parseInt(saved, 10);
     return Number.isNaN(parsed) ? null : parsed;
@@ -66,21 +66,11 @@ async function loadSelectedTableIdFromDB(): Promise<number | null> {
 }
 
 const App: React.FC = () => {
-  const [initialScreenLoaded, setInitialScreenLoaded] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('start');
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(loadScreenSync);
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(loadSelectedTableIdSync);
 
   useEffect(() => {
-    checkVersion().then(() => {
-      Promise.all([
-        loadScreenFromDB(),
-        loadSelectedTableIdFromDB(),
-      ]).then(([screen, id]) => {
-        if (screen) setCurrentScreen(screen);
-        if (id !== null) setSelectedTableId(id);
-        setInitialScreenLoaded(true);
-      });
-    });
+    checkVersion();
   }, []);
 
   const tableManager = useTableManager();
@@ -90,13 +80,11 @@ const App: React.FC = () => {
   const allLoaded = tableManager.isLoaded && historyManager.isLoaded && menuManager.isLoaded;
 
   useEffect(() => {
-    if (!initialScreenLoaded) return;
     localStorage.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
     db.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
-  }, [currentScreen, initialScreenLoaded]);
+  }, [currentScreen]);
 
   useEffect(() => {
-    if (!initialScreenLoaded) return;
     if (selectedTableId !== null) {
       localStorage.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
       db.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
@@ -104,7 +92,7 @@ const App: React.FC = () => {
       localStorage.removeItem(DB_KEYS.SELECTED_TABLE_ID);
       db.removeItem(DB_KEYS.SELECTED_TABLE_ID);
     }
-  }, [selectedTableId, initialScreenLoaded]);
+  }, [selectedTableId]);
 
   const selectedTable = useMemo(
     () => (selectedTableId !== null ? (tableManager.tables.get(selectedTableId) ?? null) : null),
@@ -158,7 +146,7 @@ const App: React.FC = () => {
 
   const allTables = useMemo(() => Array.from(tableManager.tables.values()), [tableManager.tables]);
 
-  if (!initialScreenLoaded || !allLoaded) {
+  if (!allLoaded) {
     return <LoadingScreen />;
   }
 
