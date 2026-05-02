@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { OrderItem } from '../src/types';
 import { PREDEFINED_NOTES } from '../constants';
 
@@ -10,10 +10,6 @@ interface NoteModalProps {
 
 const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
   const [note, setNote] = useState(item.note || '');
-
-  useEffect(() => {
-    setNote(item.note || '');
-  }, [item]);
 
   const handleSave = () => {
     onSave(note);

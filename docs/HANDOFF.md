@@ -570,3 +570,63 @@ Hash: f47d27c
 Message: "dark-mode: refactor StartView, DailySummaryView to use CSS variables"
 
 (End of file)
+
+---
+
+## [2026-05-02 11:00] — Codex — Kết thúc ca
+### Phase đang làm
+Code Quality Stabilization — Giữ nguyên trang bị hiện có, sửa lỗi trạng thái hiện tại
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+Bước 1 — Verify dev server baseline — ✅ DONE
+Bước 2 — Fix ESLint errors hiện tại — ✅ DONE
+Bước 3 — Verify TypeScript, ESLint, production build — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+components/MenuView.tsx — bỏ useEffect đồng bộ state không cần thiết để tránh react-hooks/set-state-in-effect
+components/NoteModal.tsx — bỏ useEffect đồng bộ note không cần thiết
+components/OrderView.tsx — thêm key cho NoteModal để remount đúng khi item/note thay đổi
+src/context/ThemeContext.tsx — bỏ React namespace type usage, dùng ReactNode type import và function component
+eslint.config.js — cấu hình React version detect, cho phép export useTheme trong ThemeContext, tắt no-console riêng cho scripts
+package.json — bump version lên 2.7.1
+package-lock.json — đồng bộ version metadata lên 2.7.1
+docs/HANDOFF.md — thêm entry ca làm việc này
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: ./node_modules/.bin/vite build
+Kết quả: [x] Thành công
+Bundle size:
+- Main chunk: 201.97 kB (62.10 kB gzip)
+- HistoryView: 19.91 kB (7.61 kB gzip)
+- MenuView: 6.39 kB (1.96 kB gzip)
+- DailySummaryView: 5.43 kB (1.69 kB gzip)
+Ghi chú: Browserslist báo dữ liệu caniuse-lite cũ 9 tháng; không cập nhật vì yêu cầu không thêm/bớt/thay đổi package.
+### Kết quả lint check
+Lệnh: ./node_modules/.bin/eslint . --ext .ts,.tsx
+Kết quả: [x] 0 errors, 0 warnings
+### Kết quả dev server check
+Lệnh: ./node_modules/.bin/vite --host 127.0.0.1
+Kết quả: [x] Dev server chạy, HTTP 200 tại http://127.0.0.1:5173/
+### Vấn đề phát sinh trong ca này
+npm không có trong PATH của shell Codex, nên các lệnh kiểm tra được chạy trực tiếp qua ./node_modules/.bin.
+Lần chạy ESLint đầu tiên bị lỗi file tạm Vite do chạy song song với build; chạy lại riêng sau khi build kết thúc thì pass sạch.
+Repo hiện chỉ có branch main, không có branch refactor/all-phases như AGENTS.md mô tả; không tự tạo branch mới.
+### Quyết định đã tự đưa ra trong ca này
+Giữ nguyên IndexedDB/localStorage/PWA và toàn bộ package hiện có theo yêu cầu "không thêm, không bớt".
+Không sửa kiến trúc storage trong ca này; chỉ đưa trạng thái kiểm chứng hiện tại về sạch.
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Tiếp tục giữ phạm vi nhỏ, không thêm/bớt package nếu chưa có yêu cầu rõ.
+Nếu cần chạy npm script trong Codex shell, dùng trực tiếp ./node_modules/.bin do npm không có trong PATH hiện tại.
+### Commit cuối cùng của ca này
+Hash: 15c7364
+Message: chore: bump version to 2.7.1

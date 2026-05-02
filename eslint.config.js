@@ -32,6 +32,11 @@ export default [
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
     rules: {
       ...js.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
@@ -52,7 +57,14 @@ export default [
       'no-debugger': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
-      'react-refresh/only-export-components': 'warn',
+      'react-refresh/only-export-components': ['warn', { allowExportNames: ['useTheme'] }],
+    },
+  },
+  {
+    name: 'bong-cafe-pos/scripts',
+    files: ['scripts/**/*.js', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ];

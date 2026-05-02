@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { MenuItem, MenuCategory } from '../src/types';
 
 interface MenuViewProps {
@@ -24,10 +24,6 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     itemId: number;
   } | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
-
-  useEffect(() => {
-    setLocalMenuCategories(menuCategories);
-  }, [menuCategories]);
 
   const containerStyle: React.CSSProperties = {
     width: '100%',

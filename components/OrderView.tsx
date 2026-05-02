@@ -303,6 +303,7 @@ const OrderView: React.FC<OrderViewProps> = ({
 
       {editingNoteItem && (
         <NoteModal
+          key={`${editingNoteItem.menuItem.id}-${editingNoteItem.note ?? ''}`}
           item={editingNoteItem}
           onClose={() => setEditingNoteItem(null)}
           onSave={(note) => {
