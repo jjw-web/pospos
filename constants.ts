@@ -195,6 +195,13 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 109, name: 'Kem ngậy', price: 10000 },
     ],
   },
+  {
+    name: 'SNACK',
+    items: [
+      { id: 126, name: 'Hướng dương', price: 15000 },
+      { id: 127, name: 'Sài gòn bạc', price: 20000 },
+    ],
+  },
 ];
 
 export const INITIAL_TABLES: TableData[] = [
