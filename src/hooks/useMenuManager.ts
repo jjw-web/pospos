@@ -4,43 +4,48 @@ import { MENU_CATEGORIES } from '../../constants';
 import { mergeMenuWithDefaults } from '../lib/merge-menu-defaults';
 import { db, DB_KEYS } from '../lib/db';
 
-function loadMenuCategories(): MenuCategory[] {
-  try {
-    const saved = localStorage.getItem(DB_KEYS.MENU_CATEGORIES);
-    if (!saved) return MENU_CATEGORIES;
-    return mergeMenuWithDefaults(JSON.parse(saved) as MenuCategory[]);
-  } catch {
-    return MENU_CATEGORIES;
-  }
-}
-
-async function persistMenuCategoriesAsync(categories: MenuCategory[]): Promise<void> {
-  const value = JSON.stringify(categories);
-  localStorage.setItem(DB_KEYS.MENU_CATEGORIES, value);
-  await db.setItem(DB_KEYS.MENU_CATEGORIES, value);
-}
-
-async function loadMenuFromDB(): Promise<MenuCategory[] | null> {
+/**
+ * Load menu from IndexedDB only, merge with defaults.
+ * Avoids double-render from sync localStorage + async DB loading race.
+ */
+async function loadMenuFromDB(): Promise<MenuCategory[]> {
   try {
     const saved = await db.getItem<string>(DB_KEYS.MENU_CATEGORIES);
     if (saved) {
       return mergeMenuWithDefaults(JSON.parse(saved) as MenuCategory[]);
     }
   } catch {
-    // ignore errors
+    // ignore — fall through to defaults
   }
-  return null;
+  return MENU_CATEGORIES;
+}
+
+/**
+ * Persist menu to localStorage (sync fallback) + IndexedDB (primary).
+ */
+async function persistMenuCategoriesAsync(categories: MenuCategory[]): Promise<void> {
+  const value = JSON.stringify(categories);
+
+  try {
+    localStorage.setItem(DB_KEYS.MENU_CATEGORIES, value);
+  } catch (err) {
+    console.error('[useMenuManager] localStorage write failed:', err);
+  }
+
+  try {
+    await db.setItem(DB_KEYS.MENU_CATEGORIES, value);
+  } catch (err) {
+    console.error('[useMenuManager] IndexedDB write failed:', err);
+  }
 }
 
 export function useMenuManager() {
-  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>(loadMenuCategories);
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     loadMenuFromDB().then((dbMenu) => {
-      if (dbMenu) {
-        setMenuCategories(dbMenu);
-      }
+      setMenuCategories(dbMenu);
       setIsLoaded(true);
     });
   }, []);

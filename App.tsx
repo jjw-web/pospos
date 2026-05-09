@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
+import { db, DB_KEYS } from './src/lib/db';
+import { checkVersion } from './src/lib/version-manager';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
 import { useMenuManager } from './src/hooks/useMenuManager';
-import { db, DB_KEYS } from './src/lib/db';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
 import OrderView from './components/OrderView';
@@ -13,8 +14,6 @@ import ViewSelectionView from './components/ViewSelectionView';
 const HistoryView = lazy(() => import('./components/HistoryView'));
 const MenuView = lazy(() => import('./components/MenuView'));
 const DailySummaryView = lazy(() => import('./components/DailySummaryView'));
-
-import { checkVersion } from './src/lib/version-manager';
 
 const LoadingScreen: React.FC = () => (
   <div
@@ -81,16 +80,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
-    db.setItem(DB_KEYS.CURRENT_SCREEN, currentScreen);
   }, [currentScreen]);
 
   useEffect(() => {
     if (selectedTableId !== null) {
       localStorage.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
-      db.setItem(DB_KEYS.SELECTED_TABLE_ID, String(selectedTableId));
     } else {
       localStorage.removeItem(DB_KEYS.SELECTED_TABLE_ID);
-      db.removeItem(DB_KEYS.SELECTED_TABLE_ID);
     }
   }, [selectedTableId]);
 

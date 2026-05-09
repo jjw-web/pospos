@@ -1,23 +1,30 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { TableData, MenuItem, ToppingItem, PaymentMethod, Bill } from '../types';
 import { INITIAL_TABLES } from '../../constants';
 import { mergeOrderItems } from '../lib/merge-orders';
 import { calcOrderTotal } from '../lib/order-utils';
 import { db, DB_KEYS } from '../lib/db';
 
-function loadTables(): Map<number, TableData> {
+/**
+ * Load tables from IndexedDB only (async).
+ * localStorage is NOT read on init — avoids data race where sync load
+ * and async DB load return different data, causing double re-render.
+ * Falls back to INITIAL_TABLES if nothing in storage.
+ */
+async function loadTablesFromDB(): Promise<Map<number, TableData>> {
   const map = new Map<number, TableData>();
 
   try {
-    const saved = localStorage.getItem(DB_KEYS.TABLES);
+    const saved = await db.getItem<string>(DB_KEYS.TABLES);
     if (saved) {
       const savedEntries = JSON.parse(saved) as [number, TableData][];
       savedEntries.forEach(([id, data]) => map.set(id, data));
     }
   } catch {
-    // ignore parse errors
+    // IndexedDB unavailable — table data will come from state defaults
   }
 
+  // Always ensure initial tables exist (e.g., new table added in app update)
   INITIAL_TABLES.forEach((t) => {
     if (!map.has(t.id)) {
       map.set(t.id, t);
@@ -28,59 +35,34 @@ function loadTables(): Map<number, TableData> {
 }
 
 /**
- * Persist tables to both localStorage (sync, guaranteed) and IndexedDB (async, robust).
- * localStorage is written first to ensure we always have a fallback.
- * Failures are logged but never throw — UI state is source of truth.
+ * Persist tables to both localStorage (sync fallback) and IndexedDB (primary store).
+ * localStorage written first so it always has the latest data even if IDB fails.
+ * Failures are silently caught — UI state is source of truth.
  */
 async function persistTablesAsync(tables: Map<number, TableData>): Promise<void> {
   const value = JSON.stringify(Array.from(tables.entries()));
 
-  // localStorage first — sync and always available
   try {
     localStorage.setItem(DB_KEYS.TABLES, value);
   } catch (err) {
     console.error('[useTableManager] localStorage write failed:', err);
   }
 
-  // IndexedDB second — async, for larger storage capacity
   try {
     await db.setItem(DB_KEYS.TABLES, value);
   } catch (err) {
     console.error('[useTableManager] IndexedDB write failed:', err);
-    // localStorage already saved, so data is not lost
   }
-}
-
-async function loadTablesFromDB(): Promise<Map<number, TableData> | null> {
-  try {
-    const saved = await db.getItem<string>(DB_KEYS.TABLES);
-    if (saved) {
-      const map = new Map<number, TableData>();
-      const savedEntries = JSON.parse(saved) as [number, TableData][];
-      savedEntries.forEach(([id, data]) => map.set(id, data));
-
-      INITIAL_TABLES.forEach((t) => {
-        if (!map.has(t.id)) {
-          map.set(t.id, t);
-        }
-      });
-      return map;
-    }
-  } catch {
-    // ignore errors, will use localStorage fallback
-  }
-  return null;
 }
 
 export function useTableManager() {
-  const [tables, setTables] = useState<Map<number, TableData>>(loadTables);
+  // Initialize to empty map — actual data loaded async from IndexedDB
+  const [tables, setTables] = useState<Map<number, TableData>>(new Map());
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     loadTablesFromDB().then((dbTables) => {
-      if (dbTables) {
-        setTables(dbTables);
-      }
+      setTables(dbTables);
       setIsLoaded(true);
     });
   }, []);
@@ -295,7 +277,7 @@ export function useTableManager() {
           const maxId = Math.max(0, ...Array.from(next.keys())) + 1;
           next.set(maxId, {
             id: maxId,
-            name: `${bill.table}-hoàn tác`,
+            name: `${bill.table}-hoàn-tác`,
             layout: target.layout,
             status: 'occupied',
             order: bill.items,

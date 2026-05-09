@@ -2,42 +2,48 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Bill } from '../types';
 import { db, DB_KEYS } from '../lib/db';
 
-function loadHistory(): Bill[] {
-  try {
-    const saved = localStorage.getItem(DB_KEYS.HISTORY);
-    return saved ? (JSON.parse(saved) as Bill[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-async function persistHistoryAsync(history: Bill[]): Promise<void> {
-  const value = JSON.stringify(history);
-  localStorage.setItem(DB_KEYS.HISTORY, value);
-  await db.setItem(DB_KEYS.HISTORY, value);
-}
-
-async function loadHistoryFromDB(): Promise<Bill[] | null> {
+/**
+ * Load history from IndexedDB only.
+ * Avoids double-render from sync localStorage + async DB loading race.
+ */
+async function loadHistoryFromDB(): Promise<Bill[]> {
   try {
     const saved = await db.getItem<string>(DB_KEYS.HISTORY);
     if (saved) {
       return JSON.parse(saved) as Bill[];
     }
   } catch {
-    // ignore errors
+    // ignore — empty history on error
   }
-  return null;
+  return [];
+}
+
+/**
+ * Persist history to localStorage (sync fallback) + IndexedDB (primary).
+ */
+async function persistHistoryAsync(history: Bill[]): Promise<void> {
+  const value = JSON.stringify(history);
+
+  try {
+    localStorage.setItem(DB_KEYS.HISTORY, value);
+  } catch (err) {
+    console.error('[useHistoryManager] localStorage write failed:', err);
+  }
+
+  try {
+    await db.setItem(DB_KEYS.HISTORY, value);
+  } catch (err) {
+    console.error('[useHistoryManager] IndexedDB write failed:', err);
+  }
 }
 
 export function useHistoryManager() {
-  const [history, setHistory] = useState<Bill[]>(loadHistory);
+  const [history, setHistory] = useState<Bill[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     loadHistoryFromDB().then((dbHistory) => {
-      if (dbHistory) {
-        setHistory(dbHistory);
-      }
+      setHistory(dbHistory);
       setIsLoaded(true);
     });
   }, []);
