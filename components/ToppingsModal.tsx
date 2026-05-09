@@ -4,6 +4,7 @@ import type { MenuItem, ToppingItem } from '../src/types';
 interface ToppingsModalProps {
   menuItem: MenuItem;
   availableToppings: ToppingItem[];
+  initialToppings?: ToppingItem[];
   onConfirm: (selectedToppings: ToppingItem[]) => void;
   onClose: () => void;
 }
@@ -11,10 +12,11 @@ interface ToppingsModalProps {
 const ToppingsModal: React.FC<ToppingsModalProps> = ({
   menuItem,
   availableToppings,
+  initialToppings,
   onConfirm,
   onClose,
 }) => {
-  const [selectedToppings, setSelectedToppings] = useState<ToppingItem[]>([]);
+  const [selectedToppings, setSelectedToppings] = useState<ToppingItem[]>(initialToppings ?? []);
 
   const toggleTopping = (topping: ToppingItem) => {
     setSelectedToppings((prev) =>
@@ -149,23 +151,10 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     cursor: 'pointer',
   };
 
-  const totalStyle: React.CSSProperties = {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: 'var(--text-main)',
-    textAlign: 'center',
-    marginBottom: '16px',
-  };
-
-  const totalToppings = selectedToppings.reduce((sum, t) => sum + t.price * t.quantity, 0);
-  const totalPrice = menuItem.price + totalToppings;
-
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <h2 style={titleStyle}>Chọn toppings cho {menuItem.name}</h2>
-
-        <div style={totalStyle}>Tổng: {totalPrice.toLocaleString('vi-VN')}đ</div>
 
         <div style={{ marginBottom: '16px' }}>
           {availableToppings.map((topping) => {
@@ -203,11 +192,24 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
         </div>
 
         <div style={buttonRowStyle}>
-          <button style={cancelBtnStyle} onClick={onClose}>
-            Hủy
-          </button>
-          <button style={confirmBtnStyle} onClick={handleConfirm}>
-            Thêm vào order ({totalPrice.toLocaleString('vi-VN')}đ)
+          <button
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: '500',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              onConfirm(selectedToppings);
+              onClose();
+            }}
+          >
+            Xong
           </button>
         </div>
       </div>

@@ -36,7 +36,7 @@ interface OrderViewProps {
   onAddTopping?: (
     tableId: number,
     mainItemId: number,
-    toppings: { id: number; name: string; price: number }[]
+    toppings: { id: number; name: string; price: number; quantity: number }[]
   ) => void;
 }
 
@@ -128,6 +128,7 @@ const OrderView: React.FC<OrderViewProps> = ({
           id: t.id,
           name: t.name,
           price: t.price,
+          quantity: t.quantity,
         }))
       );
       setToastMessage(
@@ -316,7 +317,21 @@ const OrderView: React.FC<OrderViewProps> = ({
         <ToppingsModal
           menuItem={selectedOrderItemForToppings.menuItem}
           availableToppings={availableToppings}
-          onConfirm={handleConfirmToppings}
+          initialToppings={selectedOrderItemForToppings.toppings ?? []}
+          onConfirm={(selectedToppings) => {
+            onAddTopping?.(
+              table.id,
+              selectedOrderItemForToppings.menuItem.id,
+              selectedToppings.map((t) => ({
+                id: t.id,
+                name: t.name,
+                price: t.price,
+                quantity: t.quantity,
+              }))
+            );
+            setShowToppingsModal(false);
+            setSelectedOrderItemForToppings(null);
+          }}
           onClose={() => {
             setShowToppingsModal(false);
             setSelectedOrderItemForToppings(null);

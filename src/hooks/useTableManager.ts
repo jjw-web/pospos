@@ -146,7 +146,7 @@ export function useTableManager() {
     (
       tableId: number,
       mainItemId: number,
-      toppingsToAdd: { id: number; name: string; price: number }[]
+      toppingsToSet: { id: number; name: string; price: number; quantity: number }[]
     ) => {
       setTables((prev) => {
         const next = new Map(prev);
@@ -155,18 +155,12 @@ export function useTableManager() {
 
         const newOrder = table.order.map((item) => {
           if (item.menuItem.id !== mainItemId) return item;
-          let toppings = item.toppings ?? [];
-          toppingsToAdd.forEach((t) => {
-            const idx = toppings.findIndex((tp) => tp.id === t.id);
-            if (idx >= 0) {
-              toppings = toppings.map((tp, i) =>
-                i === idx ? { ...tp, quantity: tp.quantity + 1 } : tp
-              );
-            } else {
-              toppings = [...toppings, { ...t, quantity: 1 }];
-            }
+          const currentToppings = item.toppings ?? [];
+          const newToppings = toppingsToSet.map((t) => {
+            const existing = currentToppings.find((tp) => tp.id === t.id);
+            return existing ? { ...existing, quantity: t.quantity } : { ...t, quantity: t.quantity };
           });
-          return { ...item, toppings };
+          return { ...item, toppings: newToppings };
         });
 
         next.set(tableId, { ...table, order: newOrder });
