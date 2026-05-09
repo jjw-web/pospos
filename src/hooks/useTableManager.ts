@@ -27,10 +27,28 @@ function loadTables(): Map<number, TableData> {
   return map;
 }
 
+/**
+ * Persist tables to both localStorage (sync, guaranteed) and IndexedDB (async, robust).
+ * localStorage is written first to ensure we always have a fallback.
+ * Failures are logged but never throw — UI state is source of truth.
+ */
 async function persistTablesAsync(tables: Map<number, TableData>): Promise<void> {
   const value = JSON.stringify(Array.from(tables.entries()));
-  localStorage.setItem(DB_KEYS.TABLES, value);
-  await db.setItem(DB_KEYS.TABLES, value);
+
+  // localStorage first — sync and always available
+  try {
+    localStorage.setItem(DB_KEYS.TABLES, value);
+  } catch (err) {
+    console.error('[useTableManager] localStorage write failed:', err);
+  }
+
+  // IndexedDB second — async, for larger storage capacity
+  try {
+    await db.setItem(DB_KEYS.TABLES, value);
+  } catch (err) {
+    console.error('[useTableManager] IndexedDB write failed:', err);
+    // localStorage already saved, so data is not lost
+  }
 }
 
 async function loadTablesFromDB(): Promise<Map<number, TableData> | null> {

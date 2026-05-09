@@ -7,6 +7,20 @@ export interface OrderCounts {
 }
 
 /**
+ * Build a map from menuItem.id -> category name.
+ * Used by both countOrderItems and groupItemsByCategory to avoid duplication.
+ * @param menuCategories - Danh sách category
+ * @returns Map từ item ID sang category name
+ */
+function buildItemCategoryMap(menuCategories: MenuCategory[]): Map<number, string> {
+  const map = new Map<number, string>();
+  menuCategories.forEach((cat) => {
+    cat.items.forEach((item) => map.set(item.id, cat.name));
+  });
+  return map;
+}
+
+/**
  * Tính tổng tiền của một order item bao gồm toppings.
  * @param item - OrderItem cần tính
  * @returns Tổng tiền tính bằng VND
@@ -33,10 +47,7 @@ export function calcOrderTotal(items: OrderItem[]): number {
  * @returns OrderCounts
  */
 export function countOrderItems(items: OrderItem[], menuCategories: MenuCategory[]): OrderCounts {
-  const itemToCategoryMap = new Map<number, string>();
-  menuCategories.forEach((cat) => {
-    cat.items.forEach((item) => itemToCategoryMap.set(item.id, cat.name));
-  });
+  const itemToCategoryMap = buildItemCategoryMap(menuCategories);
 
   let mainCount = 0;
   let toppingCount = 0;
@@ -72,10 +83,7 @@ export function groupItemsByCategory(
   items: OrderItem[],
   menuCategories: MenuCategory[]
 ): Record<string, OrderItem[]> {
-  const itemToCategoryMap = new Map<number, string>();
-  menuCategories.forEach((cat) => {
-    cat.items.forEach((item) => itemToCategoryMap.set(item.id, cat.name));
-  });
+  const itemToCategoryMap = buildItemCategoryMap(menuCategories);
 
   return items.reduce<Record<string, OrderItem[]>>((acc, item) => {
     const cat = itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
