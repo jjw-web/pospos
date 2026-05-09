@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
 import { db, DB_KEYS } from './src/lib/db';
 import { checkVersion } from './src/lib/version-manager';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
 import { useMenuManager } from './src/hooks/useMenuManager';
@@ -19,14 +20,31 @@ const LoadingScreen: React.FC = () => (
   <div
     style={{
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
+      backgroundColor: 'var(--bg-page)',
+      color: 'var(--text-muted)',
       fontSize: '16px',
-      color: '#94a3b8',
+      gap: '16px',
     }}
   >
+    <div
+      style={{
+        width: '40px',
+        height: '40px',
+        border: '4px solid var(--border)',
+        borderTopColor: '#3498db',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }}
+    />
+    <style>{`
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `}</style>
     Đang tải...
   </div>
 );
@@ -248,7 +266,11 @@ const App: React.FC = () => {
     }
   };
 
-  return <Suspense fallback={<LoadingScreen />}>{renderScreen()}</Suspense>;
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<LoadingScreen />}>{renderScreen()}</Suspense>
+    </ErrorBoundary>
+  );
 };
 
 export default App;
