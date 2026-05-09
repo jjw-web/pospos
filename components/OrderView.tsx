@@ -235,16 +235,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         panelRef={currentOrderRef}
       />
 
-      <div
-        style={{
-          textAlign: 'center',
-          padding: '15px 0',
-          color: 'var(--text-muted)',
-          fontSize: '12px',
-        }}
-      >
-        pospos.vercel.app
-      </div>
+      
 
       <div
         style={{
