@@ -188,6 +188,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
     name: 'TOPPING',
     items: [
       { id: 105, name: 'Trân châu trắng', price: 5000 },
+      { id: 128, name: 'Trân châu đen', price: 5000 },
       { id: 106, name: 'Nha đam', price: 5000 },
       { id: 107, name: 'Hạt đác', price: 10000 },
       { id: 122, name: 'Hạt nổ củ năng', price: 5000 },
