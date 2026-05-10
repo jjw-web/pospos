@@ -630,3 +630,51 @@ Nếu cần chạy npm script trong Codex shell, dùng trực tiếp ./node_modu
 ### Commit cuối cùng của ca này
 Hash: 15c7364
 Message: chore: bump version to 2.7.1
+
+---
+
+## [2026-05-10 08:30] — Johnny Huy — Kết thúc ca
+### Phase đang làm
+Code Quality — Fix ESLint Errors
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Quét toàn bộ codebase, đánh giá tình trạng app
+- Fix ESLint errors: xóa db import thừa trong App.tsx
+- Fix ESLint errors: xóa handleConfirmToppings trong OrderView.tsx
+- Fix ESLint errors: xóa handleConfirm, cancelBtnStyle, confirmBtnStyle trong ToppingsModal.tsx
+- Verify: ESLint 0 errors, build thành công
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+App.tsx — xóa db import (không dùng), thêm DB_KEYS import vì code còn dùng ở dòng 53,75,99,104,106
+components/OrderView.tsx — xóa handleConfirmToppings (logic đã có inline trong onConfirm callback ở dòng 312)
+components/ToppingsModal.tsx — xóa handleConfirm, cancelBtnStyle, confirmBtnStyle (không dùng, buttons dùng inline style)
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle: 202.92 kB (62.23 kB gzip) — giảm ~1KB so với trước
+### Kết quả lint check
+Lệnh: npm run lint
+Kết quả: [x] 0 errors, 0 warnings
+### Vấn đề phát sinh trong ca này
+Phát hiện: App.tsx import `db` từ db.ts nhưng không dùng, chỉ dùng `DB_KEYS`
+Phát hiện: handleConfirmToppings trùng logic với inline callback trong ToppingsModal usage
+Phát hiện: cancelBtnStyle và confirmBtnStyle được khai báo nhưng buttons dùng inline style
+### Quyết định đã tự đưa ra trong ca này
+Xóa hẳn 4 unused declarations thay vì prefix `_` để code sạch hơn
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+App đã clean: TypeScript ✅, ESLint ✅, Build ✅
+Có thể deploy hoặc tiếp tục cải thiện theo nhu cầu
+### Commit cuối cùng của ca này
+Hash: 7a560d0
+Message: fix: remove unused variables (db import, handleConfirmToppings, handleConfirm, btnStyles)
