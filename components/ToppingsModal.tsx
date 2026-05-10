@@ -34,10 +34,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     }
   };
 
-  const handleConfirm = () => {
-    onConfirm(selectedToppings);
-    onClose();
-  };
+  
 
   const overlayStyle: React.CSSProperties = {
     position: 'fixed',
@@ -127,29 +124,7 @@ const ToppingsModal: React.FC<ToppingsModalProps> = ({
     marginTop: '24px',
   };
 
-  const cancelBtnStyle: React.CSSProperties = {
-    flex: 1,
-    padding: '12px',
-    borderRadius: '8px',
-    border: '1px solid var(--border)',
-    backgroundColor: 'transparent',
-    color: 'var(--text-main)',
-    fontSize: '16px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  };
-
-  const confirmBtnStyle: React.CSSProperties = {
-    flex: 1,
-    padding: '12px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#3498db',
-    color: 'white',
-    fontSize: '16px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  };
+  
 
   return (
     <div style={overlayStyle} onClick={onClose}>

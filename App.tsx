@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
-import { db, DB_KEYS } from './src/lib/db';
+import { DB_KEYS } from './src/lib/db';
 import { checkVersion } from './src/lib/version-manager';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { useTableManager } from './src/hooks/useTableManager';

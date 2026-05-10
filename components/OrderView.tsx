@@ -118,25 +118,7 @@ const OrderView: React.FC<OrderViewProps> = ({
     [onAddItem, table.id]
   );
 
-  const handleConfirmToppings = useCallback(
-    (selectedToppings: ToppingItem[]) => {
-      if (!selectedOrderItemForToppings) return;
-      onAddTopping?.(
-        table.id,
-        selectedOrderItemForToppings.menuItem.id,
-        selectedToppings.map((t) => ({
-          id: t.id,
-          name: t.name,
-          price: t.price,
-          quantity: t.quantity,
-        }))
-      );
-      setToastMessage(
-        `Đã thêm ${selectedToppings.length} topping cho «${selectedOrderItemForToppings.menuItem.name}»`
-      );
-    },
-    [onAddTopping, table.id, selectedOrderItemForToppings]
-  );
+  
 
   const pageBg = 'var(--bg-page)';
 
