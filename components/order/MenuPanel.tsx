@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import type { MenuCategory, MenuItem } from '../../src/types';
-import { includesNormalized } from '../../src/lib/string-utils';
+import { includesNormalized, normalizeVietnamese } from '../../src/lib/string-utils';
 import SearchBar from '../SearchBar';
 
 interface MenuPanelProps {
@@ -26,9 +26,20 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
 
   const filteredItems = useMemo(() => {
     if (searchQuery) {
+      const q = normalizeVietnamese(searchQuery);
       return menuCategories
         .flatMap((cat) => cat.items)
-        .filter((item) => includesNormalized(item.name, searchQuery));
+        .filter((item) => includesNormalized(item.name, searchQuery))
+        .sort((a, b) => {
+          const na = normalizeVietnamese(a.name);
+          const nb = normalizeVietnamese(b.name);
+          const rank = (name: string) => {
+            if (name === q) return 0;
+            if (name.startsWith(q)) return 1;
+            return 2;
+          };
+          return rank(na) - rank(nb);
+        });
     }
     const category = menuCategories.find((cat) => cat.name === selectedCategory);
     return category ? category.items : [];

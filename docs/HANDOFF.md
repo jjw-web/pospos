@@ -734,10 +734,11 @@ Fix UI — Search Order: kết quả hiện ngay đầu trang khi tìm kiếm
 [x] Hoàn thành
 ### Tasks đã hoàn thành trong ca này
 - Ẩn lưới category khi đang search trong Order (MenuPanel.tsx) — kết quả hiện ngay dưới thanh search, không cần cuộn
+- Thêm sắp xếp ưu tiên kết quả search: khớp chính xác → bắt đầu bằng → chứa từ khóa (fix "Dừa" bị xếp cuối vì trùng dấu với nhóm "dứa")
 ### Task đang dở
 Không có
 ### Files đã thay đổi trong ca này
-components/order/MenuPanel.tsx — bọc lưới category trong {!searchQuery && (...)}; khi có từ khóa lưới ẩn, khi xóa từ khóa/bấm category lưới trở lại
+components/order/MenuPanel.tsx — bọc lưới category trong {!searchQuery && (...)}; thêm sort theo mức khớp (exact → startsWith → contains) bằng normalizeVietnamese
 package-lock.json — npm install đồng bộ version metadata lên 2.9.1 (khớp package.json)
 ### Files đã tạo mới trong ca này
 Không có
@@ -749,12 +750,12 @@ Kết quả: [x] 0 errors
 ### Kết quả build check
 Lệnh: npm run build
 Kết quả: [x] Thành công
-Bundle: 203.07 kB (62.31 kB gzip) — không đổi so với trước
+Bundle: 203.19 kB (62.36 kB gzip)
 ### Kết quả lint check
 Lệnh: npm run lint
 Kết quả: [x] 0 errors, 0 warnings
 ### Kết quả test tự động (SSR render)
-- menu-panel-test.mjs: 4/4 passed (grid hiện khi chưa search; grid ẩn + item hiện khi search "Dừa"; search không có kết quả không crash; search "nau" vẫn tìm được "Nâu")
+- menu-panel-test.mjs: 4/4 passed (grid hiện khi chưa search; search "Dừa" → "Dừa" đứng TRƯỚC "Bưởi dứa"/"Ổi dứa"; grid ẩn khi search; search "nau" vẫn tìm được "Nâu")
 - orderview-test.mjs: 4/4 passed (OrderView render đủ order, order summary, search bar, tổng tiền đúng khi đang có order + search — hồi quy NHÓM 14.6 OK)
 ### Kết quả dev server check
 Lệnh: npm run dev -- --host 127.0.0.1
@@ -762,13 +763,13 @@ Kết quả: [x] Dev server chạy, HTTP 200 tại http://127.0.0.1:5173/
 ### Kết quả TESTING_CHECKLIST.md
 Chưa chạy toàn bộ checklist — đã verify tự động các mục liên quan NHÓM 4 (tìm kiếm) + hồi quy NHÓM 3/14.6 qua SSR render
 ### Vấn đề phát sinh trong ca này
-Không có
+Test tay của người dùng sau ca trước: gõ "Dừa" vẫn thấy kết quả ở gần cuối. Nguyên nhân: app bỏ dấu tiếng Việt khi search → "dừa" và "dứa" cùng chuẩn hóa thành "dua", món "Dừa" nằm ở category ĐỒ UỐNG KHÁC (cuối menu) nên bị đẩy xuống. Đã fix bằng sort theo mức khớp.
 ### Quyết định đã tự đưa ra trong ca này
-Chọn phương án chỉ ẩn lưới category khi search, không thêm sắp xếp kết quả — theo yêu cầu người dùng
+Người dùng ban đầu chọn "không thêm sắp xếp", nhưng test thực tế cho thấy vẫn cần ưu tiên khớp → thêm sort exact → startsWith → contains. Ghi chú để người quản lý biết.
 ### Packages đã thêm/xóa
 Không có
 ### Hướng dẫn cho agent ca tiếp theo
-Chạy TESTING_CHECKLIST.md đầy đủ trên trình duyệt, đặc biệt NHÓM 4 mục 4.1–4.6 + thao tác gõ "Dừa" kiểm tra kết quả hiện ngay đầu trang
+Chạy TESTING_CHECKLIST.md đầy đủ trên trình duyệt, đặc biệt NHÓM 4 mục 4.1–4.6 + gõ "Dừa" kiểm tra món "Dừa" hiện ở đầu danh sách kết quả
 ### Commit cuối cùng của ca này
 Hash: (xem git log)
-Message: fix: hide category grid when searching in Order for immediate results
+Message: fix: prioritize exact matches in Order search results
