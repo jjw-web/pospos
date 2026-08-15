@@ -45,45 +45,47 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
         />
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '12px',
-          marginBottom: '20px',
-        }}
-      >
-        {menuCategories.map((category) => (
-          <div
-            key={category.name}
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              borderRadius: '10px',
-              padding: '15px 10px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              border: `1px solid ${
-                selectedCategory === category.name && !searchQuery ? '#3498db' : 'var(--border)'
-              }`,
-              boxShadow:
-                selectedCategory === category.name && !searchQuery
-                  ? '0 4px 8px rgba(52,152,219,0.2)'
-                  : '0 2px 5px rgba(0,0,0,0.2)',
-              transform:
-                selectedCategory === category.name && !searchQuery ? 'translateY(-3px)' : 'none',
-              transition: 'all 0.2s',
-            }}
-            onClick={() => {
-              onCategoryChange(category.name);
-              onSearchChange('');
-            }}
-          >
-            <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-main)' }}>
-              {category.name}
+      {!searchQuery && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '12px',
+            marginBottom: '20px',
+          }}
+        >
+          {menuCategories.map((category) => (
+            <div
+              key={category.name}
+              style={{
+                backgroundColor: 'var(--bg-surface)',
+                borderRadius: '10px',
+                padding: '15px 10px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                border: `1px solid ${
+                  selectedCategory === category.name && !searchQuery ? '#3498db' : 'var(--border)'
+                }`,
+                boxShadow:
+                  selectedCategory === category.name && !searchQuery
+                    ? '0 4px 8px rgba(52,152,219,0.2)'
+                    : '0 2px 5px rgba(0,0,0,0.2)',
+                transform:
+                  selectedCategory === category.name && !searchQuery ? 'translateY(-3px)' : 'none',
+                transition: 'all 0.2s',
+              }}
+              onClick={() => {
+                onCategoryChange(category.name);
+                onSearchChange('');
+              }}
+            >
+              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-main)' }}>
+                {category.name}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div style={{ marginBottom: '20px' }}>
         {filteredItems.map((item) => (
@@ -103,7 +105,9 @@ const MenuPanel: React.FC<MenuPanelProps> = ({
             onClick={() => onAddItem(item)}
           >
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-main)' }}>{item.name}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-main)' }}>
+                {item.name}
+              </div>
               <div
                 style={{
                   fontSize: '15px',

@@ -724,3 +724,51 @@ Cần test trên máy Android thật (Note 10) để xác nhận không còn c�
 ### Commit cuối cùng của ca này
 Hash: (chưa commit)
 Message: (chưa commit) — fix: android clipping + history header radius + receipt drink count
+
+---
+
+## [2026-08-15] — opencode — Kết thúc ca
+### Phase đang làm
+Fix UI — Search Order: kết quả hiện ngay đầu trang khi tìm kiếm
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Ẩn lưới category khi đang search trong Order (MenuPanel.tsx) — kết quả hiện ngay dưới thanh search, không cần cuộn
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+components/order/MenuPanel.tsx — bọc lưới category trong {!searchQuery && (...)}; khi có từ khóa lưới ẩn, khi xóa từ khóa/bấm category lưới trở lại
+package-lock.json — npm install đồng bộ version metadata lên 2.9.1 (khớp package.json)
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle: 203.07 kB (62.31 kB gzip) — không đổi so với trước
+### Kết quả lint check
+Lệnh: npm run lint
+Kết quả: [x] 0 errors, 0 warnings
+### Kết quả test tự động (SSR render)
+- menu-panel-test.mjs: 4/4 passed (grid hiện khi chưa search; grid ẩn + item hiện khi search "Dừa"; search không có kết quả không crash; search "nau" vẫn tìm được "Nâu")
+- orderview-test.mjs: 4/4 passed (OrderView render đủ order, order summary, search bar, tổng tiền đúng khi đang có order + search — hồi quy NHÓM 14.6 OK)
+### Kết quả dev server check
+Lệnh: npm run dev -- --host 127.0.0.1
+Kết quả: [x] Dev server chạy, HTTP 200 tại http://127.0.0.1:5173/
+### Kết quả TESTING_CHECKLIST.md
+Chưa chạy toàn bộ checklist — đã verify tự động các mục liên quan NHÓM 4 (tìm kiếm) + hồi quy NHÓM 3/14.6 qua SSR render
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Chọn phương án chỉ ẩn lưới category khi search, không thêm sắp xếp kết quả — theo yêu cầu người dùng
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Chạy TESTING_CHECKLIST.md đầy đủ trên trình duyệt, đặc biệt NHÓM 4 mục 4.1–4.6 + thao tác gõ "Dừa" kiểm tra kết quả hiện ngay đầu trang
+### Commit cuối cùng của ca này
+Hash: (xem git log)
+Message: fix: hide category grid when searching in Order for immediate results
