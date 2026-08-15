@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { OrderItem, PaymentMethod } from '../src/types';
+import type { OrderItem, MenuCategory, PaymentMethod } from '../src/types';
 import { QR_ACCOUNTS } from '../constants';
 import { formatReceiptText, copyTextToClipboard } from '../src/lib/receipt';
 
@@ -14,6 +14,7 @@ interface PaymentMethodModalProps {
   receipt?: {
     tableLabel: string;
     items: OrderItem[];
+    menuCategories?: MenuCategory[];
   };
 }
 
@@ -132,7 +133,12 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
 
   const buildReceiptText = () => {
     if (!receipt) return '';
-    return formatReceiptText({ tableLabel: receipt.tableLabel, items: receipt.items, total });
+    return formatReceiptText({
+      tableLabel: receipt.tableLabel,
+      items: receipt.items,
+      total,
+      menuCategories: receipt.menuCategories,
+    });
   };
 
   const handleCopyReceipt = async () => {

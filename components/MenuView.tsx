@@ -42,6 +42,8 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '10px',
     marginBottom: '24px',
   };
 
@@ -65,6 +67,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const formStyle: React.CSSProperties = {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '10px',
     marginBottom: '20px',
   };
@@ -76,6 +79,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     backgroundColor: '#1f2937',
     color: 'white',
     flex: '1',
+    minWidth: '140px',
   };
 
   const addButtonStyle: React.CSSProperties = {
@@ -267,6 +271,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const categoryFormStyle: React.CSSProperties = {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '8px',
     marginBottom: '16px',
   };
@@ -414,86 +419,104 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           </button>
         </div>
 
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={cellStyle}>Tên món</th>
-              <th style={cellStyle}>Giá</th>
-              <th style={cellStyle}>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {localMenuCategories
-              .find((category) => category.name === selectedCategory)
-              ?.items.map((item) => {
-                const isEditing =
-                  editingPriceItem?.categoryName === selectedCategory &&
-                  editingPriceItem?.itemId === item.id;
-                return (
-                  <tr key={item.id}>
-                    <td style={cellStyle}>{item.name}</td>
-                    <td style={cellStyle}>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          style={priceInputStyle}
-                          value={editingPrice}
-                          onChange={(e) => setEditingPrice(Number(e.target.value))}
-                          min="0"
-                          step="1000"
-                        />
-                      ) : (
-                        item.price.toLocaleString() + 'đ'
-                      )}
-                    </td>
-                    <td style={cellStyle}>
-                      {isEditing ? (
-                        <>
-                          <button
-                            style={saveButtonStyle}
-                            onClick={handleSavePrice}
-                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#059669')}
-                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#10b981')}
-                          >
-                            Lưu
-                          </button>
-                          <button
-                            style={cancelButtonStyle}
-                            onClick={handleCancelEditPrice}
-                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4b5563')}
-                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
-                          >
-                            Hủy
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            style={editButtonStyle}
-                            onClick={() =>
-                              handleStartEditPrice(selectedCategory, item.id, item.price)
-                            }
-                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-                          >
-                            Sửa giá
-                          </button>
-                          <button
-                            style={deleteButtonStyle}
-                            onClick={() => handleDeleteItem(selectedCategory, item.id)}
-                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dc2626')}
-                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ef4444')}
-                          >
-                            Xóa
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
-        </table>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={cellStyle}>Tên món</th>
+                <th style={cellStyle}>Giá</th>
+                <th style={cellStyle}>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {localMenuCategories
+                .find((category) => category.name === selectedCategory)
+                ?.items.map((item) => {
+                  const isEditing =
+                    editingPriceItem?.categoryName === selectedCategory &&
+                    editingPriceItem?.itemId === item.id;
+                  return (
+                    <tr key={item.id}>
+                      <td style={cellStyle}>{item.name}</td>
+                      <td style={cellStyle}>
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            style={priceInputStyle}
+                            value={editingPrice}
+                            onChange={(e) => setEditingPrice(Number(e.target.value))}
+                            min="0"
+                            step="1000"
+                          />
+                        ) : (
+                          item.price.toLocaleString() + 'đ'
+                        )}
+                      </td>
+                      <td style={cellStyle}>
+                        {isEditing ? (
+                          <>
+                            <button
+                              style={saveButtonStyle}
+                              onClick={handleSavePrice}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#059669')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#10b981')
+                              }
+                            >
+                              Lưu
+                            </button>
+                            <button
+                              style={cancelButtonStyle}
+                              onClick={handleCancelEditPrice}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#4b5563')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#6b7280')
+                              }
+                            >
+                              Hủy
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              style={editButtonStyle}
+                              onClick={() =>
+                                handleStartEditPrice(selectedCategory, item.id, item.price)
+                              }
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#2563eb')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#3b82f6')
+                              }
+                            >
+                              Sửa giá
+                            </button>
+                            <button
+                              style={deleteButtonStyle}
+                              onClick={() => handleDeleteItem(selectedCategory, item.id)}
+                              onMouseOver={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#dc2626')
+                              }
+                              onMouseOut={(e) =>
+                                (e.currentTarget.style.backgroundColor = '#ef4444')
+                              }
+                            >
+                              Xóa
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

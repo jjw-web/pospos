@@ -678,3 +678,49 @@ Có thể deploy hoặc tiếp tục cải thiện theo nhu cầu
 ### Commit cuối cùng của ca này
 Hash: 7a560d0
 Message: fix: remove unused variables (db import, handleConfirmToppings, handleConfirm, btnStyles)
+
+---
+
+## [2026-08-15] — opencode — Kết thúc ca
+### Phase đang làm
+Fix UI — Lỗi hiển thị Android + bo tròn box Lịch sử thanh toán + thêm tổng số đồ uống vào hóa đơn
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Fix lỗi cắt ngang màn hình Android trong Quản Lý Menu (components/MenuView.tsx)
+- Bo tròn box tiêu đề "Lịch sử thanh toán" đồng bộ 16px (components/HistoryView.tsx)
+- Thêm dòng "Tổng số đồ uống" vào hóa đơn (src/lib/receipt.ts, PaymentMethodModal, OrderView)
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+components/MenuView.tsx — bọc <table> trong container overflowX auto; thêm flexWrap cho formStyle, categoryFormStyle, headerStyle; thêm minWidth 140px cho inputStyle
+components/HistoryView.tsx — thêm borderRadius 16px + padding 15px cho box tiêu đề
+src/lib/receipt.ts — thêm menuCategories param, đếm mainCount bằng countOrderItems, thêm dòng "Tổng số đồ uống"
+components/PaymentMethodModal.tsx — thêm menuCategories vào receipt prop và truyền vào formatReceiptText
+components/OrderView.tsx — truyền menuCategories vào receipt của PaymentMethodModal
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: npx tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+Bundle: 203.07 kB (62.30 kB gzip)
+### Kết quả lint check
+Lệnh: npm run lint
+Kết quả: [x] 0 errors, 0 warnings
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Bọc bảng menu trong container cuộn ngang thay vì thu nhỏ cột — giữ nguyên bố cục trên desktop
+Dòng tổng số món trong hóa đơn chỉ đếm đồ uống (mainCount), không tính snack/topping — theo yêu cầu người dùng
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Cần test trên máy Android thật (Note 10) để xác nhận không còn cắt bên phải
+### Commit cuối cùng của ca này
+Hash: (chưa commit)
+Message: (chưa commit) — fix: android clipping + history header radius + receipt drink count

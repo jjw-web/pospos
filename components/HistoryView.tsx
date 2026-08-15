@@ -115,9 +115,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         style={{
           display: 'flex',
           alignItems: 'center',
-          padding: '15px 0',
+          padding: '15px',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--bg-surface)',
+          borderRadius: '16px',
           position: 'sticky',
           top: 0,
           zIndex: 100,
