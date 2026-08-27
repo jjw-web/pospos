@@ -6,6 +6,7 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
 import { useMenuManager } from './src/hooks/useMenuManager';
+import { useSwipeBack } from './src/hooks/useSwipeBack';
 import InsideView from './components/InsideView';
 import OutsideView from './components/OutsideView';
 import OrderView from './components/OrderView';
@@ -155,6 +156,28 @@ const App: React.FC = () => {
   );
 
   const allTables = useMemo(() => Array.from(tableManager.tables.values()), [tableManager.tables]);
+
+  const handleSwipeBack = useCallback(() => {
+    switch (currentScreen) {
+      case 'order':
+        setCurrentScreen(selectedTable?.layout === 'Inside' ? 'inside' : 'outside');
+        break;
+      case 'inside':
+      case 'outside':
+      case 'history':
+      case 'menu':
+      case 'dailySummary':
+        setCurrentScreen('viewSelection');
+        break;
+      case 'viewSelection':
+        setCurrentScreen('start');
+        break;
+      default:
+        break;
+    }
+  }, [currentScreen, selectedTable]);
+
+  useSwipeBack({ onSwipeBack: handleSwipeBack, enabled: allLoaded });
 
   if (!allLoaded) {
     return <LoadingScreen />;
