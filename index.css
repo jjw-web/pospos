@@ -2,6 +2,8 @@
    Bống Cà Phê POS — Global Styles
    ============================================= */
 
+@import "tailwindcss";
+
 /* CSS Variables — Design Tokens */
 :root {
   /* Colors (Dark theme) */
@@ -30,8 +32,6 @@
   --shadow-table-hover: 0 8px 25px rgba(0,0,0,0.3);
 }
 
-@import "tailwindcss";
-
 /* CSS Reset */
 * {
   box-sizing: border-box;
@@ -46,17 +46,10 @@ body {
   background-color: var(--bg-page);
 }
 
-html {
-  height: -webkit-fill-available;
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-page);
   color: var(--text-main);
-  width: 100vw;
-  height: 100dvh;
-  min-height: -webkit-fill-available;
   min-height: 100dvh;
   padding-top: calc(env(safe-area-inset-top) + 16px);
   padding-bottom: calc(env(safe-area-inset-bottom) + 16px);

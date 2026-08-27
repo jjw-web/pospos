@@ -36,7 +36,7 @@ export function calcItemTotal(item: OrderItem): number {
  * @returns Tổng tiền tính bằng VND
  */
 export function calcOrderTotal(items: OrderItem[]): number {
-  return items.reduce((sum, item) => sum + calcItemTotal(item), 0);
+  return (items ?? []).reduce((sum, item) => sum + calcItemTotal(item), 0);
 }
 
 /**
@@ -47,13 +47,14 @@ export function calcOrderTotal(items: OrderItem[]): number {
  * @returns OrderCounts
  */
 export function countOrderItems(items: OrderItem[], menuCategories: MenuCategory[]): OrderCounts {
+  const safeItems = items ?? [];
   const itemToCategoryMap = buildItemCategoryMap(menuCategories);
 
   let mainCount = 0;
   let toppingCount = 0;
   let snackCount = 0;
 
-  items.forEach((item) => {
+  safeItems.forEach((item) => {
     const categoryName = itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
     const lower = categoryName.toLowerCase();
     const qty = item.quantity;
@@ -83,9 +84,10 @@ export function groupItemsByCategory(
   items: OrderItem[],
   menuCategories: MenuCategory[]
 ): Record<string, OrderItem[]> {
+  const safeItems = items ?? [];
   const itemToCategoryMap = buildItemCategoryMap(menuCategories);
 
-  return items.reduce<Record<string, OrderItem[]>>((acc, item) => {
+  return safeItems.reduce<Record<string, OrderItem[]>>((acc, item) => {
     const cat = itemToCategoryMap.get(item.menuItem.id) ?? 'Khác';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(item);

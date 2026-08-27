@@ -35,7 +35,7 @@ const HistorySummaryBar: React.FC<HistorySummaryBarProps> = ({
       </div>
       <div style={cardStyle}>
         <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Doanh thu</span>
-        <strong style={{ fontSize: '22px' }}>{totalRevenue.toLocaleString()}đ</strong>
+        <strong style={{ fontSize: '22px' }}>{totalRevenue.toLocaleString('vi-VN')}đ</strong>
       </div>
     </div>
   );

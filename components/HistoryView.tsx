@@ -25,9 +25,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
+  const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
 
   const historySummary = useMemo(() => {
-    const totalRevenue = history.reduce((sum, bill) => sum + bill.total, 0);
+    const totalRevenue = history.reduce((sum, bill) => sum + (bill.total ?? 0), 0);
     return { totalRevenue, totalBills: history.length };
   }, [history]);
 
@@ -77,10 +78,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         pixelRatio: 2,
         backgroundColor: '#1e293b',
       });
-      const link = document.createElement('a');
-      link.download = `Hoa-don-Ban-${bill.table}.png`;
-      link.href = dataUrl;
-      link.click();
+      setExportedImageUrl(dataUrl);
     } catch (err) {
       console.error('Lỗi xuất ảnh:', err);
       alert('Không thể xuất ảnh lúc này.');
@@ -105,6 +103,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         maxWidth: '480px',
         margin: '0 auto',
         padding: '0 15px',
+        paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
         paddingBottom: '100px',
         minHeight: '100vh',
         backgroundColor: 'var(--bg-page)',
@@ -113,15 +112,20 @@ const HistoryView: React.FC<HistoryViewProps> = ({
     >
       <div
         style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          maxWidth: '480px',
+          margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
           padding: '15px',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--bg-surface)',
-          borderRadius: '16px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          zIndex: 101,
+          paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))',
         }}
       >
         <button
@@ -188,6 +192,48 @@ const HistoryView: React.FC<HistoryViewProps> = ({
             }}
           />
         ))
+      )}
+      {exportedImageUrl && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={() => setExportedImageUrl(null)}
+        >
+          <div style={{ position: 'relative', maxWidth: '100%', maxHeight: '100%' }}>
+            <button
+              type="button"
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: 0,
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                fontSize: '24px',
+                cursor: 'pointer',
+              }}
+              onClick={(e) => { e.stopPropagation(); setExportedImageUrl(null); }}
+            >
+              ✕
+            </button>
+            <img
+              src={exportedImageUrl}
+              style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '8px' }}
+              alt="Hóa đơn"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

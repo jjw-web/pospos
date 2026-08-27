@@ -18,8 +18,9 @@ const BillCard: React.FC<BillCardProps> = ({
   onToggleSelect,
   cardRef,
 }) => {
-  const { mainCount, toppingCount, snackCount } = countOrderItems(bill.items, menuCategories);
-  const groupedItems = groupItemsByCategory(bill.items, menuCategories);
+  const safeItems = bill.items ?? [];
+  const { mainCount, toppingCount, snackCount } = countOrderItems(safeItems, menuCategories);
+  const groupedItems = groupItemsByCategory(safeItems, menuCategories);
 
   return (
     <div
@@ -55,7 +56,7 @@ const BillCard: React.FC<BillCardProps> = ({
           <span style={{ fontWeight: 'bold', color: 'var(--text-main)' }}>Bàn {bill.table}</span>
         </label>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{bill.total.toLocaleString()}đ</div>
+          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{(bill.total ?? 0).toLocaleString('vi-VN')}đ</div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {mainCount > 0 ? `Đồ uống: ${mainCount}` : ''}
             {snackCount > 0 ? `${mainCount > 0 ? ', ' : ''}Snack: ${snackCount}` : ''}
@@ -67,7 +68,7 @@ const BillCard: React.FC<BillCardProps> = ({
       </div>
 
       <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-        {new Date(bill.date).toLocaleString('vi-VN')}
+        {bill.date ? new Date(bill.date).toLocaleString('vi-VN') : '—'}
         {bill.paymentMethod && (
           <span
             style={{
