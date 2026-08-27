@@ -66,6 +66,7 @@ const OrderView: React.FC<OrderViewProps> = ({
   const [, headerTick] = useState(0);
 
   const currentOrderRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (table.status !== 'occupied' || !table.occupiedSince) return;
@@ -128,6 +129,7 @@ const OrderView: React.FC<OrderViewProps> = ({
 
   return (
     <div
+      ref={scrollRef}
       style={{
         maxWidth: '480px',
         margin: '0 auto',
@@ -135,7 +137,9 @@ const OrderView: React.FC<OrderViewProps> = ({
         paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
         paddingBottom: '100px',
         backgroundColor: pageBg,
-        minHeight: '100vh',
+        height: '100dvh',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         boxSizing: 'border-box',
       }}
     >
@@ -143,7 +147,7 @@ const OrderView: React.FC<OrderViewProps> = ({
         table={table}
         onBack={onBack}
         onHome={onHome}
-        onClickTitle={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClickTitle={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
       />
 
       <p

@@ -4,6 +4,7 @@ import { toPng } from 'html-to-image';
 import HistorySummaryBar from './history/HistorySummaryBar';
 import HistoryActionBar from './history/HistoryActionBar';
 import BillCard from './history/BillCard';
+import ConfirmDialog from './ConfirmDialog';
 
 interface HistoryViewProps {
   history: Bill[];
@@ -12,6 +13,11 @@ interface HistoryViewProps {
   onBack: () => void;
   menuCategories: MenuCategory[];
   onRevertBill?: (bill: Bill) => void;
+}
+
+interface ConfirmState {
+  message: string;
+  onConfirm: () => void;
 }
 
 const HistoryView: React.FC<HistoryViewProps> = ({
@@ -26,6 +32,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
 
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
   const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmState | null>(null);
 
   const historySummary = useMemo(() => {
     const totalRevenue = history.reduce((sum, bill) => sum + (bill.total ?? 0), 0);
@@ -46,33 +53,31 @@ const HistoryView: React.FC<HistoryViewProps> = ({
 
   const handleDeleteSelected = () => {
     if (selectedBills.length === 0) return;
-    if (
-      window.confirm(`Bạn có chắc chắn muốn xóa ${selectedBills.length} hóa đơn đã chọn không?`)
-    ) {
-      onDeleteSelected(selectedBills);
-      setSelectedBills([]);
-    }
+    setConfirm({
+      message: `Bạn có chắc chắn muốn xóa ${selectedBills.length} hóa đơn đã chọn không?`,
+      onConfirm: () => {
+        onDeleteSelected(selectedBills);
+        setSelectedBills([]);
+      },
+    });
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?')) {
-      onClearHistory();
-      setSelectedBills([]);
-    }
+    setConfirm({
+      message: 'Bạn có chắc chắn muốn xóa toàn bộ lịch sử không?',
+      onConfirm: () => {
+        onClearHistory();
+        setSelectedBills([]);
+      },
+    });
   };
 
   const handleExportSelected = async () => {
-    if (selectedBills.length === 0) {
-      alert('Vui lòng chọn hóa đơn cần xuất ảnh');
-      return;
-    }
+    if (selectedBills.length === 0) return;
     const bill = history.find((b) => b.id === selectedBills[0]);
     if (!bill) return;
     const element = cardRefs.current.get(bill.id);
-    if (!element) {
-      alert('Không tìm thấy hóa đơn để xuất ảnh');
-      return;
-    }
+    if (!element) return;
     try {
       const dataUrl = await toPng(element, {
         pixelRatio: 2,
@@ -81,19 +86,20 @@ const HistoryView: React.FC<HistoryViewProps> = ({
       setExportedImageUrl(dataUrl);
     } catch (err) {
       console.error('Lỗi xuất ảnh:', err);
-      alert('Không thể xuất ảnh lúc này.');
     }
   };
 
   const handleRevertSelected = () => {
-    if (selectedBills.length === 0 || !onRevertBill) {
-      alert('Vui lòng chọn hóa đơn cần hoàn tác');
-      return;
-    }
+    if (selectedBills.length === 0 || !onRevertBill) return;
     const bill = history.find((b) => b.id === selectedBills[0]);
     if (bill) {
-      onRevertBill(bill);
-      setSelectedBills([]);
+      setConfirm({
+        message: `Bạn có chắc muốn hoàn tác hóa đơn bàn ${bill.table}?`,
+        onConfirm: () => {
+          onRevertBill(bill);
+          setSelectedBills([]);
+        },
+      });
     }
   };
 
@@ -105,7 +111,9 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         padding: '0 15px',
         paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
         paddingBottom: '100px',
-        minHeight: '100vh',
+        height: '100dvh',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         backgroundColor: 'var(--bg-page)',
         boxSizing: 'border-box',
       }}
@@ -129,6 +137,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
         }}
       >
         <button
+          type="button"
           style={{
             fontSize: '24px',
             marginRight: '15px',
@@ -193,6 +202,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           />
         ))
       )}
+
       {exportedImageUrl && (
         <div
           style={{
@@ -234,6 +244,14 @@ const HistoryView: React.FC<HistoryViewProps> = ({
             />
           </div>
         </div>
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          message={confirm.message}
+          onConfirm={() => { confirm.onConfirm(); setConfirm(null); }}
+          onCancel={() => setConfirm(null)}
+        />
       )}
     </div>
   );

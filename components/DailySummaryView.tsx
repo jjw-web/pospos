@@ -30,10 +30,13 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
   return (
     <div
       style={{
-        minHeight: '100vh',
+        height: '100dvh',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         backgroundColor: 'var(--bg-page)',
         padding: '16px',
-        paddingBottom: '32px',
+        paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+        paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))',
         boxSizing: 'border-box',
         color: 'var(--text-main)',
       }}

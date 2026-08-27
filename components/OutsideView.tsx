@@ -11,9 +11,13 @@ interface OutsideViewProps {
 const OutsideView: React.FC<OutsideViewProps> = ({ tables, onTableSelect, onBack }) => {
   const containerStyle: React.CSSProperties = {
     width: '100%',
-    minHeight: '100vh',
-    backgroundColor: '#111827', // Dark background like poker app
+    height: '100dvh',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
+    backgroundColor: '#111827',
     padding: '16px',
+    paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+    paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
   };
 
   const wrapperStyle: React.CSSProperties = {

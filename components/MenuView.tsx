@@ -27,9 +27,13 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
-    minHeight: '100vh',
+    height: '100dvh',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
     backgroundColor: '#111827',
     padding: '16px',
+    paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+    paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
     boxSizing: 'border-box',
   };
 

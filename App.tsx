@@ -148,12 +148,8 @@ const App: React.FC = () => {
 
   const handleRevertBill = useCallback(
     (bill: Bill) => {
-      if (!window.confirm(`Bạn có chắc muốn hoàn tác hóa đơn bàn ${bill.table}?`)) {
-        return;
-      }
       tableManager.revertBill(bill);
       historyManager.removeBill(bill.id);
-      alert(`Đã hoàn tác hóa đơn bàn ${bill.table}.`);
     },
     [tableManager, historyManager]
   );

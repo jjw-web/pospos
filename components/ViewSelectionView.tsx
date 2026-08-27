@@ -37,9 +37,13 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
-    minHeight: '100vh',
+    height: '100dvh',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',
     backgroundColor: 'var(--bg-page)',
     padding: '16px',
+    paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+    paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
     boxSizing: 'border-box',
     transition: 'background-color 0.2s ease',
   };

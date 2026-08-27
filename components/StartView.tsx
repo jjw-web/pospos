@@ -16,7 +16,7 @@ const StartView: React.FC<StartViewProps> = ({ onStart }) => {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '100vh',
+    height: '100dvh',
     backgroundColor: 'var(--bg-page)',
     transition: 'background-color 0.2s ease',
   };
