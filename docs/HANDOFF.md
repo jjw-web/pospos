@@ -773,3 +773,49 @@ Chạy TESTING_CHECKLIST.md đầy đủ trên trình duyệt, đặc biệt NH�
 ### Commit cuối cùng của ca này
 Hash: (xem git log)
 Message: fix: prioritize exact matches in Order search results
+
+---
+
+## [2026-08-28 05:15] — openclaw (ca AutoClaw) — Kết thúc ca
+### Phase đang làm
+Hoàn tất việc thay alert/confirm bằng ConfirmDialog cho iOS WKWebView (tiếp nối ca trước đang dở)
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Kiểm toán toàn bộ dự án: phát hiện ca trước làm dở (HistoryView đã đổi sang ConfirmDialog nhưng chưa commit, còn sót alert() trong version-manager.ts)
+- src/lib/version-manager.ts — bỏ alert() khi nâng cấp phiên bản (WKWebView native không có handler nên hộp thoại bị nuốt im lặng; app tự reload ngay sau đó)
+- eslint.config.js — thêm 'ios' vào ignores (ios/App/App/public chứa bản copy build của Capacitor gây 885 lỗi lint giả)
+- Commit e5c6999 gồm: version-manager.ts + eslint.config.js (phần HistoryView/ConfirmDialog đã được agent song song commit trong 93662a7)
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+src/lib/version-manager.ts — bỏ alert() trong handleVersionUpgrade
+eslint.config.js — ignores thêm 'ios'
+docs/HANDOFF.md — entry này
+### Files đã tạo mới trong ca này
+Không có (ConfirmDialog.tsx do ca song song tạo, đã nằm trong commit 93662a7)
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công (bundle index ~203 kB, gzip ~62 kB)
+### Kết quả lint check
+Lệnh: npm run lint
+Kết quả: [x] 0 errors, 0 warnings (từ 885 lỗi giả trước khi ignore ios/)
+### Vấn đề phát sinh trong ca này
+- Phát hiện agent/ca khác commit song song 93662a7 lúc 05:10:59 trong khi đang làm (ConfirmDialog + scroll layout cho các view). Đã verify lại toàn bộ HEAD sau khi gộp: tsc/build/lint đều pass.
+- Commit e5c6999 CHƯA push lên origin — cần xác nhận của người dùng trước khi deploy production (Vercel auto-deploy khi push main).
+### Quyết định đã tự đưa ra trong ca này
+- Không bump version (giữ 2.9.1) — theo convention của các fix iOS WKWebView trước đó (8945ba9, 93662a7 đều không bump)
+- Không push lên origin: deploy production cần xác nhận người dùng, đặc biệt khi có agent khác đang làm việc song song trong thư mục này
+### Packages đã thêm/xóa
+Không có (package.json thêm @capacitor/* là của ca song song, chưa commit)
+### Hướng dẫn cho agent ca tiếp theo
+- Hỏi người dùng trước khi push main (deploy production qua Vercel Action)
+- Các file chưa commit: package.json/package-lock.json (deps Capacitor), capacitor.config.ts, ios/, POSApp-source/, 2 file .ipa — quyết định user có muốn commit các file native/IPA này vào repo không (repo hiện chưa track chúng)
+### Commit cuối cùng của ca này
+Hash: e5c6999
+Message: fix: replace native alert/confirm with ConfirmDialog for iOS WKWebView
