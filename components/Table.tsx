@@ -57,7 +57,7 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '16px',
+    padding: '6px 12px 10px 12px',
     boxSizing: 'border-box',
     position: 'relative',
   };
@@ -115,7 +115,8 @@ const Table: React.FC<TableProps> = ({ table, onSelect }) => {
               color: 'white',
               fontSize: '13px',
               fontWeight: 600,
-              marginTop: '4px',
+              marginTop: '0px',
+              transform: 'translateY(-4px)',
               opacity: 0.95,
             }}
           >
