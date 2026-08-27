@@ -10,7 +10,8 @@ import { db, DB_KEYS } from './db';
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string): never {
   localStorage.setItem(DB_KEYS.APP_VERSION, newVersion);
   db.setItem(DB_KEYS.APP_VERSION, newVersion);
-  alert(`Đã cập nhật lên phiên bản ${newVersion}. Ứng dụng sẽ tự động tải lại.`);
+  // Không dùng alert(): WKWebView native không có handler nên hộp thoại bị bỏ qua,
+  // và ngay sau đó app tự reload lại nên thông báo không cần thiết.
   window.location.reload();
   throw new Error('App reloading');
 }

@@ -10,7 +10,7 @@ import prettier from 'eslint-config-prettier';
 export default [
   {
     name: 'bong-cafe-pos/ignores',
-    ignores: ['dist', 'node_modules', '*.config.ts', '*.config.js'],
+    ignores: ['dist', 'node_modules', 'ios', '*.config.ts', '*.config.js'],
   },
   {
     name: 'bong-cafe-pos/global',
