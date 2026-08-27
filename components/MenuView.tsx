@@ -67,6 +67,8 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.2s ease',
+    opacity: 0,
+    pointerEvents: 'none',
   };
 
   const formStyle: React.CSSProperties = {

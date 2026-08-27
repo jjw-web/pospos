@@ -267,7 +267,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                   </button>
                 </div>
               ))}
-              <button style={cancelBtn} onClick={() => setScreen('main')}>
+              <button style={{...cancelBtn, opacity: 0, pointerEvents: 'none'}} onClick={() => setScreen('main')}>
                 ← Quay lại
               </button>
             </div>
@@ -301,7 +301,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           <p style={{ fontSize: '32px', fontWeight: 700, color: '#1e40af' }}>
             {total.toLocaleString()}đ
           </p>
-          <button onClick={closeFullscreen} style={cancelBtn}>
+          <button onClick={closeFullscreen} style={{...cancelBtn, opacity: 0, pointerEvents: 'none'}}>
             ← Chọn tài khoản khác
           </button>
         </div>

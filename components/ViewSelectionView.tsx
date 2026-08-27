@@ -67,6 +67,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
     fontWeight: 'bold',
     padding: '8px 16px',
     opacity: 0,
+    pointerEvents: 'none',
     backgroundColor: 'transparent',
     color: 'transparent',
     borderRadius: '8px',

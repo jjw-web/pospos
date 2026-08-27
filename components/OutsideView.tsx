@@ -48,6 +48,8 @@ const OutsideView: React.FC<OutsideViewProps> = ({ tables, onTableSelect, onBack
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.2s ease',
+    opacity: 0,
+    pointerEvents: 'none',
   };
 
   // Grid layout: 2 columns, 4 rows
