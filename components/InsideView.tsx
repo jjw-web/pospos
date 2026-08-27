@@ -49,7 +49,7 @@ const InsideView: React.FC<InsideViewProps> = ({ tables, onTableSelect, onBack }
     cursor: 'pointer',
     transition: 'background-color 0.2s ease',
     opacity: 0,
-    pointerEvents: 'none',
+    pointerEvents: 'auto',
   };
 
   // Grid layout: 2 columns, 4 rows

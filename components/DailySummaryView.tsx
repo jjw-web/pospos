@@ -55,7 +55,7 @@ const DailySummaryView: React.FC<DailySummaryViewProps> = ({ history, onBack }) 
               fontWeight: 600,
               cursor: 'pointer',
               opacity: 0,
-              pointerEvents: 'none',
+              pointerEvents: 'auto',
             }}
           >
             ← Quay lại

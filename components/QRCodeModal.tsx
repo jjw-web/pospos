@@ -76,7 +76,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
                   display: 'flex',
                   alignItems: 'center',
                   opacity: 0,
-                  pointerEvents: 'none',
+                  pointerEvents: 'auto',
                 }}
               >
                 ←

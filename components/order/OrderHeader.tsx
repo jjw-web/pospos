@@ -52,7 +52,7 @@ const OrderHeader: React.FC<OrderHeaderProps> = ({
           cursor: 'pointer',
           padding: '0 5px',
           opacity: 0,
-          pointerEvents: 'none',
+          pointerEvents: 'auto',
         }}
         onClick={onBack}
         aria-label="Quay lại"

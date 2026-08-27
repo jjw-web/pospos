@@ -146,7 +146,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
             border: 'none',
             cursor: 'pointer',
             opacity: 0,
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
           }}
           onClick={onBack}
         >
