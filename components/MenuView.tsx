@@ -321,33 +321,35 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
         </div>
 
         <div style={categoriesWrapperStyle}>
-          {showCategoryForm ? (
-            <div style={categoryFormStyle}>
-              <input
-                style={inputStyle}
-                type="text"
-                placeholder="Tên nhóm mới"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-              />
-              <button style={addButtonStyle} onClick={handleAddCategory}>
-                Thêm nhóm
+          <div style={{ width: '100%' }}>
+            {showCategoryForm ? (
+              <div style={categoryFormStyle}>
+                <input
+                  style={inputStyle}
+                  type="text"
+                  placeholder="Tên nhóm mới"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                />
+                <button style={addButtonStyle} onClick={handleAddCategory}>
+                  Thêm nhóm
+                </button>
+                <button
+                  style={backButtonStyle}
+                  onClick={() => {
+                    setShowCategoryForm(false);
+                    setNewCategory('');
+                  }}
+                >
+                  Hủy
+                </button>
+              </div>
+            ) : (
+              <button style={addButtonStyle} onClick={() => setShowCategoryForm(true)}>
+                + Thêm nhóm mới
               </button>
-              <button
-                style={backButtonStyle}
-                onClick={() => {
-                  setShowCategoryForm(false);
-                  setNewCategory('');
-                }}
-              >
-                Hủy
-              </button>
-            </div>
-          ) : (
-            <button style={addButtonStyle} onClick={() => setShowCategoryForm(true)}>
-              + Thêm nhóm mới
-            </button>
-          )}
+            )}
+          </div>
 
           {localMenuCategories.map((category) => (
             <div key={category.name} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
