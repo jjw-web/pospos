@@ -66,3 +66,11 @@ export type AppScreen =
   | 'history'
   | 'menu'
   | 'dailySummary';
+
+export interface PendingMenuLog {
+  id: number;
+  category: string;
+  name: string;
+  price: number;
+  addedAt: string;
+}

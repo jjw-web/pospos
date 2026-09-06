@@ -1,10 +1,44 @@
-import React, { useState } from 'react';
-import type { MenuItem, MenuCategory } from '../src/types';
+import React, { useState, useCallback } from 'react';
+import type { MenuItem, MenuCategory, PendingMenuLog } from '../src/types';
 
 interface MenuViewProps {
   onBack: () => void;
   menuCategories: MenuCategory[];
   onUpdateMenuCategories: (categories: MenuCategory[]) => void;
+}
+
+const LOG_STORAGE_KEY = 'pending_menu_changes';
+
+function loadPendingLogs(): PendingMenuLog[] {
+  try {
+    const raw = localStorage.getItem(LOG_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PendingMenuLog[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePendingLogs(logs: PendingMenuLog[]): void {
+  try {
+    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+  } catch (err) {
+    console.error('[MenuView] Failed to save pending_menu_changes:', err);
+  }
+}
+
+function downloadJson(data: unknown, filename: string): void {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMenuCategories }) => {
@@ -24,6 +58,15 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     itemId: number;
   } | null>(null);
   const [editingPrice, setEditingPrice] = useState<number>(0);
+
+  // Log & Export state
+  const [pendingLogs, setPendingLogs] = useState<PendingMenuLog[]>(() => loadPendingLogs());
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const refreshPendingLogs = useCallback(() => {
+    setPendingLogs(loadPendingLogs());
+  }, []);
 
   const containerStyle: React.CSSProperties = {
     width: '100%',
@@ -160,6 +203,31 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     fontSize: '14px',
   };
 
+  // Sync toolbar button styles — CSS Variables compatible with Dark Theme
+  const logButtonStyle: React.CSSProperties = {
+    padding: '8px 14px',
+    backgroundColor: 'var(--bg-surface, #1f2937)',
+    color: 'var(--text-main, white)',
+    border: '1px solid var(--border, #374151)',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 600,
+    transition: 'background-color 0.2s',
+  };
+
+  const exportButtonStyle: React.CSSProperties = {
+    padding: '8px 14px',
+    backgroundColor: 'var(--bg-surface, #1f2937)',
+    color: 'var(--text-main, white)',
+    border: '1px solid var(--border, #374151)',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 600,
+    transition: 'background-color 0.2s',
+  };
+
   const handleAddItem = () => {
     if (newItem.name && newItem.price) {
       const maxId = localMenuCategories.reduce((max, category) => {
@@ -181,6 +249,19 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
       setLocalMenuCategories(updatedCategories);
       setNewItem({ name: '', price: 0 });
+
+      // Tự động ghi log món mới vào pending_menu_changes
+      const newLog: PendingMenuLog = {
+        id: item.id,
+        category: selectedCategory,
+        name: item.name,
+        price: item.price,
+        addedAt: new Date().toISOString(),
+      };
+      const existingLogs = loadPendingLogs();
+      const nextLogs = [...existingLogs, newLog];
+      savePendingLogs(nextLogs);
+      setPendingLogs(nextLogs);
 
       // Gọi callback để cập nhật menu ở cấp ứng dụng
       onUpdateMenuCategories(updatedCategories);
@@ -275,6 +356,61 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     }
   };
 
+  const handleCopyLogJson = async () => {
+    const json = JSON.stringify(pendingLogs, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback cho iOS cũ / WebView
+      const ta = document.createElement('textarea');
+      ta.value = json;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (e) {
+        console.error('[MenuView] copy failed:', e);
+      }
+      document.body.removeChild(ta);
+    }
+  };
+
+  const handleDownloadLogJson = () => {
+    const ts = new Date().toISOString().slice(0, 10);
+    downloadJson(pendingLogs, `pending-menu-log-${ts}.json`);
+  };
+
+  const handleClearLog = () => {
+    if (pendingLogs.length === 0) return;
+    const confirmed = window.confirm(
+      `Xóa toàn bộ ${pendingLogs.length} log món mới? Chỉ xóa sau khi đã đồng bộ vào code gốc.`
+    );
+    if (!confirmed) return;
+    try {
+      localStorage.removeItem(LOG_STORAGE_KEY);
+    } catch (err) {
+      console.error('[MenuView] Failed to clear log:', err);
+    }
+    setPendingLogs([]);
+    setShowLogModal(false);
+  };
+
+  const handleExportFullMenu = () => {
+    const ts = Date.now();
+    downloadJson(localMenuCategories, `menu-backup-${ts}.json`);
+  };
+
+  const handleOpenLogModal = () => {
+    refreshPendingLogs();
+    setShowLogModal(true);
+  };
+
   const categoryFormStyle: React.CSSProperties = {
     display: 'flex',
     flexWrap: 'wrap',
@@ -317,6 +453,33 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#6b7280')}
           >
             Quay lại
+          </button>
+        </div>
+
+        {/* Toolbar: Log & Export */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            marginBottom: '16px',
+          }}
+        >
+          <button
+            style={logButtonStyle}
+            onClick={handleOpenLogModal}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#374151')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface, #1f2937)')}
+          >
+            📋 Log Món Mới ({pendingLogs.length})
+          </button>
+          <button
+            style={exportButtonStyle}
+            onClick={handleExportFullMenu}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#374151')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface, #1f2937)')}
+          >
+            📤 Xuất Full Menu Thiết Bị
           </button>
         </div>
 
@@ -526,6 +689,160 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           </table>
         </div>
       </div>
+
+      {/* Log Modal */}
+      {showLogModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '16px',
+          }}
+          onClick={() => setShowLogModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface, #1f2937)',
+              color: 'var(--text-main, #f1f5f9)',
+              border: '1px solid var(--border, #334155)',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '720px',
+              maxHeight: '85vh',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px 20px',
+                borderBottom: '1px solid var(--border, #334155)',
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>
+                📋 Log Món Mới ({pendingLogs.length})
+              </h2>
+              <button
+                onClick={() => setShowLogModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted, #94a3b8)',
+                  fontSize: '22px',
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+                aria-label="Đóng"
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
+              {pendingLogs.length === 0 ? (
+                <p style={{ color: 'var(--text-muted, #94a3b8)', margin: 0, fontSize: '14px' }}>
+                  Chưa có món mới nào được thêm trên thiết bị này. Mỗi khi bấm &quot;Thêm vào [Category]&quot;,
+                  món sẽ tự động ghi vào log này.
+                </p>
+              ) : (
+                <pre
+                  style={{
+                    margin: 0,
+                    padding: '12px',
+                    backgroundColor: '#111827',
+                    color: '#e5e7eb',
+                    borderRadius: '8px',
+                    border: '1px solid #374151',
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    overflowX: 'auto',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    maxHeight: '50vh',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {JSON.stringify(pendingLogs, null, 2)}
+                </pre>
+              )}
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px',
+                padding: '16px 20px',
+                borderTop: '1px solid var(--border, #334155)',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <button
+                onClick={handleCopyLogJson}
+                disabled={pendingLogs.length === 0}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: pendingLogs.length === 0 ? '#374151' : '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: pendingLogs.length === 0 ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  opacity: pendingLogs.length === 0 ? 0.6 : 1,
+                }}
+              >
+                {copied ? '✓ Đã sao chép!' : 'Sao chép JSON'}
+              </button>
+              <button
+                onClick={handleDownloadLogJson}
+                disabled={pendingLogs.length === 0}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: pendingLogs.length === 0 ? '#374151' : '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: pendingLogs.length === 0 ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  opacity: pendingLogs.length === 0 ? 0.6 : 1,
+                }}
+              >
+                Tải File JSON
+              </button>
+              <button
+                onClick={handleClearLog}
+                disabled={pendingLogs.length === 0}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: pendingLogs.length === 0 ? '#374151' : '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: pendingLogs.length === 0 ? 'not-allowed' : 'pointer',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  opacity: pendingLogs.length === 0 ? 0.6 : 1,
+                }}
+              >
+                Xóa Log
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
