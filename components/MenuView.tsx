@@ -9,12 +9,68 @@ interface MenuViewProps {
 
 const LOG_STORAGE_KEY = 'pending_menu_changes';
 
+type LegacyPendingMenuLog = {
+  id?: number;
+  category: string;
+  name: string;
+  price: number;
+  addedAt?: string;
+  type?: PendingMenuLog['type'];
+  itemId?: number;
+  oldPrice?: number;
+  updatedAt?: string;
+};
+
+function normalizePendingLog(entry: LegacyPendingMenuLog): PendingMenuLog | null {
+  // New format already
+  if (entry.type === 'ADD_ITEM' || entry.type === 'UPDATE_PRICE') {
+    if (!entry.category || !entry.name || typeof entry.price !== 'number' || !entry.updatedAt) {
+      return null;
+    }
+    return {
+      type: entry.type,
+      category: entry.category,
+      itemId: entry.itemId ?? entry.id,
+      name: entry.name,
+      oldPrice: entry.oldPrice,
+      price: entry.price,
+      updatedAt: entry.updatedAt,
+    };
+  }
+  // Legacy format: {id, category, name, price, addedAt}
+  if (typeof entry.id === 'number' && entry.category && entry.name && typeof entry.price === 'number') {
+    return {
+      type: 'ADD_ITEM',
+      category: entry.category,
+      itemId: entry.id,
+      name: entry.name,
+      price: entry.price,
+      updatedAt: entry.addedAt || entry.updatedAt || new Date().toISOString(),
+    };
+  }
+  return null;
+}
+
 function loadPendingLogs(): PendingMenuLog[] {
   try {
     const raw = localStorage.getItem(LOG_STORAGE_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as PendingMenuLog[];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const normalized = (parsed as LegacyPendingMenuLog[]).map(normalizePendingLog).filter((x): x is PendingMenuLog => x !== null);
+    // Auto-migrate nếu phát hiện legacy: ghi lại normalized để lần sau không phải convert
+    if (normalized.length !== parsed.length || parsed.some((e) => (e as LegacyPendingMenuLog).addedAt || (e as LegacyPendingMenuLog).id !== undefined)) {
+      try {
+        // Chỉ migrate khi có legacy entries, tránh ghi đè liên tục
+        const hasLegacy = (parsed as LegacyPendingMenuLog[]).some((e) => e.addedAt !== undefined || (e.id !== undefined && e.type === undefined));
+        if (hasLegacy) {
+          localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(normalized));
+        }
+      } catch {
+        // ignore migration write failure
+      }
+    }
+    return normalized;
   } catch {
     return [];
   }
@@ -250,13 +306,14 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
       setLocalMenuCategories(updatedCategories);
       setNewItem({ name: '', price: 0 });
 
-      // Tự động ghi log món mới vào pending_menu_changes
+      // Tự động ghi log THÊM MÓN MỚI
       const newLog: PendingMenuLog = {
-        id: item.id,
+        type: 'ADD_ITEM',
         category: selectedCategory,
+        itemId: item.id,
         name: item.name,
         price: item.price,
-        addedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       const existingLogs = loadPendingLogs();
       const nextLogs = [...existingLogs, newLog];
@@ -288,6 +345,12 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const handleSavePrice = () => {
     if (editingPriceItem && editingPrice > 0) {
+      // Lấy thông tin món trước khi cập nhật để ghi log UPDATE_PRICE
+      const targetCategory = localMenuCategories.find((c) => c.name === editingPriceItem.categoryName);
+      const targetItem = targetCategory?.items.find((i) => i.id === editingPriceItem.itemId);
+      const oldPrice = targetItem?.price;
+      const itemName = targetItem?.name ?? '';
+
       const updatedCategories = localMenuCategories.map((category) =>
         category.name === editingPriceItem.categoryName
           ? {
@@ -302,6 +365,23 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
       setLocalMenuCategories(updatedCategories);
       setEditingPriceItem(null);
       setEditingPrice(0);
+
+      // Tự động ghi log SỬA GIÁ (chỉ ghi khi giá thực sự thay đổi)
+      if (targetItem && oldPrice !== undefined && oldPrice !== editingPrice) {
+        const priceLog: PendingMenuLog = {
+          type: 'UPDATE_PRICE',
+          category: editingPriceItem.categoryName,
+          itemId: editingPriceItem.itemId,
+          name: itemName,
+          oldPrice,
+          price: editingPrice,
+          updatedAt: new Date().toISOString(),
+        };
+        const existingLogs = loadPendingLogs();
+        const nextLogs = [...existingLogs, priceLog];
+        savePendingLogs(nextLogs);
+        setPendingLogs(nextLogs);
+      }
 
       // Gọi callback để cập nhật menu ở cấp ứng dụng
       onUpdateMenuCategories(updatedCategories);
@@ -389,7 +469,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const handleClearLog = () => {
     if (pendingLogs.length === 0) return;
     const confirmed = window.confirm(
-      `Xóa toàn bộ ${pendingLogs.length} log món mới? Chỉ xóa sau khi đã đồng bộ vào code gốc.`
+      `Xóa toàn bộ ${pendingLogs.length} log thay đổi? Chỉ xóa sau khi đã đồng bộ vào code gốc.`
     );
     if (!confirmed) return;
     try {
@@ -471,7 +551,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#374151')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface, #1f2937)')}
           >
-            📋 Log Món Mới ({pendingLogs.length})
+            📋 Log Thay Đổi ({pendingLogs.length})
           </button>
           <button
             style={exportButtonStyle}
@@ -731,7 +811,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
               }}
             >
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>
-                📋 Log Món Mới ({pendingLogs.length})
+                📋 Log Thay Đổi ({pendingLogs.length})
               </h2>
               <button
                 onClick={() => setShowLogModal(false)}
@@ -752,8 +832,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
             <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
               {pendingLogs.length === 0 ? (
                 <p style={{ color: 'var(--text-muted, #94a3b8)', margin: 0, fontSize: '14px' }}>
-                  Chưa có món mới nào được thêm trên thiết bị này. Mỗi khi bấm &quot;Thêm vào [Category]&quot;,
-                  món sẽ tự động ghi vào log này.
+                  Chưa có thay đổi nào trên thiết bị này. Thêm món hoặc sửa giá sẽ tự động ghi vào log này.
                 </p>
               ) : (
                 <pre

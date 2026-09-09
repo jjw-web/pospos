@@ -68,9 +68,11 @@ export type AppScreen =
   | 'dailySummary';
 
 export interface PendingMenuLog {
-  id: number;
+  type: 'ADD_ITEM' | 'UPDATE_PRICE';
   category: string;
+  itemId?: number;
   name: string;
+  oldPrice?: number;
   price: number;
-  addedAt: string;
+  updatedAt: string;
 }
