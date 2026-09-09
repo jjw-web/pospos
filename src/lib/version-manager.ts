@@ -3,6 +3,40 @@ import { upgradeDataStructure } from './data-upgrader';
 import { db, DB_KEYS } from './db';
 
 /**
+ * Hiển thị toast thông báo cập nhật bằng DOM thuần — tương thích WKWebView
+ * (không dùng alert/confirm native). Toast tự biến mất sau khi reload.
+ */
+function showVersionUpdateToast(newVersion: string): void {
+  try {
+    const existing = document.getElementById('version-update-toast');
+    if (existing) existing.remove();
+
+    const el = document.createElement('div');
+    el.id = 'version-update-toast';
+    el.setAttribute('role', 'status');
+    el.textContent = `Đã cập nhật lên phiên bản ${newVersion} — đang tải lại...`;
+    el.style.position = 'fixed';
+    el.style.left = '50%';
+    el.style.bottom = 'calc(88px + env(safe-area-inset-bottom, 0px))';
+    el.style.transform = 'translateX(-50%)';
+    el.style.zIndex = '9999';
+    el.style.maxWidth = 'min(90vw, 360px)';
+    el.style.padding = '12px 18px';
+    el.style.borderRadius = '12px';
+    el.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
+    el.style.color = '#f8fafc';
+    el.style.fontSize = '15px';
+    el.style.fontWeight = '500';
+    el.style.textAlign = 'center';
+    el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+    el.style.pointerEvents = 'none';
+    document.body.appendChild(el);
+  } catch {
+    // ignore DOM errors (e.g. body not ready)
+  }
+}
+
+/**
  * Xử lý khi có phiên bản ứng dụng mới.
  * @param oldVersion Phiên bản cũ.
  * @param newVersion Phiên bản mới.
@@ -10,9 +44,9 @@ import { db, DB_KEYS } from './db';
 function handleVersionUpgrade(oldVersion: string | null, newVersion: string): never {
   localStorage.setItem(DB_KEYS.APP_VERSION, newVersion);
   db.setItem(DB_KEYS.APP_VERSION, newVersion);
-  // Không dùng alert(): WKWebView native không có handler nên hộp thoại bị bỏ qua,
-  // và ngay sau đó app tự reload lại nên thông báo không cần thiết.
-  window.location.reload();
+  showVersionUpdateToast(newVersion);
+  // Delay reload để user kịp đọc thông báo (WKWebView-safe, không dùng alert)
+  window.setTimeout(() => window.location.reload(), 1800);
   throw new Error('App reloading');
 }
 
