@@ -3,65 +3,48 @@ import { upgradeDataStructure } from './data-upgrader';
 import { db, DB_KEYS } from './db';
 
 /**
- * Hiển thị toast thông báo cập nhật bằng DOM thuần — tương thích WKWebView
- * (không dùng alert/confirm native). Toast tự biến mất sau khi reload.
+ * Kiểm tra xem có bản cập nhật app mới không (so sánh localStorage vs bundle).
+ * Không tự reload — để App.tsx hiển thị banner cho user bấm cập nhật (WKWebView-safe).
  */
-function showVersionUpdateToast(newVersion: string): void {
+export function getVersionUpdateInfo(): {
+  hasUpdate: boolean;
+  oldVersion: string | null;
+  newVersion: string;
+} {
   try {
-    const existing = document.getElementById('version-update-toast');
-    if (existing) existing.remove();
-
-    const el = document.createElement('div');
-    el.id = 'version-update-toast';
-    el.setAttribute('role', 'status');
-    el.textContent = `Đã cập nhật lên phiên bản ${newVersion} — đang tải lại...`;
-    el.style.position = 'fixed';
-    el.style.left = '50%';
-    el.style.bottom = 'calc(88px + env(safe-area-inset-bottom, 0px))';
-    el.style.transform = 'translateX(-50%)';
-    el.style.zIndex = '9999';
-    el.style.maxWidth = 'min(90vw, 360px)';
-    el.style.padding = '12px 18px';
-    el.style.borderRadius = '12px';
-    el.style.backgroundColor = 'rgba(30, 41, 59, 0.95)';
-    el.style.color = '#f8fafc';
-    el.style.fontSize = '15px';
-    el.style.fontWeight = '500';
-    el.style.textAlign = 'center';
-    el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
-    el.style.pointerEvents = 'none';
-    document.body.appendChild(el);
+    const current = localStorage.getItem(DB_KEYS.APP_VERSION);
+    return {
+      hasUpdate: current !== APP_CONFIG.version,
+      oldVersion: current,
+      newVersion: APP_CONFIG.version,
+    };
   } catch {
-    // ignore DOM errors (e.g. body not ready)
+    return { hasUpdate: false, oldVersion: null, newVersion: APP_CONFIG.version };
   }
 }
 
 /**
- * Xử lý khi có phiên bản ứng dụng mới.
- * @param oldVersion Phiên bản cũ.
- * @param newVersion Phiên bản mới.
+ * Áp dụng cập nhật version: lưu storage rồi reload trang.
  */
-function handleVersionUpgrade(oldVersion: string | null, newVersion: string): never {
-  localStorage.setItem(DB_KEYS.APP_VERSION, newVersion);
-  db.setItem(DB_KEYS.APP_VERSION, newVersion);
-  showVersionUpdateToast(newVersion);
-  // Delay reload để user kịp đọc thông báo (WKWebView-safe, không dùng alert)
-  window.setTimeout(() => window.location.reload(), 1800);
-  throw new Error('App reloading');
+export function applyVersionUpdate(): void {
+  try {
+    localStorage.setItem(DB_KEYS.APP_VERSION, APP_CONFIG.version);
+    db.setItem(DB_KEYS.APP_VERSION, APP_CONFIG.version);
+  } catch {
+    // ignore storage errors
+  }
+  window.location.reload();
 }
 
 /**
- * Kiểm tra phiên bản ứng dụng và dữ liệu, thực hiện nâng cấp nếu cần.
+ * Kiểm tra phiên bản dữ liệu và thực hiện nâng cấp nếu cần.
+ * Không còn tự reload cho app version — app version do App.tsx banner xử lý.
  */
 export async function checkVersion() {
-  const currentAppVersion = localStorage.getItem(DB_KEYS.APP_VERSION);
   const currentDataVersion = localStorage.getItem(DB_KEYS.DATA_VERSION);
   const parsedDataVersion = currentDataVersion ? parseInt(currentDataVersion, 10) : null;
 
-  if (currentAppVersion !== APP_CONFIG.version) {
-    handleVersionUpgrade(currentAppVersion, APP_CONFIG.version);
-  }
-
+  // Chỉ xử lý dataVersion ở đây; app version do getVersionUpdateInfo() + banner xử lý
   if (parsedDataVersion === null || parsedDataVersion < APP_CONFIG.dataVersion) {
     upgradeDataStructure(parsedDataVersion, APP_CONFIG.dataVersion);
     localStorage.setItem(DB_KEYS.DATA_VERSION, APP_CONFIG.dataVersion.toString());

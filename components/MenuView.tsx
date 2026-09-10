@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import type { MenuItem, MenuCategory, PendingMenuLog } from '../src/types';
+import Toast from './Toast';
 
 interface MenuViewProps {
   onBack: () => void;
@@ -97,6 +98,65 @@ function downloadJson(data: unknown, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+async function copyTextToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback cho iOS WKWebView / HTTP
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+}
+
+async function tryShareJson(json: string, filename: string, title: string): Promise<boolean> {
+  try {
+    const nav = navigator as Navigator & {
+      canShare?: (data: { files?: File[]; title?: string; text?: string }) => boolean;
+      share?: (data: { files?: File[]; title?: string; text?: string }) => Promise<void>;
+    };
+    if (!nav.share) return false;
+    // Thử share file nếu trình duyệt hỗ trợ (iOS 16+)
+    if (nav.canShare) {
+      try {
+        const file = new File([json], filename, { type: 'application/json' });
+        if (nav.canShare({ files: [file] })) {
+          await nav.share({ files: [file], title, text: title });
+          return true;
+        }
+      } catch {
+        // fallback sang share text
+      }
+    }
+    await nav.share({ title, text: json });
+    return true;
+  } catch (err) {
+    // AbortError = user cancelled -> coi như đã xử lý
+    if ((err as Error)?.name === 'AbortError') return true;
+    return false;
+  }
+}
+
+function isIOSDevice(): boolean {
+  try {
+    const ua = navigator.userAgent;
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  } catch {
+    return false;
+  }
+}
+
 const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMenuCategories }) => {
   const [localMenuCategories, setLocalMenuCategories] = useState<MenuCategory[]>(menuCategories);
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -119,6 +179,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
   const [pendingLogs, setPendingLogs] = useState<PendingMenuLog[]>(() => loadPendingLogs());
   const [showLogModal, setShowLogModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const refreshPendingLogs = useCallback(() => {
     setPendingLogs(loadPendingLogs());
@@ -438,32 +499,38 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
 
   const handleCopyLogJson = async () => {
     const json = JSON.stringify(pendingLogs, null, 2);
-    try {
-      await navigator.clipboard.writeText(json);
+    const ok = await copyTextToClipboard(json);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback cho iOS cũ / WebView
-      const ta = document.createElement('textarea');
-      ta.value = json;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand('copy');
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch (e) {
-        console.error('[MenuView] copy failed:', e);
-      }
-      document.body.removeChild(ta);
+      setToastMessage('📋 Đã sao chép JSON log vào bộ nhớ tạm!');
+    } else {
+      // Fallback: thử share
+      const ts = new Date().toISOString().slice(0, 10);
+      const shared = await tryShareJson(json, `pending-menu-log-${ts}.json`, 'Pending Menu Log');
+      if (shared) setToastMessage('📤 Đã mở menu chia sẻ');
+      else setToastMessage('❌ Không thể sao chép, vui lòng thử lại');
     }
   };
 
-  const handleDownloadLogJson = () => {
+  const handleDownloadLogJson = async () => {
+    const json = JSON.stringify(pendingLogs, null, 2);
     const ts = new Date().toISOString().slice(0, 10);
-    downloadJson(pendingLogs, `pending-menu-log-${ts}.json`);
+    const filename = `pending-menu-log-${ts}.json`;
+    // Ưu tiên Share trên iOS WKWebView
+    if (await tryShareJson(json, filename, 'Pending Menu Log')) {
+      setToastMessage('📤 Đã mở menu chia sẻ iOS');
+      return;
+    }
+    if (isIOSDevice()) {
+      const ok = await copyTextToClipboard(json);
+      if (ok) {
+        setToastMessage('📋 Đã sao chép dữ liệu Log vào bộ nhớ tạm! (iOS không hỗ trợ tải file trực tiếp)');
+        return;
+      }
+    }
+    downloadJson(pendingLogs, filename);
+    setToastMessage('📥 Đã tải file JSON');
   };
 
   const handleClearLog = () => {
@@ -481,9 +548,26 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
     setShowLogModal(false);
   };
 
-  const handleExportFullMenu = () => {
+  const handleExportFullMenu = async () => {
+    const json = JSON.stringify(localMenuCategories, null, 2);
     const ts = Date.now();
-    downloadJson(localMenuCategories, `menu-backup-${ts}.json`);
+    const filename = `menu-backup-${ts}.json`;
+    // Ưu tiên Share trên iOS WKWebView
+    if (await tryShareJson(json, filename, 'Full Menu Backup')) {
+      setToastMessage('📤 Đã mở menu chia sẻ iOS');
+      return;
+    }
+    if (isIOSDevice()) {
+      const ok = await copyTextToClipboard(json);
+      if (ok) {
+        setToastMessage('📋 Đã sao chép dữ liệu Menu vào bộ nhớ tạm! (iOS không hỗ trợ tải file trực tiếp)');
+        return;
+      }
+      setToastMessage('❌ Không thể xuất, vui lòng thử lại');
+      return;
+    }
+    downloadJson(localMenuCategories, filename);
+    setToastMessage('📥 Đã tải file JSON');
   };
 
   const handleOpenLogModal = () => {
@@ -922,6 +1006,7 @@ const MenuView: React.FC<MenuViewProps> = ({ onBack, menuCategories, onUpdateMen
           </div>
         </div>
       )}
+      {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage(null)} durationMs={2600} />}
     </div>
   );
 };

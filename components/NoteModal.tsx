@@ -34,18 +34,21 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
   };
 
   const modalContentStyle: React.CSSProperties = {
-    background: 'white',
+    background: 'var(--bg-surface, #1e293b)',
+    color: 'var(--text-main, #f1f5f9)',
     padding: '20px',
     borderRadius: '12px',
     width: '90%',
     maxWidth: '400px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+    border: '1px solid var(--border, #334155)',
   };
 
   const modalHeaderStyle: React.CSSProperties = {
     fontSize: '18px',
     fontWeight: 600,
     marginBottom: '15px',
+    color: 'var(--text-main, #f1f5f9)',
   };
 
   const textAreaStyle: React.CSSProperties = {
@@ -53,9 +56,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
     minHeight: '80px',
     padding: '10px',
     borderRadius: '8px',
-    border: '1px solid #ccc',
+    border: '1px solid var(--border, #334155)',
+    backgroundColor: 'var(--bg-page, #0f172a)',
+    color: 'var(--text-main, #f1f5f9)',
     fontSize: '16px',
     marginBottom: '15px',
+    boxSizing: 'border-box',
   };
 
   const tagsContainerStyle: React.CSSProperties = {
@@ -66,8 +72,9 @@ const NoteModal: React.FC<NoteModalProps> = ({ item, onClose, onSave }) => {
   };
 
   const tagStyle: React.CSSProperties = {
-    background: '#f0f0f0',
-    border: '1px solid #ddd',
+    background: '#334155',
+    color: '#f1f5f9',
+    border: '1px solid var(--border, #334155)',
     borderRadius: '16px',
     padding: '6px 12px',
     fontSize: '14px',

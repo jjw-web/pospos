@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
 import { DB_KEYS } from './src/lib/db';
-import { checkVersion } from './src/lib/version-manager';
+import { checkVersion, getVersionUpdateInfo, applyVersionUpdate } from './src/lib/version-manager';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
@@ -86,8 +86,13 @@ function loadSelectedTableIdSync(): number | null {
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(loadScreenSync);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(loadSelectedTableIdSync);
+  const [versionUpdate] = useState<ReturnType<typeof getVersionUpdateInfo> | null>(() => {
+    const info = getVersionUpdateInfo();
+    return info.hasUpdate && info.oldVersion !== null ? info : null;
+  });
 
   useEffect(() => {
+    // Kiểm tra dataVersion upgrade (IndexedDB/localStorage)
     checkVersion();
   }, []);
 
@@ -287,6 +292,51 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
+      {versionUpdate && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9998,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+            padding: '10px 16px',
+            paddingTop: 'calc(10px + env(safe-area-inset-top, 0px))',
+            backgroundColor: '#10b981',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: 700,
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            animation: 'versionPulse 1.6s ease-in-out infinite',
+          }}
+          role="alert"
+        >
+          <style>{`@keyframes versionPulse { 0%,100% { opacity: 1 } 50% { opacity: 0.85 } }`}</style>
+          <span>🚀 Đã có phiên bản mới (v{versionUpdate.newVersion})!</span>
+          <button
+            onClick={() => applyVersionUpdate()}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '999px',
+              border: 'none',
+              backgroundColor: 'white',
+              color: '#059669',
+              fontWeight: 800,
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}
+          >
+            Bấm để cập nhật ngay
+          </button>
+        </div>
+      )}
       <Suspense fallback={<LoadingScreen />}>{renderScreen()}</Suspense>
     </ErrorBoundary>
   );
