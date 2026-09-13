@@ -29,6 +29,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
   onRevertBill,
 }) => {
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const [selectedBills, setSelectedBills] = useState<number[]>([]);
   const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
@@ -105,6 +106,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({
 
   return (
     <div
+      ref={scrollRef}
       style={{
         maxWidth: '480px',
         margin: '0 auto',
@@ -153,10 +155,13 @@ const HistoryView: React.FC<HistoryViewProps> = ({
           ←
         </button>
         <h1
+          onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+          title="Click để cuộn lên đầu trang"
           style={{
             fontSize: '18px',
             fontWeight: 600,
             color: 'var(--text-main)',
+            cursor: 'pointer',
           }}
         >
           Lịch sử thanh toán
