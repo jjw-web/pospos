@@ -53,6 +53,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 7, name: 'Latte', price: 45000 },
       { id: 8, name: 'Cappucino', price: 45000 },
       { id: 9, name: 'Americano', price: 35000 },
+      { id: 135, name: 'Đen máy', price: 35000 },
     ],
   },
   {
@@ -94,6 +95,9 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 37, name: 'Sữa chua dẻo trân châu', price: 40000 },
       { id: 38, name: 'Sữa chua dẻo matcha', price: 40000 },
       { id: 39, name: 'Sữa chua dẻo nha đam', price: 40000 },
+      { id: 132, name: 'Sữa chua dẻo trắng', price: 40000 },
+      { id: 133, name: 'Sữa chua dẻo cafe', price: 40000 },
+      { id: 137, name: 'Sữa chua dẻo bơ mc', price: 45000 },
     ],
   },
   {
@@ -109,6 +113,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 47, name: 'Bơ xoài dầm sữa chua', price: 45000 },
       { id: 48, name: 'Dâu xoài dầm sữa chua', price: 45000 },
       { id: 49, name: 'Mít dầm sữa chua', price: 40000 },
+      { id: 140, name: 'Bơ mít dầm sữa chua', price: 45000 },
     ],
   },
   {
@@ -128,6 +133,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 61, name: 'Quýt', price: 40000 },
       { id: 62, name: 'Chanh leo', price: 40000 },
       { id: 63, name: 'Chanh tươi', price: 30000 },
+      { id: 131, name: 'Cam', price: 45000 },
     ],
   },
   {
@@ -187,6 +193,8 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 101, name: 'Dừa', price: 40000 },
       { id: 102, name: 'Bột sắn', price: 35000 },
       { id: 104, name: 'Mơ muối', price: 35000 },
+      { id: 138, name: 'Sữa chua hộp', price: 10000 },
+      { id: 142, name: 'Sữa chua đánh đá', price: 35000 },
     ],
   },
   {
@@ -199,6 +207,9 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 122, name: 'Hạt nổ củ năng', price: 5000 },
       { id: 108, name: 'Dừa sấy', price: 5000 },
       { id: 109, name: 'Kem ngậy', price: 10000 },
+      { id: 134, name: 'Kem ngậy', price: 5000 },
+      { id: 136, name: 'Cacao', price: 5000 },
+      { id: 139, name: 'Chanh leo', price: 5000 },
     ],
   },
   {
@@ -206,7 +217,16 @@ export const MENU_CATEGORIES: MenuCategory[] = [
     items: [
       { id: 126, name: 'Hướng dương', price: 15000 },
       { id: 127, name: 'Sài gòn bạc', price: 20000 },
+      { id: 141, name: 'Hướng dương', price: 10000 },
     ],
+  },
+  {
+    name: 'SHIP',
+    items: [{ id: 129, name: 'Ship', price: 20000 }],
+  },
+  {
+    name: 'COLD BREW',
+    items: [{ id: 130, name: 'Cold Brew', price: 50000 }],
   },
 ];
 
