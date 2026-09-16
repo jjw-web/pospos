@@ -326,7 +326,7 @@ const OrderView: React.FC<OrderViewProps> = ({
           onClose={() => setShowPaymentModal(false)}
           receipt={
             table.order.length > 0
-              ? { tableLabel: table.name, items: table.order, menuCategories }
+              ? { tableLabel: table.name, items: table.order }
               : undefined
           }
         />

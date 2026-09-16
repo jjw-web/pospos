@@ -1,11 +1,10 @@
-import type { OrderItem, MenuCategory } from '../types';
-import { countOrderItems } from './order-utils';
+import type { OrderItem } from '../types';
 
 const LINE = '────────────────';
 
 /**
  * Format hóa đơn thành text để hiển thị hoặc chia sẻ.
- * @param params - Các tham số bao gồm shopName, tableLabel, items, total, menuCategories
+ * @param params - Các tham số bao gồm shopName, tableLabel, items, total
  * @returns Text hóa đơn đã format
  */
 export function formatReceiptText(params: {
@@ -13,10 +12,8 @@ export function formatReceiptText(params: {
   tableLabel: string;
   items: OrderItem[];
   total: number;
-  menuCategories?: MenuCategory[];
 }): string {
-  const { shopName = 'Bống Cà Phê', tableLabel, items, total, menuCategories = [] } = params;
-  const { mainCount } = countOrderItems(items, menuCategories);
+  const { shopName = 'Bống Cà Phê', tableLabel, items, total } = params;
   const lines: string[] = [`🧾 ${shopName}`, LINE, `Bàn: ${tableLabel}`, ''];
 
   items.forEach((row) => {
@@ -37,7 +34,6 @@ export function formatReceiptText(params: {
   lines.push(
     '',
     LINE,
-    `Tổng số đồ uống: ${mainCount}`,
     `Tổng cộng: ${total.toLocaleString('vi-VN')}đ`,
     '',
     'Cảm ơn quý khách! 💚'
