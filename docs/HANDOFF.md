@@ -819,3 +819,43 @@ Không có (package.json thêm @capacitor/* là của ca song song, chưa commit
 ### Commit cuối cùng của ca này
 Hash: e5c6999
 Message: fix: replace native alert/confirm with ConfirmDialog for iOS WKWebView
+
+---
+
+## [2026-09-16] — opencode — Kết thúc ca
+### Phase đang làm
+Menu Update — Đồng bộ MENU_CATEGORIES theo file backup của quản lý
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Đọc /Users/jjw1_o/Downloads/menu-backup-1789556294143.json (12 nhóm, 133 món, id duy nhất) — ✅ DONE
+- Cập nhật constants.ts MENU_CATEGORIES khớp 100% file backup — ✅ DONE
+- Verify tsc 0 errors, eslint 0 errors, vite build thành công — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+constants.ts — thêm 13 món + 2 nhóm mới (SHIP id 129, COLD BREW id 130); chi tiết: CÀ PHÊ +135 Đen máy; SỮA CHUA DẺO +132,+133,+137; HOA QUẢ DẦM +140; NƯỚC ÉP +131; ĐỒ UỐNG KHÁC +138,+142; TOPPING +134,+136,+139; SNACK +141
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: ./node_modules/.bin/vite build
+Kết quả: [x] Thành công (206.93 kB, gzip 63.12 kB)
+### Kết quả lint check
+Lệnh: ./node_modules/.bin/eslint .
+Kết quả: [x] 0 errors
+### Vấn đề phát sinh trong ca này
+Backup có tên món trùng nhau nhưng khác id/giá (Cam 60/131, Sữa chua đánh đá 119/142, Kem ngậy 109/134, Hướng dương 126/141, Chanh leo 62/94/139, Dưa hấu sinh tố/nước ép) — giữ nguyên theo backup vì id là duy nhất, merge-menu-defaults khớp theo id nên không xung đột
+### Quyết định đã tự đưa ra trong ca này
+Chỉ sửa constants.ts (defaults); không chạm localStorage/IndexedDB keys — mergeMenuWithDefaults sẽ tự propagate tên/giá mới cho user cũ theo id, món mới append đúng thứ tự backup
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Không push khi chưa được quản lý xác nhận (deploy Vercel auto khi push main)
+### Commit cuối cùng của ca này
+Hash: 35b283a
+Message: menu: sync MENU_CATEGORIES with menu-backup-1789556294143 (133 items, 12 cats)
