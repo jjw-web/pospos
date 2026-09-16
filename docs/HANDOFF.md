@@ -859,3 +859,48 @@ Không push khi chưa được quản lý xác nhận (deploy Vercel auto khi pu
 ### Commit cuối cùng của ca này
 Hash: 35b283a
 Message: menu: sync MENU_CATEGORIES with menu-backup-1789556294143 (133 items, 12 cats)
+
+---
+
+## [2026-09-16] — opencode — Kết thúc ca
+### Phase đang làm
+Fix hóa đơn text — Xóa dòng "Tổng số đồ uống" + bump version + push
+### Trạng thái tổng thể
+[x] Hoàn thành — đã push lên origin/main
+### Tasks đã hoàn thành trong ca này
+- Xóa dòng `Tổng số đồ uống` khỏi hóa đơn text (src/lib/receipt.ts) — ✅ DONE
+- Dọn param `menuCategories` thừa trong formatReceiptText/PaymentMethodModal/OrderView — ✅ DONE
+- Verify receipt text thực tế bằng node type-stripping (không còn chữ "Tổng số") — ✅ DONE
+- Bump version 2.13.0 → 2.13.1 (package.json + package-lock.json) để mọi máy đang chạy hiện banner cập nhật — ✅ DONE
+- Push lên origin/main — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+src/lib/receipt.ts — bỏ countOrderItems import, menuCategories param, dòng Tổng số đồ uống
+components/PaymentMethodModal.tsx — bỏ menuCategories khỏi receipt prop và buildReceiptText
+components/OrderView.tsx — bỏ menuCategories khỏi receipt prop truyền vào modal
+package.json, package-lock.json — bump 2.13.0 → 2.13.1
+### Files đã tạo mới trong ca này
+Không có
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: ./node_modules/.bin/vite build
+Kết quả: [x] Thành công
+### Kết quả lint check
+Lệnh: ./node_modules/.bin/eslint .
+Kết quả: [x] 0 errors
+### Vấn đề phát sinh trong ca này
+Không có — user chọn phương án 1 (xóa dòng tổng số) thay vì phương án 2 (thêm đầy đủ topping/snack)
+### Quyết định đã tự đưa ra trong ca này
+Xóa luôn param menuCategories khỏi formatReceiptText để không còn dead code, thay vì giữ lại cho tương lai
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo
+Vercel auto-deploy khi push main — kiểm tra deploy thành công trước khi báo user test
+### Commit cuối cùng của ca này
+Hash: 0ceba3d
+Message: receipt: remove drink-count line from text receipt + bump 2.13.1
