@@ -25,6 +25,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   handleRetry = (): void => {
+    const msg = this.state.error?.message ?? '';
+    // Lỗi chunk load (mất mạng lúc lazy-load) — state reset không đủ,
+    // phải reload để tải lại chunk
+    if (/dynamically imported module|loading chunk|importing a module/i.test(msg)) {
+      window.location.reload();
+      return;
+    }
     this.setState({ hasError: false, error: null });
   };
 

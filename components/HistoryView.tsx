@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import type { Bill, MenuCategory } from '../src/types';
 import { toPng } from 'html-to-image';
+import { isNativePlatform } from '../src/lib/platform';
 import HistorySummaryBar from './history/HistorySummaryBar';
 import HistoryActionBar from './history/HistoryActionBar';
 import BillCard from './history/BillCard';
@@ -80,8 +81,10 @@ const HistoryView: React.FC<HistoryViewProps> = ({
     const element = cardRefs.current.get(bill.id);
     if (!element) return;
     try {
+      // Native (RAM thấp): pixelRatio 1 để tránh Jetsam kill WebView;
+      // web giữ pixelRatio 2 cho ảnh nét
       const dataUrl = await toPng(element, {
-        pixelRatio: 2,
+        pixelRatio: isNativePlatform() ? 1 : 2,
         backgroundColor: '#1e293b',
       });
       setExportedImageUrl(dataUrl);

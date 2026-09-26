@@ -42,7 +42,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
         .catch(() => {}); // user từ chối thì thôi
     }
     return () => {
-      wakeLockRef.current?.release();
+      wakeLockRef.current?.release().catch(() => {});
       wakeLockRef.current = null;
     };
   }, [selectedQR]);
