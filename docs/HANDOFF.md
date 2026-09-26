@@ -1045,3 +1045,19 @@ Quản lý gửi `/Users/jjw1_o/Downloads/AppIcons (1).zip`, yêu thay icon mớ
 - Archive: SUCCEEDED. IPA mới 5.6 MB (giảm từ 8.4 MB). Verify: Assets.car 4046 KB → 1349 KB, Info.plist CFBundleIconName=AppIcon/AppIcon60x60, không còn file icon cũ. Copy ra Desktop đè bản cũ.
 ### Files đã thay đổi
 ios/* — untracked (gitignore), không commit. docs/HANDOFF.md — entry này.
+
+---
+
+## [2026-09-26] — opencode — Thay icon AppIcons (2).zip cho cả web + iOS, rebuild IPA
+### Yêu cầu
+Quản lý gửi `/Users/jjw1_o/Downloads/AppIcons (2).zip`, yêu thay icon cho cả webapp và IPA.
+### Thực hiện
+- Web (PWA): `public/icon-512.png` (resize từ 1024), `public/icon-180.png` (file 180 có sẵn), bump `?v=2` → `?v=3` trong index.html. `npm run build` OK, manifest tự nhận. `public/icon.svg` giữ nguyên (không chỗ nào dùng).
+- iOS: thay toàn bộ `AppIcon.appiconset` bằng full bộ 12 size + Contents.json từ zip (khác ca trước chỉ lấy 3 file iPhone).
+- Commit 22b65d0 + push origin/main theo lệnh quản lý (đẩy luôn 3 commit handoff cũ chưa push).
+- Giải thích cho quản lý: file IPA cũ chưa được build lại nên cài vẫn thấy icon cũ.
+- Rebuild IPA: `npx cap sync ios` → archive SUCCEEDED → đóng `BongCafePOS-v2.13.1-unsigned.ipa` (7 MB, 54 files, 0 __MACOSX). Verify: Assets.car chứa đủ bộ AppIcon mới (assetutil), capacitor.config.json không có server.url, CFBundleIconName=AppIcon. Copy đè ra Desktop.
+### Files đã thay đổi
+index.html, public/icon-*.png, ios/.../AppIcon.appiconset/ (đã commit+push 22b65d0). File .ipa untracked, không commit. docs/HANDOFF.md — entry này.
+### Lưu ý cho quản lý
+Cài IPA mới qua Sideloadly. Nếu vẫn thấy icon cũ: xóa app cũ khỏi máy trước rồi cài lại (iOS cache icon SpringBoard), không cài đè.
