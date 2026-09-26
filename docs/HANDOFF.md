@@ -972,3 +972,51 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: (4 commits: fix ios server.url / fix storage backup / fix version-manager / fix native SW+ErrorBoundary — xem git log)
 Message: xem git log --oneline -4
+
+---
+
+## [2026-09-26] — opencode — Kết thúc ca
+### Phase đang làm
+Build IPA mới — từ code đã fix crash/reset (theo yêu cầu trực tiếp của quản lý)
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Verify baseline: tsc 0 errors, dev server HTTP 200 — ✅ DONE
+- npm run build: thành công (index 208.80 kB, gzip 63.79 kB) — ✅ DONE
+- npx cap sync ios: copy dist mới vào native — ✅ DONE
+- xcodebuild archive Release unsigned: ARCHIVE SUCCEEDED — ✅ DONE
+- Đóng gói BongCafePOS-v2.13.1-unsigned.ipa (4.5 MB, 44 files) — ✅ DONE
+- Verify IPA: capacitor.config.json KHÔNG có server.url, public/index.html có trong IPA, localStorage keys giữ nguyên — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+docs/HANDOFF.md — entry này
+### Files đã tạo mới trong ca này
+BongCafePOS-v2.13.1-unsigned.ipa — file IPA unsigned mới, cài qua Sideloadly (untracked, không commit binary vào repo)
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công (index 208.80 kB / gzip 63.79 kB; HistoryView 22.12 kB; MenuView 14.45 kB; DailySummaryView 5.60 kB)
+### Kết quả dev server check
+Lệnh: ./node_modules/.bin/vite --host 127.0.0.1
+Kết quả: [x] HTTP 200
+### Vấn đề phát sinh trong ca này
+Không có — archive lần đầu SUCCEEDED ngay, không cần sửa gì
+### Quyết định đã tự đưa ra trong ca này
+Đặt tên file BongCafePOS-v2.13.1-unsigned.ipa theo version package.json hiện tại (2.13.1), phân biệt với POSApp-v1.2-unsigned.ipa cũ
+Không commit file .ipa vào repo (binary 4.5 MB; file cũ POSApp-v1.2-unsigned.ipa cũng đang untracked) — giữ cùng convention
+Không bump version, không push — chờ quản lý xác nhận
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo / quản lý
+1. Cài BongCafePOS-v2.13.1-unsigned.ipa qua Sideloadly đè lên app cũ
+2. Test quan trọng nhất: bật chế độ máy bay → app vẫn mở và data còn nguyên (fix P0-1)
+3. Test crash/reset cũ: dùng app 1-2 ngày xem còn tự reset không (fix P0-2 safe-storage)
+4. Không push main khi chưa xác nhận (Vercel auto-deploy)
+### Commit cuối cùng của ca này
+Hash: (xem git log)
+Message: handoff: opencode build IPA 2.13.1 unsigned 2026-09-26
