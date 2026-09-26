@@ -75,6 +75,8 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 22, name: 'Trà dilmah dâu', price: 30000 },
       { id: 23, name: 'Trà dilmah đào', price: 30000 },
       { id: 24, name: 'Trà dilmah bạc hà', price: 30000 },
+      { id: 145, name: 'Trà chanh', price: 25000 },
+      { id: 149, name: 'Trà lipton sữa', price: 35000 },
     ],
   },
   {
@@ -98,6 +100,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 132, name: 'Sữa chua dẻo trắng', price: 40000 },
       { id: 133, name: 'Sữa chua dẻo cafe', price: 40000 },
       { id: 137, name: 'Sữa chua dẻo bơ mc', price: 45000 },
+      { id: 143, name: 'Sữa chua dẻo bơ xoài dâu', price: 55000 },
     ],
   },
   {
@@ -134,6 +137,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 62, name: 'Chanh leo', price: 40000 },
       { id: 63, name: 'Chanh tươi', price: 30000 },
       { id: 131, name: 'Cam', price: 45000 },
+      { id: 144, name: 'Dưa vàng', price: 45000 },
     ],
   },
   {
@@ -157,6 +161,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 79, name: 'Cà rốt dứa', price: 40000 },
       { id: 80, name: 'Lựu dâu', price: 50000 },
       { id: 81, name: 'Roi dâu', price: 45000 },
+      { id: 147, name: 'Táo dứa', price: 45000 },
     ],
   },
   {
@@ -195,6 +200,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 104, name: 'Mơ muối', price: 35000 },
       { id: 138, name: 'Sữa chua hộp', price: 10000 },
       { id: 142, name: 'Sữa chua đánh đá', price: 35000 },
+      { id: 146, name: 'Mơ ngọt', price: 35000 },
     ],
   },
   {
@@ -210,6 +216,8 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       { id: 134, name: 'Kem ngậy', price: 5000 },
       { id: 136, name: 'Cacao', price: 5000 },
       { id: 139, name: 'Chanh leo', price: 5000 },
+      { id: 150, name: 'Chanh', price: 5000 },
+      { id: 151, name: 'Cafe', price: 5000 },
     ],
   },
   {
@@ -222,7 +230,10 @@ export const MENU_CATEGORIES: MenuCategory[] = [
   },
   {
     name: 'SHIP',
-    items: [{ id: 129, name: 'Ship', price: 20000 }],
+    items: [
+      { id: 129, name: 'Ship', price: 20000 },
+      { id: 148, name: 'Ship', price: 21000 },
+    ],
   },
   {
     name: 'COLD BREW',
