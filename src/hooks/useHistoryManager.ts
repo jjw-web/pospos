@@ -1,40 +1,31 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Bill } from '../types';
-import { db, DB_KEYS } from '../lib/db';
+import { DB_KEYS } from '../lib/db';
+import {
+  isBillArray,
+  parseValidatedJSON,
+  persistWithBackup,
+  readWithFallback,
+} from '../lib/safe-storage';
 
 /**
- * Load history from IndexedDB only.
- * Avoids double-render from sync localStorage + async DB loading race.
+ * Load history qua 3 lớp fallback (IndexedDB → localStorage → backup),
+ * kèm validate shape. Bản ghi hỏng bị bỏ qua thay vì làm mất lịch sử.
  */
 async function loadHistoryFromDB(): Promise<Bill[]> {
-  try {
-    const saved = await db.getItem<string>(DB_KEYS.HISTORY);
-    if (saved) {
-      return JSON.parse(saved) as Bill[];
-    }
-  } catch {
-    // ignore — empty history on error
+  const raw = await readWithFallback(DB_KEYS.HISTORY);
+  const parsed = parseValidatedJSON(raw, isBillArray);
+  if (raw && !parsed) {
+    console.error('[useHistoryManager] Stored history failed validation, using empty history.');
   }
-  return [];
+  return parsed ?? [];
 }
 
 /**
- * Persist history to localStorage (sync fallback) + IndexedDB (primary).
+ * Persist history kèm xoay vòng backup trước khi ghi đè.
  */
 async function persistHistoryAsync(history: Bill[]): Promise<void> {
-  const value = JSON.stringify(history);
-
-  try {
-    localStorage.setItem(DB_KEYS.HISTORY, value);
-  } catch (err) {
-    console.error('[useHistoryManager] localStorage write failed:', err);
-  }
-
-  try {
-    await db.setItem(DB_KEYS.HISTORY, value);
-  } catch (err) {
-    console.error('[useHistoryManager] IndexedDB write failed:', err);
-  }
+  await persistWithBackup(DB_KEYS.HISTORY, JSON.stringify(history));
 }
 
 export function useHistoryManager() {

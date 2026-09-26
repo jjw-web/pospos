@@ -7,6 +7,7 @@ import type { MenuCategory, MenuItem } from '../types';
  * - Thứ tự món theo MENU_CATEGORIES; món chỉ có trong bản lưu nối ở cuối
  */
 export function mergeMenuWithDefaults(saved: MenuCategory[]): MenuCategory[] {
+  if (!Array.isArray(saved)) return MENU_CATEGORIES;
   const defaultItemsByCategory = new Map<string, MenuItem[]>();
   MENU_CATEGORIES.forEach((cat) => defaultItemsByCategory.set(cat.name, cat.items));
 

@@ -2,41 +2,35 @@ import { useState, useCallback, useEffect } from 'react';
 import type { MenuCategory } from '../types';
 import { MENU_CATEGORIES } from '../../constants';
 import { mergeMenuWithDefaults } from '../lib/merge-menu-defaults';
-import { db, DB_KEYS } from '../lib/db';
+import { DB_KEYS } from '../lib/db';
+import {
+  isMenuCategoryArray,
+  parseValidatedJSON,
+  persistWithBackup,
+  readWithFallback,
+} from '../lib/safe-storage';
 
 /**
- * Load menu from IndexedDB only, merge with defaults.
- * Avoids double-render from sync localStorage + async DB loading race.
+ * Load menu qua 3 lớp fallback (IndexedDB → localStorage → backup),
+ * kèm validate shape, rồi merge với defaults.
  */
 async function loadMenuFromDB(): Promise<MenuCategory[]> {
-  try {
-    const saved = await db.getItem<string>(DB_KEYS.MENU_CATEGORIES);
-    if (saved) {
-      return mergeMenuWithDefaults(JSON.parse(saved) as MenuCategory[]);
-    }
-  } catch {
-    // ignore — fall through to defaults
+  const raw = await readWithFallback(DB_KEYS.MENU_CATEGORIES);
+  const parsed = parseValidatedJSON(raw, isMenuCategoryArray);
+  if (raw && !parsed) {
+    console.error('[useMenuManager] Stored menu failed validation, using defaults.');
+  }
+  if (parsed) {
+    return mergeMenuWithDefaults(parsed);
   }
   return MENU_CATEGORIES;
 }
 
 /**
- * Persist menu to localStorage (sync fallback) + IndexedDB (primary).
+ * Persist menu kèm xoay vòng backup trước khi ghi đè.
  */
 async function persistMenuCategoriesAsync(categories: MenuCategory[]): Promise<void> {
-  const value = JSON.stringify(categories);
-
-  try {
-    localStorage.setItem(DB_KEYS.MENU_CATEGORIES, value);
-  } catch (err) {
-    console.error('[useMenuManager] localStorage write failed:', err);
-  }
-
-  try {
-    await db.setItem(DB_KEYS.MENU_CATEGORIES, value);
-  } catch (err) {
-    console.error('[useMenuManager] IndexedDB write failed:', err);
-  }
+  await persistWithBackup(DB_KEYS.MENU_CATEGORIES, JSON.stringify(categories));
 }
 
 export function useMenuManager() {

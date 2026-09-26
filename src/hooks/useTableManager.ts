@@ -3,25 +3,29 @@ import type { TableData, MenuItem, ToppingItem, PaymentMethod, Bill } from '../t
 import { INITIAL_TABLES } from '../../constants';
 import { mergeOrderItems } from '../lib/merge-orders';
 import { calcOrderTotal } from '../lib/order-utils';
-import { db, DB_KEYS } from '../lib/db';
+import { DB_KEYS } from '../lib/db';
+import {
+  isTableEntries,
+  parseValidatedJSON,
+  persistWithBackup,
+  readWithFallback,
+} from '../lib/safe-storage';
 
 /**
- * Load tables from IndexedDB only (async).
- * localStorage is NOT read on init — avoids data race where sync load
- * and async DB load return different data, causing double re-render.
+ * Load tables qua 3 lớp fallback (IndexedDB → localStorage → backup),
+ * kèm validate shape. Bản ghi hỏng bị bỏ qua thay vì làm reset toàn bộ bàn.
  * Falls back to INITIAL_TABLES if nothing in storage.
  */
 async function loadTablesFromDB(): Promise<Map<number, TableData>> {
   const map = new Map<number, TableData>();
 
-  try {
-    const saved = await db.getItem<string>(DB_KEYS.TABLES);
-    if (saved) {
-      const savedEntries = JSON.parse(saved) as [number, TableData][];
-      savedEntries.forEach(([id, data]) => map.set(id, data));
-    }
-  } catch {
-    // IndexedDB unavailable — table data will come from state defaults
+  const raw = await readWithFallback(DB_KEYS.TABLES);
+  const savedEntries = parseValidatedJSON(raw, isTableEntries);
+  if (raw && !savedEntries) {
+    console.error('[useTableManager] Stored tables failed validation, trying fallback/empty.');
+  }
+  if (savedEntries) {
+    savedEntries.forEach(([id, data]) => map.set(id, data));
   }
 
   // Always ensure initial tables exist (e.g., new table added in app update)
@@ -35,24 +39,11 @@ async function loadTablesFromDB(): Promise<Map<number, TableData>> {
 }
 
 /**
- * Persist tables to both localStorage (sync fallback) and IndexedDB (primary store).
- * localStorage written first so it always has the latest data even if IDB fails.
- * Failures are silently caught — UI state is source of truth.
+ * Persist tables kèm xoay vòng backup trước khi ghi đè.
+ * Failures are caught inside persistWithBackup — UI state is source of truth.
  */
 async function persistTablesAsync(tables: Map<number, TableData>): Promise<void> {
-  const value = JSON.stringify(Array.from(tables.entries()));
-
-  try {
-    localStorage.setItem(DB_KEYS.TABLES, value);
-  } catch (err) {
-    console.error('[useTableManager] localStorage write failed:', err);
-  }
-
-  try {
-    await db.setItem(DB_KEYS.TABLES, value);
-  } catch (err) {
-    console.error('[useTableManager] IndexedDB write failed:', err);
-  }
+  await persistWithBackup(DB_KEYS.TABLES, JSON.stringify(Array.from(tables.entries())));
 }
 
 export function useTableManager() {
