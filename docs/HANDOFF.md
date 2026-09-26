@@ -1033,3 +1033,15 @@ Archive lại: SUCCEEDED. Đóng lại IPA (8.4 MB) + copy ra Desktop. Verify b�
 ### Files đã thay đổi
 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png — untracked (ios/ đang gitignore), không commit
 docs/HANDOFF.md — entry này
+
+---
+
+## [2026-09-26] — opencode — Thay icon mới từ file quản lý gửi
+### Yêu cầu
+Quản lý gửi `/Users/jjw1_o/Downloads/AppIcons (1).zip`, yêu thay icon mới, chỉ lấy file iPhone cho nhẹ.
+### Thực hiện
+- Zip có full bộ iOS (iphone+ipad, 25 files) + android + store. Chỉ lấy 3 file iPhone: `120.png` (60pt@2x), `180.png` (60pt@3x), `1024.png` (ios-marketing) → `ios/App/App/Assets.xcassets/AppIcon.appiconset/`, xóa `AppIcon-512@2x.png` cũ, viết lại `Contents.json` chỉ còn 3 entries iphone/marketing.
+- Icon mới: anh đeo kính râu nền cam. File 1024 chỉ 389 KB (nhẹ hơn icon anime cũ 1.5 MB).
+- Archive: SUCCEEDED. IPA mới 5.6 MB (giảm từ 8.4 MB). Verify: Assets.car 4046 KB → 1349 KB, Info.plist CFBundleIconName=AppIcon/AppIcon60x60, không còn file icon cũ. Copy ra Desktop đè bản cũ.
+### Files đã thay đổi
+ios/* — untracked (gitignore), không commit. docs/HANDOFF.md — entry này.
