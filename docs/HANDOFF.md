@@ -904,3 +904,71 @@ Vercel auto-deploy khi push main — kiểm tra deploy thành công trước khi
 ### Commit cuối cùng của ca này
 Hash: 0ceba3d
 Message: receipt: remove drink-count line from text receipt + bump 2.13.1
+
+---
+
+## [2026-09-26] — opencode — Kết thúc ca
+### Phase đang làm
+Fix crash/reset trên IPA — Điều tra + fix toàn bộ (theo yêu cầu trực tiếp của quản lý)
+### Trạng thái tổng thể
+[x] Hoàn thành
+### Tasks đã hoàn thành trong ca này
+- Điều tra nguyên nhân "tự crash xong reset": tìm ra 6 bug (2 P0, 2 P1, 2 P2) — ✅ DONE
+- Fix P0-1: xóa server.url remote khỏi capacitor.config.ts, `npx cap sync ios` — ✅ DONE
+- Fix P0-2: tạo src/lib/safe-storage.ts (validate + 3-layer fallback + backup rotation), dùng trong 3 hooks — ✅ DONE
+- Fix P1-1: checkVersion không bao giờ reject + mirror upgrade tables sang IndexedDB — ✅ DONE
+- Fix P1-2: tạo src/lib/platform.ts, unregister service worker khi chạy native — ✅ DONE
+- Fix P2: ErrorBoundary ngoài lên index.tsx + global handlers + retry reload chunk lỗi + toPng pixelRatio 1 trên native + wakeLock catch + merge-menu guard — ✅ DONE
+- Verify: tsc 0 errors, eslint 0 errors, vite build thành công, safe-storage test 8/8, dev server HTTP 200 — ✅ DONE
+### Task đang dở
+Không có
+### Files đã thay đổi trong ca này
+capacitor.config.ts — xóa server.url cứng, chỉ dùng khi có env CAPACITOR_SERVER_URL (dev live-reload)
+src/lib/safe-storage.ts — MỚI: parseValidatedJSON, isTableEntries/isBillArray/isMenuCategoryArray, readWithFallback, persistWithBackup
+src/lib/platform.ts — MỚI: isNativePlatform()
+src/hooks/useTableManager.ts — load/validate 3-layer fallback, persist xoay backup
+src/hooks/useHistoryManager.ts — như trên cho history
+src/hooks/useMenuManager.ts — như trên cho menu
+src/lib/version-manager.ts — checkVersion bọc try/catch toàn hàm + mirror tables sang IDB
+src/lib/data-upgrader.ts — dùng DB_KEYS.TABLES thay string literal
+src/lib/merge-menu-defaults.ts — guard non-array
+App.tsx — checkVersion().catch() lưới an toàn cuối
+index.tsx — ErrorBoundary ngoài, unregister SW khi native, global error/unhandledrejection log
+src/components/ErrorBoundary.tsx — retry reload khi lỗi chunk load
+components/HistoryView.tsx — toPng pixelRatio 1 trên native
+components/PaymentMethodModal.tsx — wakeLock release().catch()
+ios/App/App/capacitor.config.json — regenerate qua cap sync (hết server.url) — file này untracked
+### Files đã tạo mới trong ca này
+src/lib/safe-storage.ts — validate + fallback + backup rotation cho storage
+src/lib/platform.ts — nhận diện Capacitor native
+### Files đã xóa trong ca này
+Không có
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công
+### Kết quả lint check
+Lệnh: ./node_modules/.bin/eslint .
+Kết quả: [x] 0 errors
+### Kết quả test logic safe-storage (node, từ code đã compile)
+8/8 passed: truncated JSON → null, valid tables ok, wrong shape → null, missing order → null, bad history → null, valid history ok, bad menu → null, empty → null
+### Kết quả dev server check
+Lệnh: ./node_modules/.bin/vite --host 127.0.0.1
+Kết quả: [x] HTTP 200
+### Vấn đề phát sinh trong ca này
+Không có
+### Quyết định đã tự đưa ra trong ca này
+Backup keys mới (tables_backup, history_backup, menuCategories_backup) — thêm key mới nhưng không đổi key cũ, không mất data user cũ
+Không bump version trong ca này — để quản lý quyết định số version khi build IPA mới
+Không push lên origin — chờ quản lý xác nhận (Vercel auto-deploy khi push main)
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo / quản lý
+1. QUAN TRỌNG: phải build lại IPA từ dist mới (npx cap sync ios đã chạy — config native hết server.url) thì fix P0-1 mới có hiệu lực
+2. IPA mới chạy offline hoàn toàn từ dist local — test: bật chế độ máy bay, app vẫn mở và data còn nguyên
+3. Không push main khi chưa xác nhận (Vercel auto-deploy)
+### Commit cuối cùng của ca này
+Hash: (4 commits: fix ios server.url / fix storage backup / fix version-manager / fix native SW+ErrorBoundary — xem git log)
+Message: xem git log --oneline -4
