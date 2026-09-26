@@ -1020,3 +1020,16 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: (xem git log)
 Message: handoff: opencode build IPA 2.13.1 unsigned 2026-09-26
+
+---
+
+## [2026-09-26] — opencode — Bổ sung ca build IPA
+### Vấn đề phát sinh sau khi build
+Quản lý phát hiện IPA mới bị đổi icon (icon Capacitor mặc định — 2 chữ V xanh) thay vì icon cũ (anime girl như POSApp-v1.2).
+Nguyên nhân: mình KHÔNG đổi icon — thư mục `ios/` do ca trước tạo bằng `npx cap add ios` mang sẵn icon mặc định của Capacitor. IPA cũ POSApp-v1.2 được build theo cách khác với bộ Icon riêng.
+### Fix
+Copy `Icon-1024.png` (1024x1024) từ IPA cũ → `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` (appiconset chỉ cần đúng 1 file 1024, Xcode tự sinh các size).
+Archive lại: SUCCEEDED. Đóng lại IPA (8.4 MB) + copy ra Desktop. Verify bằng mắt: icon trong IPA mới đúng icon cũ.
+### Files đã thay đổi
+ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png — untracked (ios/ đang gitignore), không commit
+docs/HANDOFF.md — entry này
