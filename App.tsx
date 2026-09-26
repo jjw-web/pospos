@@ -93,7 +93,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Kiểm tra dataVersion upgrade (IndexedDB/localStorage)
-    checkVersion();
+    // checkVersion tự catch lỗi bên trong — .catch ngoài là lưới an toàn cuối
+    checkVersion().catch((err) => console.error('[App] checkVersion failed:', err));
   }, []);
 
   const tableManager = useTableManager();

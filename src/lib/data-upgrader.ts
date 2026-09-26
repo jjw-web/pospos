@@ -1,4 +1,5 @@
 import type { TableData } from '../types';
+import { DB_KEYS } from './db';
 
 const NEW_TABLES_V4: TableData[] = [
   { id: 21, name: 'T9', layout: 'Inside', status: 'available', order: [] },
@@ -14,7 +15,7 @@ const NEW_TABLES_V4: TableData[] = [
  */
 export function upgradeDataStructure(oldVersion: number | null, newVersion: number) {
   if ((oldVersion === null || oldVersion < 3) && newVersion >= 3) {
-    const tablesJSON = localStorage.getItem('tables');
+    const tablesJSON = localStorage.getItem(DB_KEYS.TABLES);
     if (!tablesJSON) return;
     try {
       const tableEntries: [number, TableData][] = JSON.parse(tablesJSON);
@@ -35,7 +36,7 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
         }
       }
       if (changed) {
-        localStorage.setItem('tables', JSON.stringify(Array.from(tablesMap.entries())));
+        localStorage.setItem(DB_KEYS.TABLES, JSON.stringify(Array.from(tablesMap.entries())));
       }
     } catch (e) {
       console.error('Lỗi nâng cấp dữ liệu v3 (tables)', e);
@@ -44,7 +45,7 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
 
   if ((oldVersion === null || oldVersion < 4) && newVersion >= 4) {
     try {
-      const tablesJSON = localStorage.getItem('tables');
+      const tablesJSON = localStorage.getItem(DB_KEYS.TABLES);
       if (!tablesJSON) return;
       const tableEntries: [number, TableData][] = JSON.parse(tablesJSON);
       const tablesMap = new Map(tableEntries);
@@ -56,7 +57,7 @@ export function upgradeDataStructure(oldVersion: number | null, newVersion: numb
         }
       }
       if (changed) {
-        localStorage.setItem('tables', JSON.stringify(Array.from(tablesMap.entries())));
+        localStorage.setItem(DB_KEYS.TABLES, JSON.stringify(Array.from(tablesMap.entries())));
       }
     } catch (e) {
       console.error('Lỗi nâng cấp dữ liệu v4 (add tables)', e);
