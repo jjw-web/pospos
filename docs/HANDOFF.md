@@ -1121,3 +1121,15 @@ Phát hiện 2 chỗ sai trong `buildVietQRPayload`:
 - tsc 0 errors, eslint 0 errors, vite build OK
 ### Còn lại
 Quản lý quét thử lại bằng app ngân hàng. Pass → build IPA + push main.
+
+---
+
+## [2026-09-27] — opencode — Đồng bộ 65 ngân hàng theo vietqr.io
+### Yêu cầu
+Danh sách bank trong tab Cash phải giống vietqr.io (lúc trước chỉ 10 bank tự ghi).
+### Thực hiện
+- GET `https://api.vietqr.io/v2/banks` → 65 banks (bin + shortName), copy nguyên shortName + thứ tự.
+- `src/lib/vietqr.ts`: `VIETQR_BANKS` 10 → 65 mục. Dropdown tab Cash tự đủ 65 không cần sửa thêm.
+- Lưu ý: shortName MB theo VietQR là `MBBank` (trước mình ghi `MB`) — lịch sử STK hiển thị `MBBank • •••8888`.
+### Verify
+65 banks, BIN duy nhất, payload MB byte-equal chuẩn, tsc/eslint/build OK.
