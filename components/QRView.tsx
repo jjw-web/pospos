@@ -67,7 +67,7 @@ const QRView: React.FC<QRViewProps> = ({ onBack }) => {
             color: 'var(--text-main)',
           }}
         >
-          Mã QR
+          QR Code
         </h1>
       </div>
 
