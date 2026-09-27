@@ -153,50 +153,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     const text = buildReceiptText();
     if (!text) return;
     const ok = await copyTextToClipboard(text);
-    showHint(ok ? '✅ Đã sao chép — dán vào Zalo/Messenger' : '❌ Không sao chép được');
-  };
-
-  const handleShareWithQR = async (account: QRAccount) => {
-    const text = buildReceiptText();
-    if (!text) return;
-    await copyTextToClipboard(text);
-
-    try {
-      // Logic mới: share QR ĐỘNG kèm tổng tiền (không còn share ảnh tĩnh).
-      // TK nào chưa gắn BIN/STK thì fallback ảnh tĩnh như cũ.
-      let blob: Blob;
-      if (account.bankBin && account.accountNumber) {
-        const payload = buildVietQRPayload({
-          bankBin: account.bankBin,
-          accountNumber: account.accountNumber,
-          amount: total,
-          note: '',
-        });
-        const dataUrl = await QRCode.toDataURL(payload, {
-          width: 640,
-          margin: 2,
-          errorCorrectionLevel: 'M',
-        });
-        const res = await fetch(dataUrl);
-        if (!res.ok) throw new Error(`QR fetch failed: ${res.status}`);
-        blob = await res.blob();
-      } else {
-        const response = await fetch(encodeURI(account.path));
-        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-        blob = await response.blob();
-      }
-      const file = new File([blob], 'qr_payment.png', { type: blob.type }); // dùng đúng type
-
-      if ('canShare' in navigator && navigator.canShare({ files: [file] })) {
-        await navigator.share({ title: 'Hóa đơn Bống Cà Phê', text, files: [file] });
-        showHint('Đã chia sẻ hóa đơn kèm QR kèm tiền');
-        return;
-      }
-    } catch (err) {
-      console.error('Share QR error:', err);
-    }
-
-    showHint('Đã copy hóa đơn — tải ảnh QR về để gửi kèm');
+    showHint(ok ? 'Đã sao chép — dán vào Zalo/Messenger' : 'Không sao chép được');
   };
 
   const handleCloseModal = () => {
@@ -291,14 +248,10 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           {screen === 'qrList' && !pendingDynamic && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {(QR_ACCOUNTS as QRAccount[]).map((account) => (
-                <div key={account.name} style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    style={{ ...btnBase, flex: 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '4px' }}
-                    onClick={() => handleShareWithQR(account)}
-                  >
-                    <span style={{ fontSize: '20px', lineHeight: 1 }}>📤</span>
-                    <span>{account.name.replace('QR ', '')}</span>
-                  </button>
+                <div key={account.name} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ flex: 1, color: '#fff', fontSize: '15px', fontWeight: 600 }}>
+                    {account.name.replace('QR ', '')}
+                  </span>
                   <button
                     style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
                     onClick={() => setSelectedQR(account)}
