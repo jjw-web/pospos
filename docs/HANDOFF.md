@@ -1168,3 +1168,18 @@ Danh sách STK đã đủ (quét từ ảnh), rebuild logic khi bấm QR Thanh t
 - tsc 0 errors, eslint 0 errors, vite build OK, dev server HTTP 200
 ### Còn lại cho quản lý
 Vào bàn → gọi món → Thanh toán → QR Thanh toán → bấm "QR +tiền" → xác nhận → **quét thật bằng app ngân hàng** (hiện đúng tổng tiền). Pass → push main + build IPA.
+
+---
+
+## [2026-09-27] — opencode — PUSH MAIN + BUILD IPA MỚI [QUẢN LÝ DUYỆT]
+### Push
+- Working tree sạch (chỉ untracked ios/.ipa theo convention) → `git push origin main`: 472d305..1ce50f7 OK
+- Vercel auto-deploy từ main (web có QR 2 tab + QR +tiền ngay sau deploy)
+### Build IPA
+- `npm run build` OK → `npx cap sync ios` OK → xcodebuild archive Release unsigned: ARCHIVE SUCCEEDED
+- Đóng `BongCafePOS-v2.13.1-unsigned.ipa` (6.7 MB), copy đè ra Desktop
+- Verify IPA: 0 __MACOSX, capacitor.config.json KHÔNG có server.url (offline OK), có public/index.html + QR MB mới
+### Nội dung IPA mới so với bản cũ
+QR 2 tab Pics/Cash (thêm/xóa ảnh, 65 bank, QR kèm tiền offline) + màn QR riêng + QR +tiền trong thanh toán + QR MB mới. Version giữ 2.13.1 (không bump).
+### Hướng dẫn cài
+Cài đè qua Sideloadly. Nếu icon cũ còn cache: xóa app cũ rồi cài lại.
