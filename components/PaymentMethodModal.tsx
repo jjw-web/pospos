@@ -33,7 +33,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   receipt,
 }) => {
   const [screen, setScreen] = useState<Screen>('main');
-  const [selectedQR, setSelectedQR] = useState<QRAccount | null>(null);
   const [pendingDynamic, setPendingDynamic] = useState<QRAccount | null>(null);
   const [dynamicQR, setDynamicQR] = useState<{ dataUrl: string; account: QRAccount } | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -43,7 +42,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
 
   // ─── Wake Lock: giữ màn hình sáng khi show QR fullscreen ──────────────────
   useEffect(() => {
-    if ((selectedQR || dynamicQR) && 'wakeLock' in navigator) {
+    if (dynamicQR && 'wakeLock' in navigator) {
       navigator.wakeLock
         .request('screen')
         .then((lock) => {
@@ -55,7 +54,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
       wakeLockRef.current?.release().catch(() => {});
       wakeLockRef.current = null;
     };
-  }, [selectedQR, dynamicQR]);
+  }, [dynamicQR]);
 
   // ─── Cleanup timeout hint khi unmount ────────────────────────────────────
   useEffect(() => {
@@ -157,7 +156,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   };
 
   const handleCloseModal = () => {
-    setSelectedQR(null);
     setPendingDynamic(null);
     setDynamicQR(null);
     setScreen('main');
@@ -165,7 +163,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   };
 
   const closeFullscreen = () => {
-    setSelectedQR(null);
     setDynamicQR(null);
     setScreen('qrList');
   };
@@ -252,13 +249,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                   <span style={{ flex: 1, color: '#fff', fontSize: '15px', fontWeight: 600 }}>
                     {account.name.replace('QR ', '')}
                   </span>
-                  <button
-                    style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
-                    onClick={() => setSelectedQR(account)}
-                    title="Khách quét tại chỗ"
-                  >
-                    🖥️
-                  </button>
                   {account.bankBin && account.accountNumber && (
                     <button
                       style={{
@@ -360,38 +350,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           )}
         </div>
       </div>
-
-      {/* Fullscreen QR */}
-      {selectedQR && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: '#fff',
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            padding: '24px',
-          }}
-          onClick={closeFullscreen} // bấm ra ngoài để thoát
-        >
-          <img
-            src={selectedQR.path}
-            alt={selectedQR.name}
-            style={{ width: '100%', maxWidth: '320px', borderRadius: '12px' }}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <p style={{ fontSize: '32px', fontWeight: 700, color: '#1e40af' }}>
-            {total.toLocaleString()}đ
-          </p>
-          <button onClick={closeFullscreen} style={{...cancelBtn, opacity: 0, pointerEvents: 'auto'}}>
-            ← Chọn tài khoản khác
-          </button>
-        </div>
-      )}
 
       {/* Fullscreen QR động kèm tổng tiền */}
       {dynamicQR && (
