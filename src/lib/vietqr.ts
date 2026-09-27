@@ -111,6 +111,10 @@ export function validateVietQRInput(input: VietQRInput): void {
 
 /**
  * Dựng payload text VietQR theo chuẩn EMVCo/NAPAS.
+ * Cấu trúc tag 38 copy đúng QR chuẩn do VietQR sinh ra (đã decode đối chiếu
+ * từng byte với img.vietqr.io): subtag 01 PHẢI lồng 2 cấp
+ * (`00`=BIN 6 số, `01`=STK), và KHÔNG có field 52 (MCC).
+ * Để BIN+STK phẳng hoặc thêm MCC 0000 → app ngân hàng báo sai định dạng.
  * Có amount > 0 → QR động (point 12, app bank tự điền tiền);
  * không có amount → QR tĩnh (point 11).
  * Note được tự sanitize về ASCII bên trong nên luôn an toàn độ dài byte.
@@ -119,7 +123,7 @@ export function validateVietQRInput(input: VietQRInput): void {
  */
 export function buildVietQRPayload(input: VietQRInput): string {
   validateVietQRInput(input);
-  const beneficiary = input.bankBin + input.accountNumber;
+  const beneficiary = tlv('00', input.bankBin) + tlv('01', input.accountNumber);
   const merchantInfo =
     tlv('00', 'A000000727') + tlv('01', beneficiary) + tlv('02', 'QRIBFTTA');
   const hasAmount = !!input.amount && input.amount > 0;
@@ -127,7 +131,6 @@ export function buildVietQRPayload(input: VietQRInput): string {
     tlv('00', '01') +
     tlv('01', hasAmount ? '12' : '11') +
     tlv('38', merchantInfo) +
-    tlv('52', '0000') +
     tlv('53', '704');
   if (hasAmount) {
     payload += tlv('54', String(Math.round(input.amount as number)));

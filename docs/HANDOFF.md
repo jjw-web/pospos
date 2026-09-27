@@ -1101,3 +1101,23 @@ Báo cáo `BAO-CAO-QR-PLAN.md` (Desktop) được quản lý + reviewer duyệt 
 1. QUÉT THẬT bằng app MB + 1 bank khác (QR 1.000đ, nội dung BONG CA PHE T3) trước khi build IPA
 2. STK 7 QR còn lại: gửi list hoặc nhập trong tab Cash
 3. Xác nhận → build IPA mới (`cap sync` → archive → Sideloadly) + quyết định push main (Vercel auto-deploy)
+
+---
+
+## [2026-09-27] — opencode — FIX QR Cash bị bank báo sai định dạng
+### Vấn đề
+Quản lý tạo thử QR tab Cash, app ngân hàng báo "không đúng định dạng của nhà cung cấp".
+### Nguyên nhân (đã đối chiếu từng byte với QR chuẩn)
+Tải QR chuẩn từ `img.vietqr.io` (MB 6126488888, 85000đ) → decode bằng jimp+jsqr được payload gốc:
+`00020101021238540010A0000007270124000697042201106126488888...`
+Phát hiện 2 chỗ sai trong `buildVietQRPayload`:
+1. Subtag 01 của tag 38 PHẢI lồng 2 cấp (`00`=BIN, `01`=STK: `0124 0006970422 01106126488888`) — mình để phẳng (`0116970422...`).
+2. QR chuẩn KHÔNG có field 52 (MCC) — mình thêm `52040000` thừa.
+### Fix
+`src/lib/vietqr.ts`: beneficiary lồng TLV 2 cấp + bỏ field 52 + ghi chú đối chiếu vào JSDoc.
+### Verify
+- Payload app sinh ra **BYTE-EQUAL 100%** với QR chuẩn VietQR (kể cả CRC `C1D2`) — cùng input MB/85000/BONGCAPHET3
+- Roundtrip: vẽ bằng lib qrcode → decode ngược → khớp payload PASS
+- tsc 0 errors, eslint 0 errors, vite build OK
+### Còn lại
+Quản lý quét thử lại bằng app ngân hàng. Pass → build IPA + push main.
