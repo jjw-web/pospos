@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { TableAreaStats } from '../src/types';
-import QRCodeModal from './QRCodeModal';
 
 interface ViewSelectionViewProps {
   onSelect: (view: 'inside' | 'outside' | 'menu') => void;
   onBack: () => void;
   onHistory: () => void;
+  onQR: () => void;
   insideStats: TableAreaStats;
   outsideStats: TableAreaStats;
 }
@@ -14,10 +14,10 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
   onSelect,
   onBack,
   onHistory,
+  onQR,
   insideStats,
   outsideStats,
 }) => {
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const areaHintStyle: React.CSSProperties = {
     fontSize: '14px',
@@ -211,7 +211,7 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
           <button
             type="button"
             style={qrButtonStyle}
-            onClick={() => setIsQRModalOpen(true)}
+            onClick={onQR}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
               e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.15)';
@@ -243,7 +243,6 @@ const ViewSelectionView: React.FC<ViewSelectionViewProps> = ({
           </button>
         </div>
       </div>
-      <QRCodeModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} />
     </div>
   );
 };

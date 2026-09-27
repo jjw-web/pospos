@@ -25,11 +25,6 @@ type DefaultQRAccount = (typeof QR_ACCOUNTS)[number] & {
 type Tab = 'pics' | 'cash';
 type CashScreen = 'form' | 'confirm' | 'result';
 
-interface QRCodeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 interface CashResult {
   dataUrl: string;
   bankBin: string;
@@ -45,7 +40,11 @@ interface CashPending {
   note: string;
 }
 
-const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
+/**
+ * Nội dung 2 tab Pics/Cash — dùng trong màn hình QRView.
+ * Không còn overlay modal: màn hình cha (QRView) lo header + nút quay lại.
+ */
+const QRPanel: React.FC = () => {
   const [tab, setTab] = useState<Tab>('pics');
   const [selectedQR, setSelectedQR] = useState<QRAccount | null>(null);
   const [showAddPopup, setShowAddPopup] = useState(false);
@@ -85,19 +84,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
     () => [...visibleDefaults, ...qr.customQRs],
     [visibleDefaults, qr.customQRs]
   );
-
-  if (!isOpen) return null;
-
-  const handleClose = () => {
-    setSelectedQR(null);
-    setShowAddPopup(false);
-    setPendingDelete(null);
-    setCashScreen('form');
-    setCashError(null);
-    setCashPending(null);
-    setCashResult(null);
-    onClose();
-  };
 
   const switchTab = (t: Tab) => {
     setTab(t);
@@ -206,120 +192,30 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
   const bankLabel = (bin: string) => getBankShortName(bin) ?? bin;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px',
-        backdropFilter: 'blur(4px)',
-      }}
-      onClick={handleClose}
-    >
-      <div
-        style={{
-          backgroundColor: 'var(--bg-surface)',
-          borderRadius: '24px',
-          width: '100%',
-          maxWidth: '500px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          padding: '24px',
-          position: 'relative',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-          transition: 'all 0.3s ease',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {selectedQR && tab === 'pics' && (
-              <button
-                onClick={() => setSelectedQR(null)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)',
-                  fontSize: '20px',
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  opacity: 0,
-                  pointerEvents: 'auto',
-                }}
-              >
-                ←
-              </button>
-            )}
-            <h2
+    <>
+      {!selectedQR && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          {(['pics', 'cash'] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => switchTab(t)}
               style={{
-                margin: 0,
+                flex: 1,
+                padding: '10px',
+                borderRadius: '12px',
+                border: '1px solid var(--border)',
+                backgroundColor: tab === t ? 'var(--border)' : 'transparent',
                 color: 'var(--text-main)',
-                fontSize: '20px',
+                fontSize: '15px',
                 fontWeight: 700,
+                cursor: 'pointer',
               }}
             >
-              {selectedQR ? 'Chi tiết mã QR' : 'Mã QR'}
-            </h2>
-          </div>
-          <button
-            onClick={handleClose}
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '36px',
-              height: '36px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-              fontSize: '18px',
-            }}
-          >
-            ✕
-          </button>
+              {t === 'pics' ? '🖼️ Pics' : '💸 Cash'}
+            </button>
+          ))}
         </div>
-
-        {!selectedQR && (
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-            {(['pics', 'cash'] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => switchTab(t)}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border)',
-                  backgroundColor: tab === t ? 'var(--border)' : 'transparent',
-                  color: 'var(--text-main)',
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {t === 'pics' ? '🖼️ Pics' : '💸 Cash'}
-              </button>
-            ))}
-          </div>
-        )}
+      )}
 
         {tab === 'pics' ? (
           <PicsTab
@@ -358,7 +254,6 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
             bankLabel={bankLabel}
           />
         )}
-      </div>
 
       {showAddPopup && (
         <AddQRPopup
@@ -379,7 +274,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
           onCancel={() => setPendingDelete(null)}
         />
       )}
-    </div>
+    </>
   );
 };
 
@@ -1011,4 +906,4 @@ const ConfirmRow: React.FC<{ label: string; value: string; mono?: boolean; highl
   </div>
 );
 
-export default QRCodeModal;
+export default QRPanel;

@@ -1133,3 +1133,22 @@ Danh sách bank trong tab Cash phải giống vietqr.io (lúc trước chỉ 10 
 - Lưu ý: shortName MB theo VietQR là `MBBank` (trước mình ghi `MB`) — lịch sử STK hiển thị `MBBank • •••8888`.
 ### Verify
 65 banks, BIN duy nhất, payload MB byte-equal chuẩn, tsc/eslint/build OK.
+
+---
+
+## [2026-09-27] — opencode — Chuyển QR popup → màn hình riêng QRView [ĐÃ DUYỆT]
+### Yêu cầu
+Modal QR popup đã chật (2 tab + form + lịch sử + QR to); chuyển sang window/màn hình riêng cho QR to dễ quét.
+**Lưu ý của quản lý: CHƯA build IPA khi chưa cho phép — ca này chỉ code + commit, không build IPA, không push.**
+### Thực hiện
+- `git mv components/QRCodeModal.tsx → components/QRPanel.tsx`: gỡ toàn bộ overlay modal (fixed backdrop, card 500px, nút ✕, isOpen/onClose), giữ nguyên 100% logic Pics/Cash + AddQRPopup + ConfirmDialog
+- `components/QRView.tsx` (MỚI): màn hình kiểu HistoryView (header cố định + ← quay lại + maxWidth 480px + safe-area), lazy-load như History/Menu/DailySummary
+- `src/types/index.ts`: AppScreen + `'qr'`
+- `App.tsx`: valid screens + `'qr'`, case render `QRView`, swipe-back `qr → viewSelection`, cả 2 chỗ dùng ViewSelectionView truyền `onQR`
+- `components/ViewSelectionView.tsx`: bỏ modal state + import QRCodeModal, nút QR Code gọi `onQR`
+### Verify
+- tsc 0 errors, eslint 0 errors, vite build OK (QRView-452c1243.js tách chunk riêng, main 207.42 kB)
+- Không còn import QRCodeModal trong code (chỉ 1 dòng comment trong QRView)
+- Dev server HTTP 200
+### Chưa làm (chờ lệnh)
+Quét thử QR Cash thật → push main → build IPA mới.

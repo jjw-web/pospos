@@ -15,6 +15,7 @@ import ViewSelectionView from './components/ViewSelectionView';
 
 const HistoryView = lazy(() => import('./components/HistoryView'));
 const MenuView = lazy(() => import('./components/MenuView'));
+const QRView = lazy(() => import('./components/QRView'));
 const DailySummaryView = lazy(() => import('./components/DailySummaryView'));
 
 const LoadingScreen: React.FC = () => (
@@ -61,6 +62,7 @@ function loadScreenSync(): AppScreen {
       'order',
       'history',
       'menu',
+      'qr',
       'dailySummary',
     ];
     if (saved && valid.includes(saved as AppScreen)) {
@@ -172,6 +174,7 @@ const App: React.FC = () => {
       case 'outside':
       case 'history':
       case 'menu':
+      case 'qr':
       case 'dailySummary':
         setCurrentScreen('viewSelection');
         break;
@@ -200,6 +203,7 @@ const App: React.FC = () => {
             onSelect={(view) => setCurrentScreen(view as AppScreen)}
             onBack={() => setCurrentScreen('start')}
             onHistory={() => setCurrentScreen('history')}
+            onQR={() => setCurrentScreen('qr')}
             insideStats={insideStats}
             outsideStats={outsideStats}
           />
@@ -230,6 +234,7 @@ const App: React.FC = () => {
               onSelect={(view) => setCurrentScreen(view as AppScreen)}
               onBack={() => setCurrentScreen('start')}
               onHistory={() => setCurrentScreen('history')}
+              onQR={() => setCurrentScreen('qr')}
               insideStats={insideStats}
               outsideStats={outsideStats}
             />
@@ -277,6 +282,9 @@ const App: React.FC = () => {
             onUpdateMenuCategories={menuManager.updateMenuCategories}
           />
         );
+
+      case 'qr':
+        return <QRView onBack={() => setCurrentScreen('viewSelection')} />;
 
       case 'dailySummary':
         return (
