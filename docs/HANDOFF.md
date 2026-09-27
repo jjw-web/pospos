@@ -1226,3 +1226,17 @@ Màn QR thanh toán đọc cứng `QR_ACCOUNTS` → QR tự thêm chỉ hiện �
 tsc 0 errors, eslint 0 errors, vite build OK.
 ### Chưa làm (chờ lệnh)
 Test tay: thêm QR → vào thanh toán thấy ngay → push main → build IPA.
+
+---
+
+## [2026-09-27] — opencode — PUSH MAIN + BUILD IPA LẦN 2 [QUẢN LÝ DUYỆT]
+### Push
+`git push origin main`: 2f3716b..a01cff5 OK (Vercel auto-deploy).
+Bao gồm từ sau IPA lần 1: QR tự thêm hiện ở thanh toán, auto-scan jsQR + tên `QR + chủ TK + bank`, Xuất/Nhập JSON, 65 bank, màn QR riêng, QR +tiền, MB ảnh mới.
+### Build IPA
+- `npm run build` OK → `cap sync` OK → archive Release unsigned: SUCCEEDED
+- `BongCafePOS-v2.13.1-unsigned.ipa` (6.7 MB), copy đè ra Desktop
+- Verify: 0 __MACOSX, capacitor.config 0 "server" (offline OK), có public/index.html
+- Version giữ 2.13.1 (không bump)
+### Cài đặt
+Sideloadly đè lên app cũ. Cache icon cũ → xóa app cũ, cài lại.
