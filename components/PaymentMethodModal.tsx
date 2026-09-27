@@ -162,22 +162,41 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     await copyTextToClipboard(text);
 
     try {
-      const response = await fetch(encodeURI(account.path));
-      if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-
-      const blob = await response.blob();
+      // Logic mới: share QR ĐỘNG kèm tổng tiền (không còn share ảnh tĩnh).
+      // TK nào chưa gắn BIN/STK thì fallback ảnh tĩnh như cũ.
+      let blob: Blob;
+      if (account.bankBin && account.accountNumber) {
+        const payload = buildVietQRPayload({
+          bankBin: account.bankBin,
+          accountNumber: account.accountNumber,
+          amount: total,
+          note: '',
+        });
+        const dataUrl = await QRCode.toDataURL(payload, {
+          width: 640,
+          margin: 2,
+          errorCorrectionLevel: 'M',
+        });
+        const res = await fetch(dataUrl);
+        if (!res.ok) throw new Error(`QR fetch failed: ${res.status}`);
+        blob = await res.blob();
+      } else {
+        const response = await fetch(encodeURI(account.path));
+        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+        blob = await response.blob();
+      }
       const file = new File([blob], 'qr_payment.png', { type: blob.type }); // dùng đúng type
 
       if ('canShare' in navigator && navigator.canShare({ files: [file] })) {
         await navigator.share({ title: 'Hóa đơn Bống Cà Phê', text, files: [file] });
-        showHint('✅ Đã chia sẻ hóa đơn kèm QR');
+        showHint('Đã chia sẻ hóa đơn kèm QR kèm tiền');
         return;
       }
     } catch (err) {
       console.error('Share QR error:', err);
     }
 
-    showHint('📋 Đã copy hóa đơn — tải ảnh QR về để gửi kèm');
+    showHint('Đã copy hóa đơn — tải ảnh QR về để gửi kèm');
   };
 
   const handleCloseModal = () => {
