@@ -274,10 +274,11 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               {(QR_ACCOUNTS as QRAccount[]).map((account) => (
                 <div key={account.name} style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    style={{ ...btnBase, flex: 1, textAlign: 'left' }}
+                    style={{ ...btnBase, flex: 1, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '4px' }}
                     onClick={() => handleShareWithQR(account)}
                   >
-                    📤 {account.name.replace('QR ', '')}
+                    <span style={{ fontSize: '20px', lineHeight: 1 }}>📤</span>
+                    <span>{account.name.replace('QR ', '')}</span>
                   </button>
                   <button
                     style={{ ...btnBase, width: 'auto', padding: '14px 16px', fontSize: '20px' }}
