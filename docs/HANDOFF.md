@@ -1061,3 +1061,19 @@ Quản lý gửi `/Users/jjw1_o/Downloads/AppIcons (2).zip`, yêu thay icon cho 
 index.html, public/icon-*.png, ios/.../AppIcon.appiconset/ (đã commit+push 22b65d0). File .ipa untracked, không commit. docs/HANDOFF.md — entry này.
 ### Lưu ý cho quản lý
 Cài IPA mới qua Sideloadly. Nếu vẫn thấy icon cũ: xóa app cũ khỏi máy trước rồi cài lại (iOS cache icon SpringBoard), không cài đè.
+
+---
+
+## [2026-09-27] — opencode — Thêm QR Nguyen Viet Hung MB
+### Yêu cầu
+Quản lý gửi `/Users/jjw1_o/Downloads/IMG_9566.JPG` (QR VietQR MB, NGUYEN VIET HUNG 6126488888), yêu thêm vào mục QR code.
+### Thực hiện
+- Copy → `public/QR code/QR Nguyen Viet Hung MB.png` (344 KB).
+- `constants.ts`: thêm entry `{ name: 'QR Nguyen Viet Hung MB', method: 'JJW' }` (map JJW vì PaymentMethod hiện chỉ có Cash/BIDV/JJW; QR này chỉ dùng xem trong QRCodeModal, không ảnh hưởng flow thu tiền).
+- Verify: tsc 0 errors, eslint 0 errors, vite build OK, `dist/QR code/` có file mới.
+### Files đã thay đổi
+`public/QR code/QR Nguyen Viet Hung MB.png` (mới), `constants.ts` (+5 dòng). Commit a69029e, CHƯA push — chờ quản lý xác nhận.
+### Trả lời câu hỏi của quản lý: IPA có cần cài lại không?
+- Web (Vercel): chỉ cần push main là tự có QR mới, không cần làm gì thêm.
+- IPA (iPhone): CÓ cần build lại + cài lại, vì ảnh trong `public/` được đóng gói vào IPA lúc build. IPA cũ trên máy không tự có ảnh mới.
+- IPA mới chưa build trong ca này — quản lý xác nhận thì build (`npm run build` → `npx cap sync ios` → archive → đóng IPA mới).
