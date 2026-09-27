@@ -114,12 +114,13 @@ export function sanitizeVietQRNote(note: string): string {
 }
 
 /**
- * Chỉ giữ lại chữ số (cho ô nhập STK — paste thoải mái, tự lọc).
+ * Chỉ giữ lại chữ + số (cho ô nhập STK — paste thoải mái, tự lọc).
+ * Giữ chữ vì có mã merchant dạng alias (vd `V1THKD0109244`).
  * @param raw - Chuỗi user nhập/paste
- * @returns Chỉ các ký tự 0-9
+ * @returns Chuỗi uppercase tối đa 25 ký tự
  */
 export function sanitizeAccountNumber(raw: string): string {
-  return raw.replace(/[^0-9]/g, '').slice(0, 19);
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 25);
 }
 
 function tlv(id: string, value: string): string {
@@ -146,14 +147,16 @@ export function crc16(str: string): string {
 /**
  * Kiểm tra input trước khi dựng payload. Ném Error message tiếng Việt
  * để UI hiện trực tiếp cho nhân viên.
+ * STK cho phép chữ + số vì có mã merchant dạng alias
+ * (vd BIDV `V1THKD0109244`) — VietQR chuẩn vẫn nhận.
  * @param input - Thông tin tài khoản + số tiền + nội dung
  */
 export function validateVietQRInput(input: VietQRInput): void {
   if (!/^[0-9]{6}$/.test(input.bankBin)) {
     throw new Error('Chưa chọn ngân hàng.');
   }
-  if (!/^[0-9]{6,19}$/.test(input.accountNumber)) {
-    throw new Error('Số tài khoản phải từ 6–19 chữ số.');
+  if (!/^[A-Z0-9]{6,25}$/i.test(input.accountNumber)) {
+    throw new Error('Số tài khoản phải từ 6–25 ký tự (số hoặc mã merchant).');
   }
   if (input.amount !== undefined) {
     if (!Number.isFinite(input.amount) || input.amount <= 0) {

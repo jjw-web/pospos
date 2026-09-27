@@ -1152,3 +1152,19 @@ Modal QR popup đã chật (2 tab + form + lịch sử + QR to); chuyển sang w
 - Dev server HTTP 200
 ### Chưa làm (chờ lệnh)
 Quét thử QR Cash thật → push main → build IPA mới.
+
+---
+
+## [2026-09-27] — opencode — QR +tiền trong màn thanh toán [ĐÃ CODE]
+### Yêu cầu
+Danh sách STK đã đủ (quét từ ảnh), rebuild logic khi bấm QR Thanh toán: tự tạo QR kèm tổng tiền, nội dung để trống.
+### Thực hiện
+- `constants.ts`: gắn BIN/STK/tên chủ TK cho 7 QR còn lại (Tech x4, VCB x2, BIDV merchant V1THKD0109244)
+- `src/lib/vietqr.ts`: validate STK cho phép chữ+số (`/^[A-Z0-9]{6,25}$/i`); `sanitizeAccountNumber` giữ chữ + uppercase + max 25
+- `components/QRPanel.tsx`: ô STK maxLength 19→25, inputMode text (hỗ trợ mã merchant)
+- `components/PaymentMethodModal.tsx`: mỗi dòng QR thêm nút **"QR +tiền"** (hiện khi TK có BIN/STK) → màn xác nhận (bank + STK + chủ TK + tổng tiền) → vẽ offline → fullscreen QR to + tổng tiền + bank/STK. Giữ nguyên share/xem ảnh/✅ xác nhận. WakeLock áp dụng cả QR động.
+### Verify
+- TLV 8/8 PASS (nested BIN/STK đúng, CRC tự nhất quán, point 12, không field 62 vì note trống)
+- tsc 0 errors, eslint 0 errors, vite build OK, dev server HTTP 200
+### Còn lại cho quản lý
+Vào bàn → gọi món → Thanh toán → QR Thanh toán → bấm "QR +tiền" → xác nhận → **quét thật bằng app ngân hàng** (hiện đúng tổng tiền). Pass → push main + build IPA.

@@ -917,8 +917,8 @@ const CashTab: React.FC<CashTabProps> = (props) => {
           value={accountNumber}
           onChange={(e) => props.onStkChange(e.target.value)}
           placeholder="Nhập hoặc dán STK"
-          inputMode="numeric"
-          maxLength={19}
+          inputMode="text"
+          maxLength={25}
           style={cashInputStyle}
         />
       </div>
