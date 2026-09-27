@@ -1077,3 +1077,27 @@ Quản lý gửi `/Users/jjw1_o/Downloads/IMG_9566.JPG` (QR VietQR MB, NGUYEN VI
 - Web (Vercel): chỉ cần push main là tự có QR mới, không cần làm gì thêm.
 - IPA (iPhone): CÓ cần build lại + cài lại, vì ảnh trong `public/` được đóng gói vào IPA lúc build. IPA cũ trên máy không tự có ảnh mới.
 - IPA mới chưa build trong ca này — quản lý xác nhận thì build (`npm run build` → `npx cap sync ios` → archive → đóng IPA mới).
+
+---
+
+## [2026-09-27] — opencode — QR 2 tab (Pics + Cash) + lib qrcode [ĐÃ DUYỆT, ĐÃ CODE]
+### Phê duyệt
+Báo cáo `BAO-CAO-QR-PLAN.md` (Desktop) được quản lý + reviewer duyệt PASSED, cho phép `npm i qrcode`.
+### Thực hiện
+- `npm i qrcode @types/qrcode` (package.json + package-lock.json)
+- `src/lib/vietqr.ts` (MỚI): buildVietQRPayload EMVCo/NAPAS, CRC16-CCITT, sanitizeVietQRNote (ASCII trước tlv — theo phản biện reviewer), validate tiếng Việt, VIETQR_BANKS 10 bank
+- `src/lib/image-utils.ts` (MỚI): compressImageFile (max 1000px JPEG 0.85, nền trắng) + isValidImageUrl
+- `src/types/index.ts`: + QRAccount, TransferHistoryItem
+- `src/lib/db.ts`: + CUSTOM_QR, HIDDEN_DEFAULT_QR, TRANSFER_HISTORY (keys mới, không đổi key cũ)
+- `src/lib/safe-storage.ts`: + isQRAccountArray, isStringArray, isTransferHistoryArray
+- `src/hooks/useQRManager.ts` (MỚI): customQRs + hiddenDefaults + transferHistory (tối đa 20), pattern useMenuManager
+- `constants.ts`: QR MB gắn bankBin 970422 / 6126488888 / NGUYEN VIET HUNG
+- `components/QRCodeModal.tsx` (rewrite): tab Pics (list gộp + popup ＋ tên/ảnh/link + 🗑 + ConfirmDialog + khôi phục) + tab Cash (bank/STK/tiền/nội dung → xác nhận → QR offline 640px) + nút "Tạo QR tiền" khi QR có STK
+- `PaymentMethodModal.tsx`: KHÔNG đụng (đúng phạm vi)
+### Verify
+- node test vietqr: 12/12 PASS (CRC vector 29B1, payload MB 85000 đúng BIN/STK/54, CRC tự nhất quán, sanitize "Cà phê bàn 3 @#$"→"CA PHE BAN 3", QR tĩnh point 11, validate lỗi TV, render qrcode dataURL 6414 chars)
+- tsc 0 errors, eslint 0 errors, vite build OK, dev server HTTP 200
+### Còn lại cho quản lý
+1. QUÉT THẬT bằng app MB + 1 bank khác (QR 1.000đ, nội dung BONG CA PHE T3) trước khi build IPA
+2. STK 7 QR còn lại: gửi list hoặc nhập trong tab Cash
+3. Xác nhận → build IPA mới (`cap sync` → archive → Sideloadly) + quyết định push main (Vercel auto-deploy)

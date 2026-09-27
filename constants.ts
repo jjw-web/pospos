@@ -35,6 +35,9 @@ export const QR_ACCOUNTS = [
     name: 'QR Nguyen Viet Hung MB',
     path: '/QR code/QR Nguyen Viet Hung MB.png',
     method: 'JJW' as const,
+    bankBin: '970422',
+    accountNumber: '6126488888',
+    accountName: 'NGUYEN VIET HUNG',
   },
   {
     name: 'QR HKD Bong Tingee BIDV',

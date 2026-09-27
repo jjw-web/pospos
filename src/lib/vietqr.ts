@@ -1,0 +1,142 @@
+import { normalizeVietnamese } from './string-utils';
+
+export interface VietQRInput {
+  bankBin: string;
+  accountNumber: string;
+  amount?: number;
+  note?: string;
+}
+
+export interface BankInfo {
+  bin: string;
+  shortName: string;
+  fullName: string;
+}
+
+/**
+ * Danh sách ngân hàng phổ biến (BIN 6 số theo NAPAS).
+ * Dùng cho dropdown tab Cash — user chọn bank thay vì nhớ mã số.
+ */
+export const VIETQR_BANKS: BankInfo[] = [
+  { bin: '970422', shortName: 'MB', fullName: 'Ngân hàng Quân Đội (MB)' },
+  { bin: '970436', shortName: 'VCB', fullName: 'Vietcombank (VCB)' },
+  { bin: '970407', shortName: 'Techcombank', fullName: 'Techcombank' },
+  { bin: '970418', shortName: 'BIDV', fullName: 'BIDV' },
+  { bin: '970415', shortName: 'VietinBank', fullName: 'VietinBank' },
+  { bin: '970405', shortName: 'Agribank', fullName: 'Agribank' },
+  { bin: '970416', shortName: 'ACB', fullName: 'ACB' },
+  { bin: '970432', shortName: 'VPBank', fullName: 'VPBank' },
+  { bin: '970423', shortName: 'TPBank', fullName: 'TPBank' },
+  { bin: '970403', shortName: 'Sacombank', fullName: 'Sacombank' },
+];
+
+/**
+ * Tra cứu tên ngân hàng từ BIN. Trả về shortName hoặc null nếu chưa biết.
+ * @param bin - Mã BIN 6 số
+ * @returns Tên viết tắt ngân hàng, hoặc null
+ */
+export function getBankShortName(bin: string): string | null {
+  const found = VIETQR_BANKS.find((b) => b.bin === bin);
+  return found ? found.shortName : null;
+}
+
+/**
+ * Chuẩn hóa nội dung chuyển khoản về ASCII an toàn cho payload VietQR.
+ * BẮT BUỘC chạy trước khi đưa vào tlv(): value.length đếm UTF-16,
+ * ký tự có dấu sẽ làm sai độ dài byte khiến app ngân hàng không đọc được.
+ * "Cà phê bàn 3 @#$" → "CA PHE BAN 3".
+ * @param note - Nội dung gốc do user nhập
+ * @returns Chuỗi ASCII uppercase, tối đa 50 ký tự
+ */
+export function sanitizeVietQRNote(note: string): string {
+  return normalizeVietnamese(note)
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ._-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 50);
+}
+
+/**
+ * Chỉ giữ lại chữ số (cho ô nhập STK — paste thoải mái, tự lọc).
+ * @param raw - Chuỗi user nhập/paste
+ * @returns Chỉ các ký tự 0-9
+ */
+export function sanitizeAccountNumber(raw: string): string {
+  return raw.replace(/[^0-9]/g, '').slice(0, 19);
+}
+
+function tlv(id: string, value: string): string {
+  return id + String(value.length).padStart(2, '0') + value;
+}
+
+/**
+ * CRC16-CCITT (poly 0x1021, init 0xFFFF) — checksum field 63 chuẩn EMVCo.
+ * @param str - Chuỗi ASCII cần tính checksum
+ * @returns 4 ký tự hex uppercase, vd '29B1'
+ */
+export function crc16(str: string): string {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
+      crc &= 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+/**
+ * Kiểm tra input trước khi dựng payload. Ném Error message tiếng Việt
+ * để UI hiện trực tiếp cho nhân viên.
+ * @param input - Thông tin tài khoản + số tiền + nội dung
+ */
+export function validateVietQRInput(input: VietQRInput): void {
+  if (!/^[0-9]{6}$/.test(input.bankBin)) {
+    throw new Error('Chưa chọn ngân hàng.');
+  }
+  if (!/^[0-9]{6,19}$/.test(input.accountNumber)) {
+    throw new Error('Số tài khoản phải từ 6–19 chữ số.');
+  }
+  if (input.amount !== undefined) {
+    if (!Number.isFinite(input.amount) || input.amount <= 0) {
+      throw new Error('Số tiền phải lớn hơn 0.');
+    }
+    if (Math.round(input.amount) > 999999999999) {
+      throw new Error('Số tiền quá lớn.');
+    }
+  }
+}
+
+/**
+ * Dựng payload text VietQR theo chuẩn EMVCo/NAPAS.
+ * Có amount > 0 → QR động (point 12, app bank tự điền tiền);
+ * không có amount → QR tĩnh (point 11).
+ * Note được tự sanitize về ASCII bên trong nên luôn an toàn độ dài byte.
+ * @param input - Bank BIN + STK + số tiền + nội dung
+ * @returns Chuỗi payload sẵn sàng đưa vào lib qrcode để vẽ
+ */
+export function buildVietQRPayload(input: VietQRInput): string {
+  validateVietQRInput(input);
+  const beneficiary = input.bankBin + input.accountNumber;
+  const merchantInfo =
+    tlv('00', 'A000000727') + tlv('01', beneficiary) + tlv('02', 'QRIBFTTA');
+  const hasAmount = !!input.amount && input.amount > 0;
+  let payload =
+    tlv('00', '01') +
+    tlv('01', hasAmount ? '12' : '11') +
+    tlv('38', merchantInfo) +
+    tlv('52', '0000') +
+    tlv('53', '704');
+  if (hasAmount) {
+    payload += tlv('54', String(Math.round(input.amount as number)));
+  }
+  payload += tlv('58', 'VN');
+  const note = sanitizeVietQRNote(input.note ?? '');
+  if (note) {
+    payload += tlv('62', tlv('08', note));
+  }
+  payload += '6304';
+  return payload + crc16(payload);
+}

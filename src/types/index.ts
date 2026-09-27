@@ -76,3 +76,21 @@ export interface PendingMenuLog {
   price: number;
   updatedAt: string;
 }
+
+export interface QRAccount {
+  id: string;
+  name: string;
+  path: string;
+  isCustom: boolean;
+  bankBin?: string;
+  accountNumber?: string;
+  accountName?: string;
+}
+
+export interface TransferHistoryItem {
+  bankBin: string;
+  accountNumber: string;
+  accountName?: string;
+  label?: string;
+  lastUsed: string;
+}

@@ -1,4 +1,4 @@
-import type { Bill, MenuCategory, TableData } from '../types';
+import type { Bill, MenuCategory, QRAccount, TableData, TransferHistoryItem } from '../types';
 
 import { db } from './db';
 
@@ -76,6 +76,46 @@ export function isMenuCategoryArray(value: unknown): value is MenuCategory[] {
         cat !== null &&
         typeof (cat as MenuCategory).name === 'string' &&
         Array.isArray((cat as MenuCategory).items)
+    )
+  );
+}
+
+/**
+ * Type guard cho QR tự thêm của tab Pics.
+ */
+export function isQRAccountArray(value: unknown): value is QRAccount[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (qr) =>
+        typeof qr === 'object' &&
+        qr !== null &&
+        typeof (qr as QRAccount).id === 'string' &&
+        typeof (qr as QRAccount).name === 'string' &&
+        typeof (qr as QRAccount).path === 'string'
+    )
+  );
+}
+
+/**
+ * Type guard cho tên QR mặc định bị ẩn (mảng string).
+ */
+export function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string');
+}
+
+/**
+ * Type guard cho lịch sử STK tab Cash.
+ */
+export function isTransferHistoryArray(value: unknown): value is TransferHistoryItem[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (h) =>
+        typeof h === 'object' &&
+        h !== null &&
+        typeof (h as TransferHistoryItem).bankBin === 'string' &&
+        typeof (h as TransferHistoryItem).accountNumber === 'string'
     )
   );
 }
