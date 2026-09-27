@@ -17,7 +17,7 @@ const QRView: React.FC<QRViewProps> = ({ onBack }) => {
         maxWidth: '480px',
         margin: '0 auto',
         padding: '0 15px',
-        paddingTop: 'calc(52px + env(safe-area-inset-top, 0px))',
+        paddingTop: 'calc(84px + env(safe-area-inset-top, 0px))',
         paddingBottom: '100px',
         height: '100dvh',
         overflowY: 'auto',
