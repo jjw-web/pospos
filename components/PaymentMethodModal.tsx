@@ -227,7 +227,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
       <div style={overlayStyle} onClick={handleCloseModal}>
         <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
           <h2 style={titleStyle}>
-            {screen === 'qrList' ? '🏦 Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
+            {screen === 'qrList' ? 'Chọn tài khoản' : '💳 Chọn phương thức thanh toán'}
           </h2>
           <div style={totalStyle}>Tổng cộng: {total.toLocaleString()}đ</div>
 
