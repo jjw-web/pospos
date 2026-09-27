@@ -11,6 +11,8 @@ import {
   sanitizeVietQRNote,
 } from '../src/lib/vietqr';
 import { compressImageFile, isValidImageUrl } from '../src/lib/image-utils';
+import { copyTextToClipboard } from '../src/lib/receipt';
+import type { ImportQRResult } from '../src/hooks/useQRManager';
 import {
   buildAutoQRName,
   detectAccountFromDataUrl,
@@ -227,6 +229,7 @@ const QRPanel: React.FC = () => {
         {tab === 'pics' ? (
           <PicsTab
             list={picsList}
+            customQRs={qr.customQRs}
             hasHidden={qr.hiddenDefaults.length > 0}
             selectedQR={selectedQR}
             onSelect={setSelectedQR}
@@ -235,6 +238,7 @@ const QRPanel: React.FC = () => {
             onDelete={setPendingDelete}
             onRestore={qr.restoreDefaults}
             onUseForCash={fillCashFromAccount}
+            onImportQRs={qr.importCustomQRs}
           />
         ) : (
           <CashTab
@@ -289,6 +293,7 @@ const QRPanel: React.FC = () => {
 
 interface PicsTabProps {
   list: QRAccount[];
+  customQRs: QRAccount[];
   hasHidden: boolean;
   selectedQR: QRAccount | null;
   onSelect: (qr: QRAccount) => void;
@@ -297,6 +302,7 @@ interface PicsTabProps {
   onDelete: (qr: QRAccount) => void;
   onRestore: () => void;
   onUseForCash: (qr: QRAccount) => void;
+  onImportQRs: (jsonText: string) => ImportQRResult;
 }
 
 const picsRowStyle: React.CSSProperties = {
@@ -318,6 +324,7 @@ const picsRowStyle: React.CSSProperties = {
 
 const PicsTab: React.FC<PicsTabProps> = ({
   list,
+  customQRs,
   hasHidden,
   selectedQR,
   onSelect,
@@ -326,7 +333,9 @@ const PicsTab: React.FC<PicsTabProps> = ({
   onDelete,
   onRestore,
   onUseForCash,
+  onImportQRs,
 }) => {
+  const [ioMode, setIoMode] = useState<null | 'export' | 'import'>(null);
   if (selectedQR) {
     return (
       <div style={{ textAlign: 'center' }}>
@@ -455,6 +464,158 @@ const PicsTab: React.FC<PicsTabProps> = ({
           Khôi phục QR mặc định
         </button>
       )}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={() => setIoMode('export')}
+          style={{
+            flex: 1, padding: '10px', borderRadius: '12px',
+            border: '1px solid var(--border)', backgroundColor: 'transparent',
+            color: 'var(--text-muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          Xuất JSON
+        </button>
+        <button
+          onClick={() => setIoMode('import')}
+          style={{
+            flex: 1, padding: '10px', borderRadius: '12px',
+            border: '1px solid var(--border)', backgroundColor: 'transparent',
+            color: 'var(--text-muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          Nhập JSON
+        </button>
+      </div>
+      {ioMode && (
+        <QRJsonPopup
+          mode={ioMode}
+          customQRs={customQRs}
+          onImport={onImportQRs}
+          onClose={() => setIoMode(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Popup Xuất/Nhập JSON QR ─────────────────────────────────────────────────
+// Xuất: copy JSON ảnh tự thêm để gửi máy khác / gửi về add vào bản IPA.
+// Nhập: dán JSON → validate → gộp vào list (bỏ trùng id/tên).
+interface QRJsonPopupProps {
+  mode: 'export' | 'import';
+  customQRs: QRAccount[];
+  onImport: (jsonText: string) => ImportQRResult;
+  onClose: () => void;
+}
+
+const QRJsonPopup: React.FC<QRJsonPopupProps> = ({ mode, customQRs, onImport, onClose }) => {
+  const [text, setText] = useState(mode === 'export' ? JSON.stringify(customQRs, null, 2) : '');
+  const [message, setMessage] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  const handleCopy = async () => {
+    const ok = await copyTextToClipboard(text);
+    setMessage(ok ? 'Đã sao chép — gửi đoạn này sang máy khác.' : 'Không sao chép được.');
+  };
+
+  const handleImport = () => {
+    const result = onImport(text);
+    if (result.error) {
+      setMessage(result.error);
+      return;
+    }
+    setMessage(`Đã thêm ${result.added} QR${result.skipped > 0 ? `, bỏ qua ${result.skipped} mục trùng` : ''}.`);
+    setDone(true);
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 2000, padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'var(--bg-surface)', borderRadius: '20px',
+          padding: '24px', width: '100%', maxWidth: '420px',
+          maxHeight: '85vh', overflowY: 'auto',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 style={{ margin: '0 0 16px', color: 'var(--text-main)', fontSize: '17px', fontWeight: 700 }}>
+          {mode === 'export' ? 'Xuất JSON QR' : 'Nhập JSON QR'}
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {mode === 'export' && customQRs.length === 0 && (
+            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)', textAlign: 'center' }}>
+              Chưa có ảnh QR tự thêm để xuất.
+            </p>
+          )}
+          {(mode === 'import' || customQRs.length > 0) && (
+            <textarea
+              value={text}
+              onChange={(e) => { setText(e.target.value); setMessage(null); setDone(false); }}
+              readOnly={mode === 'export'}
+              rows={8}
+              placeholder={mode === 'import' ? 'Dán đoạn JSON QR vào đây...' : undefined}
+              style={{
+                ...addInputStyle,
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                resize: 'vertical',
+              }}
+            />
+          )}
+          {message && (
+            <p style={{ margin: 0, fontSize: '13px', color: '#10b981', textAlign: 'center', fontWeight: 600 }}>
+              {message}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={onClose}
+              style={{
+                flex: 1, padding: '12px', borderRadius: '12px',
+                border: '1px solid var(--border)', backgroundColor: 'transparent',
+                color: 'var(--text-muted)', fontSize: '15px', fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              {done ? 'Xong' : 'Hủy'}
+            </button>
+            {mode === 'export' ? (
+              <button
+                onClick={handleCopy}
+                disabled={customQRs.length === 0}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
+                  backgroundColor: '#3b82f6', color: 'white',
+                  fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                  opacity: customQRs.length === 0 ? 0.5 : 1,
+                }}
+              >
+                Sao chép
+              </button>
+            ) : (
+              <button
+                onClick={handleImport}
+                disabled={done}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
+                  backgroundColor: '#10b981', color: 'white',
+                  fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                  opacity: done ? 0.5 : 1,
+                }}
+              >
+                Nhập
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

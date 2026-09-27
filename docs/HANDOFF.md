@@ -1198,3 +1198,18 @@ Thêm ảnh QR → app tự decode trên máy → điền sẵn tên `QR + bank 
 - tsc 0 errors, eslint 0 errors, vite build OK
 ### Chưa làm (chờ lệnh)
 Test tay thêm ảnh thật → push main → build IPA.
+
+---
+
+## [2026-09-27] — opencode — Xuất/Nhập JSON QR [ĐÃ CODE]
+### Yêu cầu (từ đề xuất)
+Đồng bộ QR tự thêm giữa các máy + gửi JSON về để bake vào constants.ts khi build IPA.
+Các phần còn lại trong đề xuất (parse TLV, auto-scan, tự đặt tên) app ĐÃ CÓ từ ca trước — không viết trùng.
+### Thực hiện
+- `src/hooks/useQRManager.ts`: + `importCustomQRs(jsonText)` (parse + validate shape + bỏ trùng id/tên, trả về added/skipped/error tiếng Việt) + type `ImportQRResult`
+- `components/QRPanel.tsx`: tab Pics thêm 2 nút **Xuất JSON / Nhập JSON** + popup `QRJsonPopup` (xuất: textarea readonly + Sao chép; nhập: dán + validate + báo đã thêm X, bỏ qua Y trùng)
+### Verify
+- Validate JSON: đúng shape PASS, chuỗi hỏng → null, sai shape → null
+- tsc 0 errors, eslint 0 errors, vite build OK
+### Chưa làm (chờ lệnh)
+Test tay xuất/nhập thật → push main → build IPA.
