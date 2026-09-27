@@ -32,6 +32,11 @@ export const QR_ACCOUNTS = [
     method: 'JJW' as const,
   },
   {
+    name: 'QR Nguyen Viet Hung MB',
+    path: '/QR code/QR Nguyen Viet Hung MB.png',
+    method: 'JJW' as const,
+  },
+  {
     name: 'QR HKD Bong Tingee BIDV',
     path: '/QR code/QR HKD Bong Tingee BIDV2.png',
     method: 'BIDV' as const,
