@@ -496,7 +496,7 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
       const found = await detectAccountFromDataUrl(dataUrl);
       setDetected(found);
       if (found) {
-        setName((prev) => (prev.trim() ? prev : buildAutoQRName(found.bankBin, found.accountNumber)));
+        setName((prev) => (prev.trim() ? prev : buildAutoQRName(found.bankBin)));
       }
     } finally {
       setDetecting(false);
@@ -580,7 +580,7 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Đặt tên (vd: QR Hùng VCB)"
+            placeholder="Tên chủ TK + bank (vd: QR HUNG MB)"
             maxLength={60}
             style={addInputStyle}
           />
@@ -639,7 +639,7 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
           )}
           {preview && !detecting && detected && (
             <p style={{ margin: 0, fontSize: '13px', color: '#10b981', textAlign: 'center', fontWeight: 600 }}>
-              Đã nhận diện: {getBankShortName(detected.bankBin) ?? detected.bankBin} • {detected.accountNumber} — tên tự điền, dùng được nút Tạo QR tiền
+              Đã nhận diện: {getBankShortName(detected.bankBin) ?? detected.bankBin} • {detected.accountNumber} — gõ thêm tên chủ TK rồi Lưu
             </p>
           )}
           {preview && !detecting && !detected && (

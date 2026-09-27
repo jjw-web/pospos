@@ -54,17 +54,16 @@ export function parseVietQRAccount(payload: string): DecodedQRAccount | null {
 }
 
 /**
- * Sinh tên gợi nhớ chuẩn: `QR + tên bank + 4 số cuối STK`.
- * Vd: `QR MBBank 8888`, `QR Vietcombank 8769`.
+ * Sinh tên gợi nhớ theo format sẵn có của app: `QR + tên chủ TK + bank`.
+ * Vd: `QR HUNG MB`, `QR ANH Tech`.
+ * Tên chủ TK KHÔNG nằm trong dữ liệu QR nên không tự đọc được offline —
+ * hàm này điền sẵn khung `QR ... + bank`, user chỉ gõ thêm tên vào giữa.
  * @param bankBin - Mã BIN 6 số
- * @param accountNumber - STK hoặc mã merchant
- * @returns Tên gợi nhớ
+ * @returns Khung tên, vd `QR  MBBank` (2 khoảng trắng chờ điền tên)
  */
-export function buildAutoQRName(bankBin: string, accountNumber: string): string {
+export function buildAutoQRName(bankBin: string): string {
   const bank = getBankShortName(bankBin) ?? bankBin;
-  const tail =
-    accountNumber.length > 4 ? accountNumber.slice(-4) : accountNumber;
-  return `QR ${bank} ${tail}`;
+  return `QR  ${bank}`;
 }
 
 function loadImage(dataUrl: string): Promise<HTMLImageElement> {
