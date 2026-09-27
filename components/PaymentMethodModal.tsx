@@ -274,7 +274,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
               {(QR_ACCOUNTS as QRAccount[]).map((account) => (
                 <div key={account.name} style={{ display: 'flex', gap: '8px' }}>
                   <button
-                    style={{ ...blueBtn, flex: 1, textAlign: 'left' }}
+                    style={{ ...btnBase, flex: 1, textAlign: 'left' }}
                     onClick={() => handleShareWithQR(account)}
                   >
                     📤 {account.name.replace('QR ', '')}
@@ -294,9 +294,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                         padding: '14px 12px',
                         fontSize: '14px',
                         fontWeight: 700,
-                        backgroundColor: '#d1fae5',
-                        borderColor: '#6ee7b7',
-                        color: '#065f46',
                         whiteSpace: 'nowrap',
                       }}
                       onClick={() => setPendingDynamic(account)}
@@ -311,8 +308,6 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                       width: 'auto',
                       padding: '14px 16px',
                       fontSize: '20px',
-                      backgroundColor: '#dcfce7',
-                      borderColor: '#86efac',
                     }}
                     onClick={() => {
                       if (account.method) {
