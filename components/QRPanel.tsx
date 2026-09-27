@@ -11,6 +11,12 @@ import {
   sanitizeVietQRNote,
 } from '../src/lib/vietqr';
 import { compressImageFile, isValidImageUrl } from '../src/lib/image-utils';
+import {
+  buildAutoQRName,
+  detectAccountFromDataUrl,
+  fetchImageAsDataUrl,
+  type DecodedQRAccount,
+} from '../src/lib/qr-decode';
 import { includesNormalized } from '../src/lib/string-utils';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -477,8 +483,25 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
   const [name, setName] = useState('');
   const [link, setLink] = useState('');
   const [preview, setPreview] = useState('');
+  const [detected, setDetected] = useState<DecodedQRAccount | null>(null);
+  const [detecting, setDetecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Tự decode QR → điền tên + giữ BIN/STK. Thất bại thì nhập tay như cũ.
+  const autoDetect = async (dataUrl: string) => {
+    setDetected(null);
+    setDetecting(true);
+    try {
+      const found = await detectAccountFromDataUrl(dataUrl);
+      setDetected(found);
+      if (found) {
+        setName((prev) => (prev.trim() ? prev : buildAutoQRName(found.bankBin, found.accountNumber)));
+      }
+    } finally {
+      setDetecting(false);
+    }
+  };
 
   const handlePickFile = async (file: File | undefined) => {
     if (!file) return;
@@ -490,15 +513,21 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
     }
     setPreview(dataUrl);
     setLink('');
+    void autoDetect(dataUrl);
   };
 
-  const handleUseLink = () => {
+  const handleUseLink = async () => {
     setError(null);
     if (!isValidImageUrl(link)) {
       setError('Link chưa đúng (phải bắt đầu http...).');
       return;
     }
-    setPreview(link.trim());
+    const cleanLink = link.trim();
+    setPreview(cleanLink);
+    const dataUrl = await fetchImageAsDataUrl(cleanLink);
+    if (dataUrl) {
+      void autoDetect(dataUrl);
+    }
   };
 
   const handleSave = () => {
@@ -521,6 +550,8 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
       name: cleanName,
       path: preview,
       isCustom: true,
+      bankBin: detected?.bankBin,
+      accountNumber: detected?.accountNumber,
     });
   };
 
@@ -600,6 +631,21 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
                 }}
               />
             </div>
+          )}
+          {preview && detecting && (
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>
+              Đang nhận diện QR...
+            </p>
+          )}
+          {preview && !detecting && detected && (
+            <p style={{ margin: 0, fontSize: '13px', color: '#10b981', textAlign: 'center', fontWeight: 600 }}>
+              Đã nhận diện: {getBankShortName(detected.bankBin) ?? detected.bankBin} • {detected.accountNumber} — tên tự điền, dùng được nút Tạo QR tiền
+            </p>
+          )}
+          {preview && !detecting && !detected && (
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>
+              Không đọc được mã QR — nhập tên tay, ảnh chỉ để xem
+            </p>
           )}
           {error && (
             <p style={{ margin: 0, fontSize: '13px', color: '#e74c3c', textAlign: 'center' }}>{error}</p>

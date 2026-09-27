@@ -1183,3 +1183,18 @@ Vào bàn → gọi món → Thanh toán → QR Thanh toán → bấm "QR +tiề
 QR 2 tab Pics/Cash (thêm/xóa ảnh, 65 bank, QR kèm tiền offline) + màn QR riêng + QR +tiền trong thanh toán + QR MB mới. Version giữ 2.13.1 (không bump).
 ### Hướng dẫn cài
 Cài đè qua Sideloadly. Nếu icon cũ còn cache: xóa app cũ rồi cài lại.
+
+---
+
+## [2026-09-27] — opencode — Tự động nhận diện QR khi thêm ảnh (jsQR) [ĐÃ CODE]
+### Ý tưởng (quản lý duyệt)
+Thêm ảnh QR → app tự decode trên máy → điền sẵn tên `QR + bank + 4 số cuối` + giữ BIN/STK để dùng nút Tạo QR tiền. Chỉ còn bấm Lưu.
+### Thực hiện
+- `npm i jsqr@1.4.0` (có sẵn types, KHÔNG cần @types/jsqr — package này không tồn tại, cài kèm gây lỗi 404)
+- `src/lib/qr-decode.ts` (MỚI): parseTLVFields + parseVietQRAccount (chiều ngược buildVietQRPayload) + buildAutoQRName + decodeQRFromDataUrl (canvas, offline) + fetchImageAsDataUrl (link, fail CORS thì null)
+- `components/QRPanel.tsx` (AddQRPopup): chọn ảnh/dán link → tự decode → tên tự điền nếu ô trống + dòng trạng thái (nhận diện OK / đang chạy / không đọc được-nhập tay). Lưu kèm bankBin/accountNumber → ảnh tự thêm dùng được Tạo QR tiền
+### Verify
+- Parser 8/8 payload thật + 2 case rác → null đúng. Tên mẫu: `QR MBBank 8888`, `QR BIDV 9244`, `QR Vietcombank 8769`
+- tsc 0 errors, eslint 0 errors, vite build OK
+### Chưa làm (chờ lệnh)
+Test tay thêm ảnh thật → push main → build IPA.
