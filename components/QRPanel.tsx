@@ -13,7 +13,7 @@ import {
 import { compressImageFile, isValidImageUrl } from '../src/lib/image-utils';
 import ConfirmDialog from './ConfirmDialog';
 
-// Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
+// Thêm field method vào QR_ACCOUNTS để map đúng method
 // Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
 type DefaultQRAccount = (typeof QR_ACCOUNTS)[number] & {
   method?: PaymentMethod;
@@ -211,7 +211,7 @@ const QRPanel: React.FC = () => {
                 cursor: 'pointer',
               }}
             >
-              {t === 'pics' ? '🖼️ Pics' : '💸 Cash'}
+              {t === 'pics' ? 'Pics' : 'Cash'}
             </button>
           ))}
         </div>
@@ -368,7 +368,7 @@ const PicsTab: React.FC<PicsTabProps> = ({
                 fontSize: '15px', fontWeight: 700, cursor: 'pointer',
               }}
             >
-              💸 Tạo QR tiền
+              Tạo QR tiền
             </button>
           )}
           <button
@@ -379,7 +379,7 @@ const PicsTab: React.FC<PicsTabProps> = ({
               fontSize: '15px', fontWeight: 700, cursor: 'pointer',
             }}
           >
-            🗑 Xóa
+            Xóa
           </button>
         </div>
       </div>
@@ -397,11 +397,11 @@ const PicsTab: React.FC<PicsTabProps> = ({
           fontWeight: 700,
         }}
       >
-        <span>＋ Thêm ảnh QR</span>
+        <span>+ Thêm ảnh QR</span>
       </button>
       {list.length === 0 && (
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', margin: '8px 0' }}>
-          Chưa có mã QR nào — bấm ＋ để thêm hoặc khôi phục mặc định bên dưới.
+          Chưa có mã QR nào — bấm + để thêm hoặc khôi phục mặc định bên dưới.
         </p>
       )}
       {list.map((qrItem) => (
@@ -432,7 +432,7 @@ const PicsTab: React.FC<PicsTabProps> = ({
               padding: '0 14px',
             }}
           >
-            🗑
+            Xóa
           </button>
         </div>
       ))}
@@ -445,7 +445,7 @@ const PicsTab: React.FC<PicsTabProps> = ({
             color: 'var(--text-muted)', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
           }}
         >
-          ↺ Khôi phục QR mặc định
+          Khôi phục QR mặc định
         </button>
       )}
     </div>
@@ -542,7 +542,7 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
         onClick={(e) => e.stopPropagation()}
       >
         <h3 style={{ margin: '0 0 16px', color: 'var(--text-main)', fontSize: '17px', fontWeight: 700 }}>
-          ＋ Thêm ảnh QR
+          + Thêm ảnh QR
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
@@ -567,7 +567,7 @@ const AddQRPopup: React.FC<AddQRPopupProps> = ({ existingNames, onClose, onSave,
               fontSize: '15px', fontWeight: 600, cursor: 'pointer',
             }}
           >
-            📁 Chọn ảnh từ máy
+            Chọn ảnh từ máy
           </button>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input
@@ -730,7 +730,7 @@ const CashTab: React.FC<CashTabProps> = (props) => {
               opacity: generating ? 0.6 : 1,
             }}
           >
-            {generating ? 'Đang tạo...' : '✅ Đúng rồi, tạo QR'}
+            {generating ? 'Đang tạo...' : 'Đúng rồi, tạo QR'}
           </button>
         </div>
       </div>
@@ -843,7 +843,7 @@ const CashTab: React.FC<CashTabProps> = (props) => {
           opacity: generating ? 0.6 : 1,
         }}
       >
-        {generating ? 'Đang tạo...' : '💸 Tạo QR chuyển khoản'}
+        {generating ? 'Đang tạo...' : 'Tạo QR chuyển khoản'}
       </button>
 
       {history.length > 0 && (
