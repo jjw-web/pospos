@@ -11,6 +11,7 @@ import {
   sanitizeVietQRNote,
 } from '../src/lib/vietqr';
 import { compressImageFile, isValidImageUrl } from '../src/lib/image-utils';
+import { includesNormalized } from '../src/lib/string-utils';
 import ConfirmDialog from './ConfirmDialog';
 
 // Thêm field method vào QR_ACCOUNTS để map đúng method
@@ -677,6 +678,130 @@ const cashLabelStyle: React.CSSProperties = {
   margin: '0 0 6px',
 };
 
+/**
+ * Ô chọn ngân hàng có smart search: gõ tên (có/không dấu), tên viết tắt
+ * hoặc mã BIN đều lọc được. Chữ trong danh sách 17px cho dễ bấm.
+ */
+const BankSearch: React.FC<{ bankBin: string; onPick: (bin: string) => void }> = ({
+  bankBin,
+  onPick,
+}) => {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const selected = VIETQR_BANKS.find((b) => b.bin === bankBin) ?? null;
+
+  const results = query.trim()
+    ? VIETQR_BANKS.filter((b) =>
+        includesNormalized(`${b.shortName} ${b.fullName} ${b.bin}`, query.trim())
+      )
+    : VIETQR_BANKS;
+
+  const handleFocus = () => {
+    setQuery('');
+    setOpen(true);
+  };
+
+  const handlePick = (bin: string) => {
+    onPick(bin);
+    setQuery('');
+    setOpen(false);
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <input
+          value={query || (selected ? selected.fullName : '')}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={handleFocus}
+          placeholder="Tìm: MB, Vietcombank, 970422..."
+          style={{ ...cashInputStyle, flex: 1 }}
+        />
+        {selected && (
+          <button
+            onClick={() => onPick('')}
+            title="Bỏ chọn"
+            style={{
+              borderRadius: '12px',
+              border: '1px solid var(--border)',
+              backgroundColor: 'transparent',
+              color: 'var(--text-muted)',
+              fontSize: '15px',
+              cursor: 'pointer',
+              padding: '0 14px',
+            }}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+      {open && (
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 50 }}
+            onClick={() => setOpen(false)}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              marginTop: '6px',
+              maxHeight: '260px',
+              overflowY: 'auto',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.35)',
+              zIndex: 51,
+            }}
+          >
+            {results.length === 0 && (
+              <p style={{ margin: 0, padding: '14px', fontSize: '16px', color: 'var(--text-muted)', textAlign: 'center' }}>
+                Không tìm thấy ngân hàng
+              </p>
+            )}
+            {results.map((b) => (
+              <button
+                key={b.bin}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => handlePick(b.bin)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '10px',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '13px 14px',
+                  border: 'none',
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: b.bin === bankBin ? 'var(--border)' : 'transparent',
+                  color: 'var(--text-main)',
+                  fontSize: '17px',
+                  fontWeight: b.bin === bankBin ? 700 : 500,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <span>{b.fullName}</span>
+                <span style={{ fontSize: '14px', color: 'var(--text-muted)', flexShrink: 0 }}>
+                  {b.bin}
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const CashTab: React.FC<CashTabProps> = (props) => {
   const {
     screen, bankBin, accountNumber, amountText, noteText, error,
@@ -779,20 +904,12 @@ const CashTab: React.FC<CashTabProps> = (props) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div>
+      <div style={{ position: 'relative' }}>
         <p style={cashLabelStyle}>Ngân hàng</p>
-        <select
-          value={bankBin}
-          onChange={(e) => props.onBankChange(e.target.value)}
-          style={cashInputStyle}
-        >
-          <option value="">— Chọn ngân hàng —</option>
-          {VIETQR_BANKS.map((b) => (
-            <option key={b.bin} value={b.bin}>
-              {b.fullName}
-            </option>
-          ))}
-        </select>
+        <BankSearch
+          bankBin={bankBin}
+          onPick={(bin) => props.onBankChange(bin)}
+        />
       </div>
       <div>
         <p style={cashLabelStyle}>Số tài khoản</p>
