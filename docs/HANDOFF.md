@@ -1213,3 +1213,16 @@ Các phần còn lại trong đề xuất (parse TLV, auto-scan, tự đặt tê
 - tsc 0 errors, eslint 0 errors, vite build OK
 ### Chưa làm (chờ lệnh)
 Test tay xuất/nhập thật → push main → build IPA.
+
+---
+
+## [2026-09-27] — opencode — Màn thanh toán thấy QR tự thêm [ĐÃ CODE]
+### Bug (quản lý chỉ ra)
+Màn QR thanh toán đọc cứng `QR_ACCOUNTS` → QR tự thêm chỉ hiện ở màn QR ngoài, vào thanh toán thì mất.
+### Fix
+- `components/PaymentMethodModal.tsx`: đấu `useQRManager`, list hiển thị = `activeQRAccounts` (mặc định chưa ẩn + custom), key theo id. Nút ✅: `onSelect(account.method || 'JJW')` (custom chưa gán method → JJW).
+- Type local tách rõ: `ModalQRAccount` (có method?) + `DefaultQREntry` (entry constants).
+### Verify
+tsc 0 errors, eslint 0 errors, vite build OK.
+### Chưa làm (chờ lệnh)
+Test tay: thêm QR → vào thanh toán thấy ngay → push main → build IPA.

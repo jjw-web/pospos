@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import QRCode from 'qrcode';
-import type { OrderItem, PaymentMethod } from '../src/types';
+import type { OrderItem, PaymentMethod, QRAccount } from '../src/types';
 import { QR_ACCOUNTS } from '../constants';
+import { useQRManager } from '../src/hooks/useQRManager';
 import { formatReceiptText, copyTextToClipboard } from '../src/lib/receipt';
 import { buildVietQRPayload, getBankShortName } from '../src/lib/vietqr';
 
-// Thêm field method vào QR_ACCOUNTS để map đúng method khi bấm ✅
-// Ví dụ: { name: 'QR BIDV', path: '/qr/bidv.png', method: 'BIDV' }
-type QRAccount = (typeof QR_ACCOUNTS)[number] & {
+// QR mặc định (có method thu tiền) + QR tự thêm (chưa gán method → mặc định JJW)
+type ModalQRAccount = QRAccount & { method?: PaymentMethod };
+type DefaultQREntry = (typeof QR_ACCOUNTS)[number] & {
   method?: PaymentMethod;
   bankBin?: string;
   accountNumber?: string;
@@ -33,12 +34,37 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
   receipt,
 }) => {
   const [screen, setScreen] = useState<Screen>('main');
-  const [pendingDynamic, setPendingDynamic] = useState<QRAccount | null>(null);
-  const [dynamicQR, setDynamicQR] = useState<{ dataUrl: string; account: QRAccount } | null>(null);
+  const [pendingDynamic, setPendingDynamic] = useState<ModalQRAccount | null>(null);
+  const [dynamicQR, setDynamicQR] = useState<{ dataUrl: string; account: ModalQRAccount } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const hintTimeoutRef = useRef<number>();
+
+  const qrManager = useQRManager();
+
+  // Danh sách QR thanh toán = (mặc định chưa bị ẩn) + (tự thêm).
+  // QR tự thêm chưa gán method → mặc định JJW khi bấm ✅.
+  const activeQRAccounts: ModalQRAccount[] = useMemo(
+    () => [
+      ...(QR_ACCOUNTS as DefaultQREntry[])
+        .filter((d) => !qrManager.hiddenDefaults.includes(d.name))
+        .map(
+          (d, i): ModalQRAccount => ({
+            id: `default-${i}-${d.name}`,
+            name: d.name,
+            path: d.path,
+            isCustom: false,
+            method: d.method,
+            bankBin: d.bankBin,
+            accountNumber: d.accountNumber,
+            accountName: d.accountName,
+          })
+        ),
+      ...qrManager.customQRs,
+    ],
+    [qrManager.hiddenDefaults, qrManager.customQRs]
+  );
 
   // ─── Wake Lock: giữ màn hình sáng khi show QR fullscreen ──────────────────
   useEffect(() => {
@@ -192,7 +218,7 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
     }
   };
 
-  const bankLabelOf = (account: QRAccount): string =>
+  const bankLabelOf = (account: ModalQRAccount): string =>
     (account.bankBin && getBankShortName(account.bankBin)) || account.name.replace('QR ', '');
 
   return (
@@ -244,8 +270,8 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
           {/* Màn hình danh sách QR */}
           {screen === 'qrList' && !pendingDynamic && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {(QR_ACCOUNTS as QRAccount[]).map((account) => (
-                <div key={account.name} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {activeQRAccounts.map((account) => (
+                <div key={account.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span style={{ flex: 1, color: '#fff', fontSize: '15px', fontWeight: 600 }}>
                     {account.name.replace('QR ', '')}
                   </span>
@@ -273,10 +299,8 @@ const PaymentMethodModal: React.FC<PaymentMethodModalProps> = ({
                       fontSize: '20px',
                     }}
                     onClick={() => {
-                      if (account.method) {
-                        onSelect(account.method);
-                      }
-                    }} // fix: map đúng method
+                      onSelect(account.method || 'JJW');
+                    }}
                     title="Xác nhận thu tiền"
                   >
                     ✅
