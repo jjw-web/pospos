@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, Suspense, lazy } from 'react';
 import type { PaymentMethod, Bill, AppScreen } from './src/types';
 import { DB_KEYS } from './src/lib/db';
-import { checkVersion, getVersionUpdateInfo, applyVersionUpdate } from './src/lib/version-manager';
+import { getVersionUpdateInfo, applyVersionUpdate, ensureStorageReady } from './src/lib/version-manager';
+import { flushStorageWrites } from './src/lib/safe-storage';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { useTableManager } from './src/hooks/useTableManager';
 import { useHistoryManager } from './src/hooks/useHistoryManager';
@@ -94,9 +95,29 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    // Kiểm tra dataVersion upgrade (IndexedDB/localStorage)
-    // checkVersion tự catch lỗi bên trong — .catch ngoài là lưới an toàn cuối
-    checkVersion().catch((err) => console.error('[App] checkVersion failed:', err));
+    // Khởi động storage đúng một lần, đúng trình tự (snapshot premigration +
+    // nâng cấp data) trước mọi lần đọc của các hook. Singleton nên gọi ở đây
+    // hay trong từng hook đều chỉ chạy một lần.
+    void ensureStorageReady();
+  }, []);
+
+  useEffect(() => {
+    // Ép lưu khi app xuống nền (khóa máy/vuốt tắt): chờ hàng đợi ghi hoàn tất.
+    // Không đảm bảo tuyệt đối nếu tiến trình bị kill ngay, nhưng localStorage
+    // đã ghi đồng bộ tại thời điểm thao tác nên bản mới nhất vẫn an toàn —
+    // flush ở đây là lớp bảo hiểm thêm cho IndexedDB.
+    const flush = () => {
+      void flushStorageWrites();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', flush);
+    };
   }, []);
 
   const tableManager = useTableManager();

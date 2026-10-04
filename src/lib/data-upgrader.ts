@@ -1,5 +1,4 @@
 import type { TableData } from '../types';
-import { DB_KEYS } from './db';
 
 const NEW_TABLES_V4: TableData[] = [
   { id: 21, name: 'T9', layout: 'Inside', status: 'available', order: [] },
@@ -9,58 +8,65 @@ const NEW_TABLES_V4: TableData[] = [
 ];
 
 /**
- * Nâng cấp cấu trúc dữ liệu trong localStorage từ phiên bản cũ sang phiên bản mới.
- * @param oldVersion Phiên bản dữ liệu cũ (lấy từ localStorage).
- * @param newVersion Phiên bản dữ liệu mới (từ config).
+ * Nang cap cau truc du lieu ban tren CHUOI PAYLOAD cho truoc.
+ * Ham THUAN: khong doc/ghi storage, khong side-effect.
+ * @param payload - Chuỗi JSON entries bàn (đã bóc envelope, nếu có).
+ * @param oldVersion - Phiên bản dữ liệu cũ (null nếu chưa có).
+ * @param newVersion - Phiên bản dữ liệu mới (từ config).
+ * @returns Chuoi payload sau nang cap (co the giong het dau vao neu khong doi)
  */
-export function upgradeDataStructure(oldVersion: number | null, newVersion: number) {
+export function upgradeTablesPayload(
+  payload: string,
+  oldVersion: number | null,
+  newVersion: number
+): string {
+  let entries: [number, TableData][];
+  try {
+    entries = JSON.parse(payload) as [number, TableData][];
+  } catch (e) {
+    console.error('[data-upgrader] Payload ban khong hop le, bo qua nang cap:', e);
+    return payload;
+  }
+  const tablesMap = new Map<number, TableData>(entries);
+  let result = payload;
+
   if ((oldVersion === null || oldVersion < 3) && newVersion >= 3) {
-    const tablesJSON = localStorage.getItem(DB_KEYS.TABLES);
-    if (!tablesJSON) return;
-    try {
-      const tableEntries: [number, TableData][] = JSON.parse(tablesJSON);
-      const tablesMap = new Map(tableEntries);
-      let changed = false;
-      const fallbackSince = new Date().toISOString();
-      for (const [id, t] of tablesMap.entries()) {
-        if (t.order.length === 0 && t.occupiedSince != null) {
-          tablesMap.set(id, { ...t, occupiedSince: undefined });
-          changed = true;
-        } else if (
-          t.status === 'occupied' &&
-          t.order.length > 0 &&
-          (t.occupiedSince == null || t.occupiedSince === '')
-        ) {
-          tablesMap.set(id, { ...t, occupiedSince: fallbackSince });
-          changed = true;
-        }
+    let changed = false;
+    const fallbackSince = new Date().toISOString();
+    for (const [id, t] of tablesMap.entries()) {
+      if (t.order.length === 0 && t.occupiedSince != null) {
+        tablesMap.set(id, { ...t, occupiedSince: undefined });
+        changed = true;
+      } else if (
+        t.status === 'occupied' &&
+        t.order.length > 0 &&
+        (t.occupiedSince == null || t.occupiedSince === '')
+      ) {
+        tablesMap.set(id, { ...t, occupiedSince: fallbackSince });
+        changed = true;
       }
-      if (changed) {
-        localStorage.setItem(DB_KEYS.TABLES, JSON.stringify(Array.from(tablesMap.entries())));
-      }
-    } catch (e) {
-      console.error('Lỗi nâng cấp dữ liệu v3 (tables)', e);
+    }
+    if (changed) {
+      result = JSON.stringify(Array.from(tablesMap.entries()));
     }
   }
 
   if ((oldVersion === null || oldVersion < 4) && newVersion >= 4) {
-    try {
-      const tablesJSON = localStorage.getItem(DB_KEYS.TABLES);
-      if (!tablesJSON) return;
-      const tableEntries: [number, TableData][] = JSON.parse(tablesJSON);
-      const tablesMap = new Map(tableEntries);
-      let changed = false;
-      for (const newTable of NEW_TABLES_V4) {
-        if (!tablesMap.has(newTable.id)) {
-          tablesMap.set(newTable.id, newTable);
-          changed = true;
-        }
+    // Parse lai tu `result` de bao gom ca thay doi cua buoc v3 o tren
+    const currentMap = new Map<number, TableData>(
+      JSON.parse(result) as [number, TableData][]
+    );
+    let changed = false;
+    for (const newTable of NEW_TABLES_V4) {
+      if (!currentMap.has(newTable.id)) {
+        currentMap.set(newTable.id, newTable);
+        changed = true;
       }
-      if (changed) {
-        localStorage.setItem(DB_KEYS.TABLES, JSON.stringify(Array.from(tablesMap.entries())));
-      }
-    } catch (e) {
-      console.error('Lỗi nâng cấp dữ liệu v4 (add tables)', e);
+    }
+    if (changed) {
+      result = JSON.stringify(Array.from(currentMap.entries()));
     }
   }
+
+  return result;
 }

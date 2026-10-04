@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { TableData, MenuItem, ToppingItem, PaymentMethod, Bill } from '../types';
 import { INITIAL_TABLES } from '../../constants';
 import { mergeOrderItems } from '../lib/merge-orders';
@@ -6,26 +6,27 @@ import { calcOrderTotal } from '../lib/order-utils';
 import { DB_KEYS } from '../lib/db';
 import {
   isTableEntries,
-  parseValidatedJSON,
   persistWithBackup,
-  readWithFallback,
+  readWithFallbackValidated,
 } from '../lib/safe-storage';
+import { ensureStorageReady } from '../lib/version-manager';
 
 /**
- * Load tables qua 3 lớp fallback (IndexedDB → localStorage → backup),
- * kèm validate shape. Bản ghi hỏng bị bỏ qua thay vì làm reset toàn bộ bàn.
+ * Load tables: đọc bản MỚI NHẤT trong 3 lớp (IndexedDB/localStorage/backup),
+ * kèm validate shape. Nâng cấp dữ liệu luôn chạy trước qua ensureStorageReady.
  * Falls back to INITIAL_TABLES if nothing in storage.
  */
 async function loadTablesFromDB(): Promise<Map<number, TableData>> {
+  await ensureStorageReady();
+
   const map = new Map<number, TableData>();
 
-  const raw = await readWithFallback(DB_KEYS.TABLES);
-  const savedEntries = parseValidatedJSON(raw, isTableEntries);
-  if (raw && !savedEntries) {
-    console.error('[useTableManager] Stored tables failed validation, trying fallback/empty.');
+  const result = await readWithFallbackValidated(DB_KEYS.TABLES, isTableEntries);
+  if (!result) {
+    console.error('[useTableManager] Khong co ban ghi ban hop le, dung ban mac dinh.');
   }
-  if (savedEntries) {
-    savedEntries.forEach(([id, data]) => map.set(id, data));
+  if (result) {
+    result.value.forEach(([id, data]) => map.set(id, data));
   }
 
   // Always ensure initial tables exist (e.g., new table added in app update)
@@ -38,25 +39,36 @@ async function loadTablesFromDB(): Promise<Map<number, TableData>> {
   return map;
 }
 
-/**
- * Persist tables kèm xoay vòng backup trước khi ghi đè.
- * Failures are caught inside persistWithBackup — UI state is source of truth.
- */
-async function persistTablesAsync(tables: Map<number, TableData>): Promise<void> {
-  await persistWithBackup(DB_KEYS.TABLES, JSON.stringify(Array.from(tables.entries())));
-}
-
 export function useTableManager() {
   // Initialize to empty map — actual data loaded async from IndexedDB
   const [tables, setTables] = useState<Map<number, TableData>>(new Map());
   const [isLoaded, setIsLoaded] = useState(false);
+  const lastPersistedTablesRef = useRef<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     loadTablesFromDB().then((dbTables) => {
+      if (cancelled) return;
+      // Ghi nho chuoi vua load de effect persist khong ghi trung lai
+      lastPersistedTablesRef.current = JSON.stringify(Array.from(dbTables.entries()));
       setTables(dbTables);
       setIsLoaded(true);
     });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // Persist TAP TRUNG tai day — khong persist ben trong updater nua.
+  // Updater cua setState phai thuan (pure), khong side-effect: tranh double-write
+  // khi React StrictMode goi updater 2 lan va tranh race giua cac lenh ghi.
+  useEffect(() => {
+    if (!isLoaded) return;
+    const serialized = JSON.stringify(Array.from(tables.entries()));
+    if (serialized === lastPersistedTablesRef.current) return;
+    lastPersistedTablesRef.current = serialized;
+    void persistWithBackup(DB_KEYS.TABLES, serialized);
+  }, [tables, isLoaded]);
 
   const addItemsToTable = useCallback(
     (tableId: number, itemsToAdd: { menuItem: MenuItem; toppings?: ToppingItem[] }[]) => {
@@ -88,7 +100,6 @@ export function useTableManager() {
           occupiedSince: table.occupiedSince ?? new Date().toISOString(),
         };
         next.set(tableId, updated);
-        persistTablesAsync(next);
         return next;
       });
     },
@@ -114,7 +125,6 @@ export function useTableManager() {
         occupiedSince: newOrder.length > 0 ? table.occupiedSince : undefined,
       };
       next.set(tableId, updated);
-      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -128,7 +138,6 @@ export function useTableManager() {
         item.menuItem.id === menuItemId ? { ...item, note } : item
       );
       next.set(tableId, { ...table, order: newOrder });
-      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -155,7 +164,6 @@ export function useTableManager() {
         });
 
         next.set(tableId, { ...table, order: newOrder });
-        persistTablesAsync(next);
         return next;
       });
     },
@@ -183,7 +191,6 @@ export function useTableManager() {
         status: 'available',
         occupiedSince: undefined,
       });
-      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -213,7 +220,6 @@ export function useTableManager() {
         status: 'available',
         occupiedSince: undefined,
       });
-      persistTablesAsync(next);
       return next;
     });
   }, []);
@@ -242,7 +248,6 @@ export function useTableManager() {
           status: 'available',
           occupiedSince: undefined,
         });
-        persistTablesAsync(next);
         return next;
       });
 
@@ -287,7 +292,6 @@ export function useTableManager() {
         });
       }
 
-      persistTablesAsync(next);
       return next;
     });
   }, []);

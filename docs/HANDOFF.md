@@ -1238,5 +1238,77 @@ Bao gồm từ sau IPA lần 1: QR tự thêm hiện ở thanh toán, auto-scan 
 - `BongCafePOS-v2.13.1-unsigned.ipa` (6.7 MB), copy đè ra Desktop
 - Verify: 0 __MACOSX, capacitor.config 0 "server" (offline OK), có public/index.html
 - Version giữ 2.13.1 (không bump)
+- Version giữ 2.13.1 (không bump)
 ### Cài đặt
 Sideloadly đè lên app cũ. Cache icon cũ → xóa app cũ, cài lại.
+
+---
+
+## [2026-10-04] — opencode — Fix P0 rollback/mất dữ liệu (theo 2 guide)
+### Phase đang làm
+Fix P0 rollback — Phase 0 → 6 guide BongCafePOS_Fix_Rollback_Bug_Guide (+ đối chiếu HUONG-DAN-FIX-MAT-DU-LIEU)
+### Trạng thái tổng thể
+[x] Hoàn thành code + test logic — chờ test tay trên trình duyệt/IPA thật + xác nhận push
+### Tasks đã hoàn thành trong ca này
+Phase 0 — Baseline (tsc sạch) + đọc đủ 5 file (db, safe-storage, version-manager, data-upgrader, useTableManager) — ✅ DONE
+Phase 1 — Tái hiện bug: script mô phỏng readWithFallback hiện tại (IDB cũ/T1 trống + LS mới/3 món) → app trả bản cũ, món TEST-22H biến mất — ✅ DONE (BUG REPRODUCED)
+Phase 2 — Viết lại src/lib/db.ts: openPromise gộp, onclose/onversionchange reset, resolve tại tx.oncomplete, reset khi transaction ném đồng bộ, reject khi open blocked — ✅ DONE
+Phase 3 — Viết lại lõi safe-storage.ts: envelope {__bongEnvelope:1,savedAt,revision,data}, readWithFallbackValidated (đọc 3 lớp, loại bản hỏng theo validator, chọn mới nhất savedAt→revision→tie-break LS>IDB>backup), self-heal qua write queue, persistWithBackup giữ nguyên signature, + flushStorageWrites — ✅ DONE
+Phase 4 — 4 hooks: load qua readWithFallbackValidated sau ensureStorageReady + cancelled guard; persist rời khỏi updater vào useEffect có isLoaded guard + ref chống ghi trùng (table/history/menu/3 key QR riêng) — ✅ DONE
+Phase 5 — data-upgrader thành hàm thuần upgradeTablesPayload (xóa export cũ upgradeDataStructure); version-manager: ensureStorageReady singleton + checkVersion đọc data_version max 2 nơi, đọc bản thắng heal:false, chỉ bump version SAU khi ghi xong — ✅ DONE
+Phase 5B — Premigration snapshot: tables/history × 3 nguồn → *_premigration_* trong localStorage, chỉ tạo 1 lần — ✅ DONE
+App.tsx — bỏ checkVersion() song song, gọi ensureStorageReady() 1 lần + listener visibilitychange/pagehide flush — ✅ DONE
+Phase 6 — Test logic trên code thật (esbuild bundle + fake IDB/LS trong Node): suite chính 14/14 (T1,T2,T3,T4,T5,T6,T7,T8,T10,T11,T12) + suite T9 5/5 (giữ T1, thêm T9–T12, data_version 4 cả 2 nơi, snapshot 1 lần) — ✅ DONE
+### Task đang dở
+Không có (code). Còn lại PHẦN NGƯỜI: test tay mục 6.3 trên IPA thật (khóa máy/vuốt tắt/force-quit × 5) + TESTING_CHECKLIST 89 items + build IPA + cài đè — chưa làm trong ca này
+### Files đã thay đổi trong ca này
+src/lib/db.ts — rewrite theo Phase 2 (giữ nguyên DB_NAME/DB_VERSION/store keyval/DB_KEYS)
+src/lib/safe-storage.ts — rewrite lõi theo Phase 3 (giữ nguyên type guards + exports cũ + BACKUP_SUFFIX)
+src/lib/data-upgrader.ts — hàm thuần upgradeTablesPayload, xóa upgradeDataStructure
+src/lib/version-manager.ts — ensureStorageReady + snapshotBeforeFirstMigration + checkVersion mới (giữ getVersionUpdateInfo/applyVersionUpdate)
+src/hooks/useTableManager.ts — load mới + persist useEffect, xóa persistTablesAsync
+src/hooks/useHistoryManager.ts — rewrite theo mẫu Phase 4.2
+src/hooks/useMenuManager.ts — rewrite theo mẫu Phase 4.3
+src/hooks/useQRManager.ts — rewrite theo mẫu Phase 4.4 (importCustomQRs đọc ref thay closure để đúng khi gọi dồn)
+App.tsx — ensureStorageReady + flush on background (bỏ checkVersion trực tiếp)
+docs/HANDOFF.md — entry này
+### Files đã tạo mới trong ca này
+Không có trong repo (scripts test nằm ở /tmp/opencode: repro-phase1.mjs, test-storage.mts, test-t9.mts — không commit)
+### Files đã xóa trong ca này
+Không có (chỉ xóa export upgradeDataStructure trong data-upgrader.ts, không còn ai dùng)
+### Kết quả TypeScript check
+Lệnh: ./node_modules/.bin/tsc --noEmit
+Kết quả: [x] 0 errors
+### Kết quả build check
+Lệnh: npm run build
+Kết quả: [x] Thành công (index 246.04 kB / gzip 78.35 kB; QRView 154.14 kB; HistoryView 21.07 kB; MenuView 14.45 kB)
+### Kết quả lint check
+Lệnh: npm run lint
+Kết quả: [x] 0 errors, 0 warnings (fix 1 lỗi _value unused-arg sau build)
+### Kết quả dev server check
+Lệnh: vite --host 127.0.0.1 + curl
+Kết quả: [x] HTTP 200
+### Kết quả TESTING_CHECKLIST.md
+Chưa chạy tay 89 items — đã verify tự động các nhóm liên quan: Nhóm 3/10/11 (ghi+đọc tables/history qua test T7/T12), Nhóm 12 (menu load/merge qua useMenuManager — code path qua readWithFallbackValidated đã cover), Nhóm 13 (persistence T1/T8/T11), Nhóm 14.4 (revertBill giữ nguyên logic, chỉ rời persist)
+Test tay + IPA thật: CHƯA LÀM — bắt buộc trước khi đóng bug (mục 6.3 guide)
+### Vấn đề phát sinh trong ca này
+T7 revision = 56 thay vì 50: do lastKnownMeta module-level còn sót qua các test trong cùng process — hành vi đúng (đơn điệu tăng), không phải bug
+T9 assertion order.length sai 1 lần (viết test nhầm quantity 2 thành length 2) — đã sửa test, code đúng
+### Quyết định đã tự đưa ra trong ca này
+Lấy guide 2 (Fix_Rollback_Bug_Guide) làm kiến trúc chính; KHÔNG làm: màn Khôi phục ẩn (T4 guide 1), đổi hành vi menu (T5 guide 1 — chính guide yêu cầu chủ app duyệt), @capacitor/filesystem (T7 — cần duyệt package). Ghi nhận để ca sau/quản lý quyết
+importCustomQRs đọc lastPersisted ref thay vì closure customQRs — đúng hơn khi gọi 2 lần dồn dập
+Giữ readWithFallback cũ làm wrapper tương thích (trả payload bản mới nhất) thay vì xóa
+Không bump version, KHÔNG push, KHÔNG build IPA trong ca này — chờ quản lý xác nhận
+KHÔNG commit (git chưa được phép trong ca này) — toàn bộ thay đổi đang uncommitted, cần commit theo quyết định quản lý
+### Packages đã thêm/xóa
+Không có
+### Hướng dẫn cho agent ca tiếp theo / quản lý
+1. Review diff 9 files trên. Commit khi duyệt
+2. Chạy TESTING_CHECKLIST.md tay trên trình duyệt, trọng tâm Nhóm 10/11/13/14
+3. Test IPA thật mục 6.3 (khóa máy, vuốt tắt × 5, xóa lịch sử không hồi sinh) — bắt buộc
+4. Dặn người dùng trước khi cài đè: KHÔNG xóa app cũ, hạn chế thao tác ghi mới nếu vừa bị rollback
+5. Tồn đọng Phase 7 guide (ghi nhận, không bắt buộc): thanh toán 2 key chưa nguyên tử; toast cảnh báo khi IDB fail liên tiếp; dọn *_premigration_* thủ công sau ổn định
+6. Downgrade cảnh báo: đã lên bản này thì không quay lại bản cũ (envelope bản cũ đọc sai shape → rơi về mặc định)
+### Commit cuối cùng của ca này
+Hash: (chưa commit — chờ duyệt)
+Message: (dự kiến) fix-data: envelope + newest-wins read, write queue, reconnect IDB, hooks persist via effect
