@@ -1312,3 +1312,19 @@ Không có
 ### Commit cuối cùng của ca này
 Hash: (chưa commit — chờ duyệt)
 Message: (dự kiến) fix-data: envelope + newest-wins read, write queue, reconnect IDB, hooks persist via effect
+
+---
+
+## [2026-10-04] — opencode — PUSH MAIN + BUILD IPA 2.14.0 [QUẢN LÝ DUYỆT]
+### Push
+- Bump 2.13.1 → 2.14.0 (package.json + package-lock.json, đổi định dạng storage → banner cập nhật hiện mọi máy)
+- Commit fe0b04f (12 files, +829/−238) → `git push origin main`: OK (Vercel auto-deploy)
+### Build IPA
+- `npm run build` OK → `npx cap sync ios` OK → xcodebuild archive Release unsigned: ARCHIVE SUCCEEDED
+- `BongCafePOS-v2.14.0-unsigned.ipa` (6.4 MB, 57 files), copy ra Desktop
+- Verify IPA: 0 __MACOSX, capacitor.config.json KHÔNG có server.url (offline OK), có public/index.html, Assets.car (icon) đầy đủ
+- IPA trong repo untracked theo convention (không commit binary)
+### Cài đặt
+Sideloadly cài đè (giữ bundle ID com.bongcafe.pos, KHÔNG xóa app cũ). Lần mở đầu tiên bản vá chụp premigration snapshot + tự chữa IDB cũ
+### Còn lại (bắt buộc trước khi coi là đóng bug)
+Test tay mục 6.3 trên máy thật: khóa máy/vuốt tắt/force-quit × 5, xóa lịch sử không hồi sinh; TESTING_CHECKLIST 89 items
